@@ -1,268 +1,160 @@
-<!-- TITLE -->
-<p align="center">
-  <img width="100px" src="https://github.com/celo-org/celo-composer/blob/main/images/readme/celo_isotype.svg" align="center" alt="Celo" />
- <h2 align="center">Celo Composer</h2>
- <p align="center">Build, deploy, and iterate quickly on decentralized applications using Celo.</p>
-</p>
-  <p align="center">
-    <a href="https://github.com/celo-org/celo-composer/graphs/stars">
-      <img alt="GitHub Contributors" src="https://img.shields.io/github/stars/celo-org/celo-composer?color=FCFF52" />
-    </a>
-    <a href="https://github.com/celo-org/celo-composer/graphs/contributors">
-      <img alt="GitHub Contributors" src="https://img.shields.io/github/contributors/celo-org/celo-composer?color=E7E3D4" />
-    </a>
-    <a href="https://github.com/celo-org/celo-composer/issues">
-      <img alt="Issues" src="https://img.shields.io/github/issues/celo-org/celo-composer?color=E7E3D4" />
-    </a>
-    <a href="https://github.com/celo-org/celo-composer/pulls">
-      <img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/celo-org/celo-composer?color=E7E3D4" />
-    </a>
-    <a href="https://opensource.org/license/mit/">
-      <img alt="MIT License" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
-    </a>
-  </p>
-</p>
+# CeloSubPay: A DeFi-Based Subscription Payment Protocol
 
-<!-- TABLE OF CONTENTS -->
+## 📌 Project Description
+CeloSubPay is a decentralized finance (DeFi) protocol that enables automated, recurring subscription payments using stablecoins. It bridges the gap between traditional subscription models and blockchain technology, offering businesses an efficient way to manage subscriptions while giving users full control over their payments.
 
-<div>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li><a href="#about-the-project">About The Project</a></li>
-      <ol>
-        <li><a href="#built-with">Built With</a></li>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-     </ol>
-    <li><a href="#how-to-use-celo-composer">How to use Celo Composer</a></li>
-        <ol>
-          <li><a href="#install-dependencies">Install Dependencies</a></li>
-          <li><a href="#deploy-a-smart-contract">Deploy a Smart Contract</a></li>
-          <li><a href="#deploy-your-dapp-locally">Deploy your Dapp Locally</a></li>
-          <li><a href="#add-ui-components">Add UI Components</a></li>
-          <li><a href="#deploy-with-vercel">Deploy with Vercel</a></li>
-          <li><a href="#supported-frameworks">Supported Frameworks</a></li>
-          <li><a href="#supported-templates">Supported Templates</a></li>
-        </ol>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#support">Support</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ol>
-</div>
+### 🌍 Key Features
+- **Smart Contract-Based Subscriptions** – Automates recurring payments with user-defined parameters.
+- **Stablecoin Integration** – Eliminates volatility concerns with cUSD and cEUR payments.
+- **AI-Powered Risk Management** – Credit risk assessment, fraud detection, and payment optimization.
+- **Business Management Dashboard** – Tools for creating, monitoring, and managing subscriptions.
+- **User Sovereignty** – Transparent billing, easy modifications, and full user control over payments.
+- **Low Transaction Costs** – Reduces fees (0.1-0.5%) compared to traditional payment processors (2-5%).
 
-<!-- ABOUT THE PROJECT -->
+---
 
-## About The Project
+## 🚀 Problem Statement
+The current Web3 ecosystem lacks efficient subscription payment solutions due to:
+- ❌ **No Native Recurring Payment Mechanisms** – Blockchain transactions are typically one-time payments.
+- 💸 **High Transaction Costs** – Traditional processors charge excessive fees.
+- ⚠️ **Payment Reliability Issues** – No automated verification of wallet balances or user creditworthiness.
+- 🔍 **Limited Credit Assessment** – No traditional credit scoring in blockchain transactions.
+- 📉 **Complex User Experience** – Many existing crypto subscription models require manual renewals.
+- 🌍 **Cross-Border Limitations** – High fees and regulatory barriers for global transactions.
 
-Celo Composer allows you to quickly build, deploy, and iterate on decentralized applications using Celo. It provides a number of frameworks, templates, deployment and component support, and Celo specific functionality to help you get started with your next dApp. 
+**CeloSubPay solves these issues by enabling smart contract-driven, stablecoin-based, and AI-optimized subscription payments.**
 
-It is the perfect lightweight starter-kit for any hackathon and for quickly testing out integrations and deployments on Celo.
+---
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+## 🛠️ Solution Overview
+### 🔗 Core Components
+1. **Smart Contract Subscription Framework**
+   - Handles subscription creation, execution, and termination.
+2. **Stablecoin-Powered Payments**
+   - Uses **cUSD & cEUR** to provide price stability.
+3. **AI-Enhanced Risk Management**
+   - Detects fraud, predicts payment failures, and assesses creditworthiness.
+4. **Automated Billing & Notifications**
+   - Smart contracts handle scheduled payments, sending alerts for upcoming transactions.
+5. **User & Business Dashboards**
+   - **Subscribers:** Manage subscriptions, cancel, or modify anytime.
+   - **Businesses:** Set up pricing models, track revenue, and manage subscribers.
+6. **On-Chain Dispute Resolution**
+   - Provides a transparent mechanism for handling disputes and refunds.
 
-## Built With
+---
 
-Celo Composer is built on Celo to make it simple to build dApps using a variety of front-end frameworks, and libraries.
+## 🔥 Competitive Advantages
+- **✅ Cost Efficiency:** Lower fees compared to traditional processors.
+- **🧠 AI-Driven Risk Management:** Unique fraud detection and credit scoring features.
+- **📱 Mobile-First Design:** Built for Celo’s mobile-friendly blockchain.
+- **🌎 Global Accessibility:** Borderless payments with stablecoin support.
+- **🛡️ Security & Transparency:** Immutable smart contract-based billing.
+- **⚙️ Programmable Subscriptions:** Dynamic pricing, usage-based billing, and DAO membership models.
 
-- [Celo](https://celo.org/)
-- [Solidity](https://docs.soliditylang.org/en/v0.8.19/)
-- [Hardhat](https://hardhat.org/)
-- [React.js](https://reactjs.org/)
-- [Next.js](https://nextjs.org/)
-- [viem](https://viem.sh/)
-- [Tailwind](https://tailwindcss.com/)
+---
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+## 📐 Technical Architecture
+### **1️⃣ Core Protocol Layer**
+- **Subscription Registry Contract** – Maintains active subscriptions.
+- **Payment Authorization Contract** – Manages secure allowances.
+- **Payment Execution Contract** – Automates payment transactions.
+- **Dispute Resolution Contract** – Handles disputes and refunds.
+- **Credit Scoring Contract** – Updates on-chain credit scores based on transaction history.
 
-<!-- GETTING STARTED -->
+### **2️⃣ AI Analytics Layer**
+- **Risk Assessment Engine** – Generates credit risk profiles.
+- **Fraud Detection System** – Monitors suspicious activities.
+- **Payment Prediction Module** – Forecasts potential failures.
+- **Churn Analysis System** – Identifies at-risk subscribers.
 
-## Prerequisites
+### **3️⃣ Interface Layer**
+- **Subscriber dApp** – Mobile-optimized UI for managing subscriptions.
+- **Business Dashboard** – Tools for subscription plan creation and revenue tracking.
+- **Developer Console** – SDKs and APIs for third-party integration.
+- **Analytics Portal** – Reporting tools for performance insights.
 
-- Node (v20 or higher)
-- Git (v2.38 or higher)
+### **4️⃣ Integration Layer**
+- **API Gateway** – RESTful APIs for easy service integration.
+- **SDK Library** – Development kits for various programming languages.
+- **Webhook System** – Real-time event notifications.
+- **Identity Verification Module** – Optional KYC integration.
+- **Accounting Connectors** – Integrates with existing ERP systems.
 
-## How to use Celo Composer
+---
 
-The easiest way to start with Celo Composer is using `@celo/celo-composer`. This CLI tool lets you quickly start building dApps on Celo, including several templates. To get started, just run the following command, and follow the steps:
+## 💰 Revenue Model & Tokenomics
+### **Fee Structure**
+- **0.5-1%** transaction fee per successful subscription payment.
+- **Tiered pricing** for businesses (lower fees for higher volumes).
+- **Premium features** available via paid subscriptions.
 
-- Step 1
+### **$CSPAY Utility Token**
+- **Governance Rights** – Token holders participate in protocol decisions.
+- **Fee Discounts** – Users receive lower fees when staking tokens.
+- **Revenue Sharing** – Stakers earn a share of protocol revenue.
+- **Credit Collateral** – Used for advanced credit-based payments.
 
-```bash
-npx @celo/celo-composer@latest create
+---
+
+## 📜 Smart Contracts
+| Contract | Description |
+|----------|-------------|
+| SubscriptionRegistry.sol | Manages all active subscriptions |
+| PaymentAuthorization.sol | Handles user-approved allowances for payments |
+| PaymentExecution.sol | Executes automated payments based on predefined terms |
+| DisputeResolution.sol | Handles on-chain disputes and refunds |
+| CreditScoring.sol | Generates credit risk profiles using AI algorithms |
+
+---
+
+## 🚀 Getting Started
+### Prerequisites
+- **Node.js** & **Yarn/npm** installed
+- **Hardhat** for smart contract development
+- **Celo Wallet** for test transactions
+
+### Installation
+Clone the repository and install dependencies:
+```sh
+$ git clone https://github.com/your-repo/celosubpay.git
+$ cd celosubpay
+$ yarn install
 ```
 
-- Step 2: Provide the Project Name: You will be prompted to enter the name of your project.
-
-```text
-What is your project name: 
+### Deploy Smart Contracts
+```sh
+$ npx hardhat compile
+$ npx hardhat run scripts/deploy.js --network alfajores
 ```
 
-- Step 3: Choose to Use Hardhat: You will be asked if you want to use Hardhat. Select Yes or No.
-
-```text
-Do you want to use Hardhat? (Y/n)
+### Run the Frontend
+```sh
+$ cd frontend
+$ yarn start
 ```
 
-- Step 4: Choose to Use a Template: You will be asked if you want to use a template. Select `Yes` or `No`.
+---
 
-```text
-Do you want to use a template?
-```
 
-- Step 5: Select a Template: If you chose to use a template, you will be prompted to select a template from the list provided.
+## 📢 Contributing
+We welcome contributions from the community! 🚀
+1. Fork the repository
+2. Create a new feature branch (`git checkout -b feature-name`)
+3. Commit changes (`git commit -m 'Add new feature'`)
+4. Push to your fork (`git push origin feature-name`)
+5. Open a Pull Request 🎉
 
-```text
-- Minipay
-- Valora
-```
+---
 
-- Step 6: Provide the Project Owner's Name: You will be asked to enter the project owner's name.
+## 🛡️ License
+This project is licensed under the **MIT License** – see the [LICENSE](LICENSE) file for details.
 
-```text
-Project Owner name:
-```
+---
 
-- Step 7: Wait for Project Creation: The CLI will now create the project based on your inputs. This may take a few minutes.
-
-- Step 8: Follow the instructions to start the project. The same will be displayed on the console after the project is created.
-
-```text
-🚀 Your starter project has been successfully created!
-```
-
-## Install Dependencies
-
-
-Once your custom dApp has been created, just install dependencies, either with yarn:
-
-```bash
-   yarn
-```
-
-If you prefer npm, you can run:
-
-```bash
-   npm install
-```
-
-## Deploy a Smart Contract
-
-Find the detailed instructions on how to run your smart contract in [packages/hardhat/README.md](./packages/hardhat/README.md).
-
-For quick development follow these three steps:
-
-1. Change `packages/hardhat/env.template` to `packages/hardhat/env` and add your `PRIVATE_KEY` into the `.env` file.
-2. Make sure your wallet is funded when deploying to testnet or mainnet. You can get test tokens for deploying it on Alfajores from the [Celo Faucet](https://faucet.celo.org/alfajores).
-3. Run the following commands from the `packages/hardhat` folder to deploy your smart contract to the Celo Testnet Alfajores:
-
-```bash
-npx hardhat ignition deploy ./ignition/modules/Lock.ts --network alfajores
-```
-
-## Deploy your Dapp Locally
-
-Find the detailed instructions on how to run your frontend in the [`react-dapp` README.md](./packages/react-app/README.md).
-
-Before you start the project, please follow these steps:
-
-1. Rename the file:
-   packages/react-app/.env.template
-   to
-   packages/react-app/.env
-
-2. Open the newly renamed .env file and add your WalletConnect Cloud Project ID from [WalletConnect Cloud](https://cloud.walletconnect.com/)
-
-Once you've done that, you're all set to start your project!
-
-Run the following commands from the `packages/react-app` folder to start the project:
-
-```bash
-   yarn dev
-```
-
-If you prefer npm, you can run:
-
-```bash
-   npm run dev
-```
-
-Thank you for using Celo Composer! If you have any questions or need further assistance, please refer to the README or reach out to our team.
-
-**_🔥Voila, you have a dApp ready to go. Start building your dApp on Celo._**
-
-
-## Add UI Components
-
-To keep the Celo Composer as lightwieght as possible we didn't add any components but rather a guide on how to add the components you need yourself with a very simple to use components library. To learn how to add UI components using [ShadCN](https://ui.shadcn.com/) in this project, refer to the [UI Components Guide](./docs/UI_COMPONENTS.md).
-
-## Deploy with Vercel
-
-The Celo Composer is a great tool for hackathons and fast deployments. We created a guide for you, using the Vercel CLI to create a live deployment in minutes. For detailed instructions on deploying the Next.js app using Vercel CLI, refer to the [Deployment Guide](./docs/DEPLOYMENT_GUIDE.md).
-
-
-## Supported Frameworks
-
-### React / Nextjs
-
-- Support for Website and Progressive Web Application.
-- Works with all major crypto wallets.
-
-Check [nextjs docs](https://nextjs.org/docs) to learn more about it.
-
-### Hardhat
-
-- Robust framework for building and testing smart contracts.
-- Compatible with various Ethereum development tools and plugins.
-
-Check [hardhat docs](https://hardhat.org/hardhat-runner/docs/getting-started) to learn more about it.
-
-## Supported Templates
-
-### Minipay
-
-- Pre-built template for creating a mini-payment application.
-- Seamless integration with Celo blockchain for handling payments.
-
-Checkout [minipay docs](https://docs.celo.org/developer/build-on-minipay/overview) to learn more about it.
-
-### Valora
-
-- Template designed for Valora wallet integration.
-- Facilitates easy wallet connectivity and transaction management.
-
-Checkout [valora docs](https://docs.valora.xyz/) to learn more about it.
-
-
-## Support
-
-Join the Celo Discord server at <https://chat.celo.org>. Reach out on the dedicated repo channel [here](https://discord.com/channels/600834479145353243/941003424298856448).
-
-<!-- ROADMAP -->
-
-## Roadmap
-
-See the [open issues](https://github.com/celo-org/celo-composer/issues) for a full list of proposed features (and known issues).
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-<!-- CONTRIBUTING -->
-
-## Contributing
-
-We welcome contributions from the community.
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-## License
-
-Distributed under the MIT License. See `LICENSE.txt` for more information.
-
-<!-- CONTACT -->
-## Contact
-
-- [@CeloDevs](https://twitter.com/CeloDevs)
-- [Discord](https://discord.com/invite/celo)
-
-<p align="right">(<a href="#top">back to top</a>)</p>
+## 🌎 Connect with Us
+- **Website:** [Coming Soon]
+<!-- - **Twitter:** [@CeloSubPay](https://twitter.com/CeloSubPay)
+- **Discord:** [Join the Community](https://discord.gg/celosubpay)
+- **Documentation:** [Docs](https://docs.celosubpay.com) -->
+- **Email:** nasihudeen04@gmail.com
