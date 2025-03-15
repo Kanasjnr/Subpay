@@ -8,11 +8,7 @@ const TOKENS = {
     cUSD: "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
     cEUR: "0x10c892A6EC43a53E45D0B916B4b7D383B1b78C0F",
   },
-  // Hardhat Network (will deploy mock tokens)
-  hardhat: {
-    cUSD: "",
-    cEUR: "",
-  },
+ 
   
 }
 
