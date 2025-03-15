@@ -19,6 +19,7 @@
     "chai": "^4.2.0",
     "chain": "^0.4.0",
     "hardhat": "^2.22.15",
+    "hardhat-coverage": "^0.9.19",
     "hardhat-gas-reporter": "^1.0.8",
     "solidity-coverage": "^0.8.1",
     "ts-node": "^10.9.2",
@@ -27,7 +28,8 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.2.0",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "ethers": "^5.8.0"
   },
   "scripts": {
     "postinstall": "chmod +x sync-abis.js",
