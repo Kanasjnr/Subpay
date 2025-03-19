@@ -69,21 +69,7 @@ export default function Contact() {
               </div>
             </div>
 
-            <div className="mt-12">
-              <h4 className="text-base font-medium text-gray-900 mb-4">Follow Us</h4>
-              <div className="flex space-x-4">
-                {["twitter", "linkedin", "github", "discord"].map((platform) => (
-                  <a
-                    key={platform}
-                    href="#"
-                    className="bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
-                  >
-                    <span className="sr-only">{platform}</span>
-                    <div className="h-5 w-5 bg-gray-500 rounded-full"></div>
-                  </a>
-                ))}
-              </div>
-            </div>
+  
           </motion.div>
 
           {/* Contact Form */}
