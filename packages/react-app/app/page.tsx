@@ -8,7 +8,7 @@ import Features from "@/components/sections/Features"
 import HowItWorks from "@/components/sections/HowItWorks"
 import UseCases from "@/components/sections/UsesCases"
 import FAQ from "@/components/sections/FAQ"
-import CTA from "@/components/sections/CTA"
+// import CTA from "@/components/sections/CTA"
 import Contact from "@/components/sections/Contact"
 import Footer from "@/components/Layout/Footer"
 import SplashScreen from "@/components/SplashScreen"
@@ -48,7 +48,7 @@ export default function Home() {
               <HowItWorks />
               <UseCases />
               <FAQ />
-              <CTA />
+              {/* <CTA /> */}
               <Contact />
             </main>
             <Footer />
