@@ -164,7 +164,7 @@ export default function Hero() {
   return (
     <section
       ref={containerRef}
-      className="relative pt-32 pb-20 overflow-hidden bg-black text-white min-h-screen flex items-center"
+      className="relative pt-32 pb-20 overflow-hidden bg-gradient-to-b from-[#f8fcfa] to-white min-h-screen flex items-center"
     >
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
 
@@ -178,11 +178,7 @@ export default function Hero() {
             transition={{ duration: 0.8 }}
           >
             <div className="max-w-lg">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.6 }}
-              >
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
                 <motion.span
                   className="inline-block py-1 px-3 rounded-full bg-[#35D07F]/20 text-[#35D07F] text-sm font-medium mb-6"
                   animate={{
@@ -198,10 +194,10 @@ export default function Hero() {
                 </motion.span>
               </motion.div>
               <motion.h1
-                className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6"
+                className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6 text-gray-900"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
+                transition={{ duration: 0.4 }}
               >
                 <span className="block">Revolutionize</span>
                 <span className="block">
@@ -218,10 +214,10 @@ export default function Hero() {
                 </span>
               </motion.h1>
               <motion.p
-                className="text-xl text-gray-400 mb-8"
+                className="text-xl text-gray-600 mb-8"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.6 }}
+                transition={{ duration: 0.4 }}
               >
                 Seamless, automated recurring payments on the blockchain with full user control and transparency.
               </motion.p>
@@ -229,11 +225,11 @@ export default function Hero() {
                 className="flex flex-wrap gap-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.6 }}
+                transition={{ duration: 0.4 }}
               >
                 <motion.a
                   href="#get-started"
-                  className="bg-[#35D07F] hover:bg-[#35D07F]/90 text-black font-medium rounded-lg px-6 py-3 inline-flex items-center transition-colors"
+                  className="bg-[#35D07F] hover:bg-[#35D07F]/90 text-white font-medium rounded-lg px-6 py-3 inline-flex items-center transition-colors"
                   whileHover={{ scale: 1.05, x: 5 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -248,7 +244,7 @@ export default function Hero() {
                 </motion.a>
                 <motion.a
                   href="#demo"
-                  className="bg-transparent hover:bg-white/10 text-white border border-white/30 font-medium rounded-lg px-6 py-3 inline-flex items-center transition-colors"
+                  className="bg-transparent hover:bg-[#35D07F]/10 text-gray-800 border border-gray-300 font-medium rounded-lg px-6 py-3 inline-flex items-center transition-colors"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -261,7 +257,7 @@ export default function Hero() {
                 className="mt-16 grid grid-cols-3 gap-4"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 1, duration: 0.6 }}
+                transition={{ duration: 0.6 }}
               >
                 {[
                   { value: "95%", label: "Lower Fees" },
@@ -273,7 +269,7 @@ export default function Hero() {
                     className="text-center"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 1 + i * 0.2, duration: 0.5 }}
+                    transition={{ delay: 0.1 * i, duration: 0.3 }}
                   >
                     <motion.p
                       className="text-3xl font-bold text-[#35D07F]"
@@ -293,7 +289,7 @@ export default function Hero() {
                     >
                       {stat.value}
                     </motion.p>
-                    <p className="text-sm text-gray-400">{stat.label}</p>
+                    <p className="text-sm text-gray-500">{stat.label}</p>
                   </motion.div>
                 ))}
               </motion.div>
@@ -305,7 +301,7 @@ export default function Hero() {
             className="w-full lg:w-1/2 relative"
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
+            transition={{ duration: 0.8 }}
           >
             {/* 3D Subscription Card */}
             <motion.div
@@ -316,20 +312,20 @@ export default function Hero() {
               }}
             >
               <motion.div
-                className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-8 border border-gray-800 shadow-[0_0_50px_rgba(53,208,127,0.3)]"
+                className="bg-white rounded-2xl p-8 border border-gray-100 shadow-xl"
                 whileHover={{
-                  boxShadow: "0 0 70px rgba(53, 208, 127, 0.5)",
+                  boxShadow: "0 20px 70px rgba(53, 208, 127, 0.3)",
                   transition: { duration: 0.3 },
                 }}
               >
                 <div className="flex justify-between items-center mb-8">
                   <div className="flex items-center">
                     <div className="w-12 h-12 rounded-full bg-[#35D07F]/20 flex items-center justify-center">
-                      <Logo size={28} animated={false} darkMode />
+                      <Logo size={28} animated={false} />
                     </div>
                     <div className="ml-3">
-                      <p className="text-lg font-medium text-white">SubPay Protocol</p>
-                      <p className="text-sm text-gray-400">Smart Subscription</p>
+                      <p className="text-lg font-medium text-gray-900">SubPay Protocol</p>
+                      <p className="text-sm text-gray-500">Smart Subscription</p>
                     </div>
                   </div>
                   <motion.div
@@ -353,7 +349,7 @@ export default function Hero() {
 
                 <div className="space-y-6">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-400 mb-3">Subscription Details</h4>
+                    <h4 className="text-sm font-medium text-gray-500 mb-3">Subscription Details</h4>
                     <div className="space-y-4">
                       {[
                         { label: "Next payment", value: "June 15, 2023" },
@@ -365,18 +361,18 @@ export default function Hero() {
                           className="flex justify-between items-center"
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.5 + i * 0.2, duration: 0.5 }}
+                          transition={{ duration: 0.3 }}
                         >
-                          <p className="text-sm text-gray-400">{item.label}</p>
-                          <p className="text-sm font-medium text-white">{item.value}</p>
+                          <p className="text-sm text-gray-500">{item.label}</p>
+                          <p className="text-sm font-medium text-gray-900">{item.value}</p>
                         </motion.div>
                       ))}
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-gray-800">
+                  <div className="pt-4 border-t border-gray-100">
                     <div className="flex justify-between mb-3">
-                      <h4 className="text-sm font-medium text-gray-400">Status</h4>
+                      <h4 className="text-sm font-medium text-gray-500">Status</h4>
                       <motion.div
                         className="flex items-center"
                         animate={{
@@ -391,17 +387,17 @@ export default function Hero() {
                         <p className="text-sm font-medium text-[#35D07F]">Auto-renewing</p>
                       </motion.div>
                     </div>
-                    <div className="h-2 bg-gray-800 rounded-full overflow-hidden mt-4">
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden mt-4">
                       <motion.div
                         className="h-full bg-gradient-to-r from-[#35D07F] to-[#4EEAA0]"
                         initial={{ width: 0 }}
                         animate={{ width: "75%" }}
-                        transition={{ delay: 1.1, duration: 1, ease: "easeOut" }}
+                        transition={{ duration: 1, ease: "easeOut" }}
                       />
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-gray-800">
+                  <div className="pt-4 border-t border-gray-100">
                     <motion.button
                       className="w-full bg-[#35D07F]/10 hover:bg-[#35D07F]/20 text-[#35D07F] font-medium py-3 px-4 rounded-lg transition-colors"
                       whileHover={{ scale: 1.02 }}
@@ -416,10 +412,10 @@ export default function Hero() {
 
             {/* Floating elements */}
             <motion.div
-              className="absolute -top-6 -right-6 bg-[#35D07F] text-black p-4 rounded-xl shadow-lg z-10"
+              className="absolute -top-6 -right-6 bg-[#35D07F] text-white p-4 rounded-xl shadow-lg z-10"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.9, duration: 0.5 }}
+              transition={{ duration: 0.5 }}
               animate={{
                 y: [0, -10, 0],
                 transition: {
@@ -430,7 +426,7 @@ export default function Hero() {
               }}
             >
               <div className="flex items-center">
-                <div className="w-8 h-8 rounded-full bg-black/20 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
                   <Zap className="h-4 w-4" />
                 </div>
                 <div className="ml-3">
@@ -441,10 +437,10 @@ export default function Hero() {
             </motion.div>
 
             <motion.div
-              className="absolute -bottom-6 -left-6 bg-gray-900 p-4 rounded-xl shadow-lg border border-gray-800 z-10"
+              className="absolute -bottom-6 -left-6 bg-white p-4 rounded-xl shadow-lg border border-gray-100 z-10"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 1.1, duration: 0.5 }}
+              transition={{ duration: 0.5 }}
               animate={{
                 y: [0, 10, 0],
                 transition: {
@@ -459,8 +455,8 @@ export default function Hero() {
                   <Shield className="h-4 w-4" />
                 </div>
                 <div className="ml-3">
-                  <p className="text-xs font-medium text-gray-400">Payment Status</p>
-                  <p className="text-sm font-bold text-white">Fully Secured</p>
+                  <p className="text-xs font-medium text-gray-500">Payment Status</p>
+                  <p className="text-sm font-bold text-gray-900">Fully Secured</p>
                 </div>
               </div>
             </motion.div>
