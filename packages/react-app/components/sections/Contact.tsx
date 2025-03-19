@@ -54,21 +54,6 @@ export default function Contact() {
             </p>
 
             <div className="space-y-6">
-              
-
-              <div className="flex items-start">
-                <div className="flex-shrink-0 mt-1">
-                  <Phone className="h-6 w-6 text-forest" />
-                </div>
-                <div className="ml-4">
-                  <h4 className="text-base font-medium text-gray-900">Call Us</h4>
-                  <p className="mt-1 text-gray-600">
-                    +1 (555) 123-4567
-                    <br />
-                    Mon-Fri from 9am to 6pm EST
-                  </p>
-                </div>
-              </div>
 
               <div className="flex items-start">
                 <div className="flex-shrink-0 mt-1">
@@ -78,8 +63,7 @@ export default function Contact() {
                   <h4 className="text-base font-medium text-gray-900">Email Us</h4>
                   <p className="mt-1 text-gray-600">
                     info@subpay.io
-                    <br />
-                    support@subpay.io
+                  
                   </p>
                 </div>
               </div>
