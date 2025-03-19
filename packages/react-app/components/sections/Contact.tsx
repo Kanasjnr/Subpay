@@ -1,23 +1,25 @@
-"use client"
+'use client';
 
-import type React from "react"
+import type React from 'react';
 
-import { motion } from "framer-motion"
-import { useState } from "react"
-import {  Mail, Send } from "lucide-react"
+import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { Mail, Send } from 'lucide-react';
 
 export default function Contact() {
-  const [formStatus, setFormStatus] = useState<"idle" | "submitting" | "success" | "error">("idle")
+  const [formStatus, setFormStatus] = useState<
+    'idle' | 'submitting' | 'success' | 'error'
+  >('idle');
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setFormStatus("submitting")
+    e.preventDefault();
+    setFormStatus('submitting');
 
     // Simulate form submission
     setTimeout(() => {
-      setFormStatus("success")
-    }, 1500)
-  }
+      setFormStatus('success');
+    }, 1500);
+  };
 
   return (
     <section id="contact" className="py-24 bg-white">
@@ -32,10 +34,12 @@ export default function Contact() {
           <span className="inline-block py-1 px-3 rounded-full bg-green-100 text-forest text-sm font-medium mb-6">
             Get In Touch
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Contact Us</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Contact Us
+          </h2>
           <p className="text-lg text-gray-600">
-            Have questions about SubPay? Our team is here to help you implement the perfect subscription solution for
-            your business.
+            Have questions about SubPay? Our team is here to help you implement
+            the perfect subscription solution for your business.
           </p>
         </motion.div>
 
@@ -47,32 +51,27 @@ export default function Contact() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">Get in touch</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">
+              Get in touch
+            </h3>
             <p className="text-gray-600 mb-8">
-              Our team is ready to answer your questions and discuss how SubPay can help your business implement
-              subscription models effectively.
+              Our team is ready to answer your questions and discuss how SubPay
+              can help your business implement subscription models effectively.
             </p>
 
             <div className="space-y-6">
-              
-
-            
-
               <div className="flex items-start">
                 <div className="flex-shrink-0 mt-1">
                   <Mail className="h-6 w-6 text-forest" />
                 </div>
                 <div className="ml-4">
-                  <h4 className="text-base font-medium text-gray-900">Email Us</h4>
-                  <p className="mt-1 text-gray-600">
-                    info@subpay.io
-                    
-                  </p>
+                  <h4 className="text-base font-medium text-gray-900">
+                    Email Us
+                  </h4>
+                  <p className="mt-1 text-gray-600">info@subpay.io</p>
                 </div>
               </div>
             </div>
-
-          
           </motion.div>
 
           {/* Contact Form */}
@@ -83,12 +82,17 @@ export default function Contact() {
             transition={{ duration: 0.6 }}
           >
             <div className="bg-gray-50 rounded-2xl p-8 border border-gray-200">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Send us a message</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                Send us a message
+              </h3>
 
               <form onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                   <div>
-                    <label htmlFor="first-name" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="first-name"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       First Name
                     </label>
                     <input
@@ -100,7 +104,10 @@ export default function Contact() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="last-name" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="last-name"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       Last Name
                     </label>
                     <input
@@ -114,7 +121,10 @@ export default function Contact() {
                 </div>
 
                 <div className="mb-6">
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Email Address
                   </label>
                   <input
@@ -127,7 +137,10 @@ export default function Contact() {
                 </div>
 
                 <div className="mb-6">
-                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="subject"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Subject
                   </label>
                   <input
@@ -140,7 +153,10 @@ export default function Contact() {
                 </div>
 
                 <div className="mb-6">
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="message"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Message
                   </label>
                   <textarea
@@ -154,10 +170,10 @@ export default function Contact() {
 
                 <button
                   type="submit"
-                  disabled={formStatus === "submitting"}
+                  disabled={formStatus === 'submitting'}
                   className="w-full bg-forest hover:bg-forest/90 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center transition-colors"
                 >
-                  {formStatus === "submitting" ? (
+                  {formStatus === 'submitting' ? (
                     <>Sending...</>
                   ) : (
                     <>
@@ -167,11 +183,13 @@ export default function Contact() {
                   )}
                 </button>
 
-                {formStatus === "success" && (
-                  <p className="mt-4 text-green-600 text-center">Your message has been sent successfully!</p>
+                {formStatus === 'success' && (
+                  <p className="mt-4 text-green-600 text-center">
+                    Your message has been sent successfully!
+                  </p>
                 )}
 
-                {formStatus === "error" && (
+                {formStatus === 'error' && (
                   <p className="mt-4 text-red-600 text-center">
                     There was an error sending your message. Please try again.
                   </p>
@@ -182,6 +200,5 @@ export default function Contact() {
         </div>
       </div>
     </section>
-  )
+  );
 }
-

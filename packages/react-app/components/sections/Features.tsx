@@ -105,7 +105,7 @@ export default function Features() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.4 }}
+            transition={{ duration: 0.6 }}
           >
             SubPay combines cutting-edge blockchain technology with user-friendly design to create the ultimate
             subscription payment solution.

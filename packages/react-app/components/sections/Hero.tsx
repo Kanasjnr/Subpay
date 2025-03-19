@@ -269,7 +269,7 @@ export default function Hero() {
                     className="text-center"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 * i, duration: 0.3 }}
+                    transition={{ duration: 0.3 }}
                   >
                     <motion.p
                       className="text-3xl font-bold text-[#35D07F]"
@@ -282,9 +282,7 @@ export default function Hero() {
                       }}
                       transition={{
                         duration: 2,
-                        delay: i * 0.5,
                         repeat: Number.POSITIVE_INFINITY,
-                        repeatDelay: 3,
                       }}
                     >
                       {stat.value}
@@ -500,7 +498,7 @@ export default function Hero() {
                   strokeDasharray="5,5"
                   initial={{ pathLength: 0, opacity: 0 }}
                   animate={{ pathLength: 1, opacity: 0.3 }}
-                  transition={{ duration: 1.5, delay: 1.2 + i * 0.2 }}
+                  transition={{ duration: 1.5 }}
                 />
               ))}
             </svg>

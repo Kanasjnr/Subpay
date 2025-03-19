@@ -7,16 +7,16 @@ import Logo from "@/components/ui/Logo"
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 border-t border-gray-800">
+    <footer className="bg-gray-50 border-t border-gray-100">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1 md:col-span-1">
             <Link href="/" className="flex items-center">
-              <Logo size={40} className="mr-2" animated={false} darkMode />
-              <span className="font-bold text-xl text-white">SubPay</span>
+              <Logo size={40} className="mr-2" animated={false} />
+              <span className="font-bold text-xl text-gray-900">SubPay</span>
             </Link>
-            <p className="mt-4 text-sm text-gray-400 max-w-xs">
+            <p className="mt-4 text-sm text-gray-600 max-w-xs">
               The future of subscription payments on the blockchain. Empowering businesses with automated recurring
               transactions.
             </p>
@@ -58,13 +58,13 @@ export default function Footer() {
 
           {/* Product Links */}
           <div>
-            <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-4">Product</h3>
+            <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4">Product</h3>
             <ul className="space-y-3">
               {["Features", "Integrations", "Pricing", "FAQ", "Roadmap"].map((item) => (
                 <li key={item}>
                   <motion.a
                     href="#"
-                    className="text-sm text-gray-400 hover:text-[#35D07F] transition-colors"
+                    className="text-sm text-gray-600 hover:text-[#35D07F] transition-colors"
                     whileHover={{ x: 5, color: "#35D07F" }}
                   >
                     {item}
@@ -76,13 +76,13 @@ export default function Footer() {
 
           {/* Company Links */}
           <div>
-            <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-4">Company</h3>
+            <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4">Company</h3>
             <ul className="space-y-3">
               {["About", "Blog", "Jobs", "Press", "Partners"].map((item) => (
                 <li key={item}>
                   <motion.a
                     href="#"
-                    className="text-sm text-gray-400 hover:text-[#35D07F] transition-colors"
+                    className="text-sm text-gray-600 hover:text-[#35D07F] transition-colors"
                     whileHover={{ x: 5, color: "#35D07F" }}
                   >
                     {item}
@@ -94,13 +94,13 @@ export default function Footer() {
 
           {/* Legal Links */}
           <div>
-            <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-4">Legal</h3>
+            <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4">Legal</h3>
             <ul className="space-y-3">
               {["Privacy", "Terms", "Security", "Licenses"].map((item) => (
                 <li key={item}>
                   <motion.a
                     href="#"
-                    className="text-sm text-gray-400 hover:text-[#35D07F] transition-colors"
+                    className="text-sm text-gray-600 hover:text-[#35D07F] transition-colors"
                     whileHover={{ x: 5, color: "#35D07F" }}
                   >
                     {item}
@@ -132,7 +132,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-gray-800">
+        <div className="mt-12 pt-8 border-t border-gray-200">
           <p className="text-sm text-gray-500">
             &copy; {new Date().getFullYear()} SubPay Protocol. All rights reserved.
           </p>
