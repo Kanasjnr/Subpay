@@ -4,7 +4,7 @@ import type React from "react"
 
 import { motion } from "framer-motion"
 import { useState } from "react"
-import { MapPin, Phone, Mail, Send } from "lucide-react"
+import { Mail, Send } from "lucide-react"
 
 export default function Contact() {
   const [formStatus, setFormStatus] = useState<"idle" | "submitting" | "success" | "error">("idle")
