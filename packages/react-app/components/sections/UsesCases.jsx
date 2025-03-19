@@ -106,7 +106,7 @@ export default function UseCases() {
                       className="flex flex-col items-center justify-center bg-white p-4 rounded-lg shadow-sm"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2 + i * 0.1, duration: 0.5 }}
+                      transition={{ duration: 0.5 }}
                     >
                       <motion.div
                         animate={{
@@ -115,7 +115,6 @@ export default function UseCases() {
                         }}
                         transition={{
                           duration: 3,
-                          delay: i * 0.5,
                           repeat: Number.POSITIVE_INFINITY,
                           repeatDelay: 1,
                         }}
@@ -137,7 +136,7 @@ export default function UseCases() {
                   strokeDasharray="5,5"
                   initial={{ pathLength: 0, opacity: 0 }}
                   animate={{ pathLength: 1, opacity: 0.5 }}
-                  transition={{ duration: 1.5, delay: 0.8 }}
+                  transition={{ duration: 1.5 }}
                 />
                 <motion.path
                   d="M250 100 L250 300"
@@ -146,7 +145,7 @@ export default function UseCases() {
                   strokeDasharray="5,5"
                   initial={{ pathLength: 0, opacity: 0 }}
                   animate={{ pathLength: 1, opacity: 0.5 }}
-                  transition={{ duration: 1.5, delay: 1 }}
+                  transition={{ duration: 1.5 }}
                 />
               </svg>
 
@@ -169,7 +168,6 @@ export default function UseCases() {
                   }}
                   transition={{
                     duration: 4,
-                    delay: i * 0.5,
                     repeat: Number.POSITIVE_INFINITY,
                     repeatType: "reverse",
                   }}
@@ -190,7 +188,7 @@ export default function UseCases() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.1, duration: 0.6 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
               whileHover={{ y: -5, transition: { duration: 0.3 } }}
             >
               <div className="w-16 h-16 rounded-lg flex items-center justify-center text-forest mb-6 bg-green-50">
