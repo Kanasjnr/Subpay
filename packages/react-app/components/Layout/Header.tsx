@@ -29,7 +29,7 @@ export default function Header() {
     <motion.header
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        isScrolled ? "bg-black/80 backdrop-blur-md border-b border-gray-800 py-3" : "bg-transparent py-5",
+        isScrolled ? "bg-white/80 backdrop-blur-md border-b border-gray-100 py-3" : "bg-transparent py-5",
       )}
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
@@ -39,9 +39,9 @@ export default function Header() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <Logo size={40} className="mr-2" animated={false} darkMode />
+            <Logo size={40} className="mr-2" animated={false} />
             <motion.span
-              className="font-bold text-xl text-white"
+              className="font-bold text-xl text-gray-900"
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
@@ -56,10 +56,10 @@ export default function Header() {
               <motion.a
                 key={item.name}
                 href={item.href}
-                className="text-sm font-medium text-gray-300 hover:text-[#35D07F] transition-colors"
+                className="text-sm font-medium text-gray-700 hover:text-[#35D07F] transition-colors"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
+                transition={{ duration: 0.2, delay: index * 0.05 }}
                 whileHover={{
                   color: "#35D07F",
                   textShadow: "0 0 8px rgba(53, 208, 127, 0.5)",
@@ -75,10 +75,10 @@ export default function Header() {
             className="hidden md:flex items-center"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
+            transition={{ duration: 0.3 }}
           >
             <motion.button
-              className="connect-wallet-button bg-[#35D07F] hover:bg-[#35D07F]/90 text-black rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+              className="connect-wallet-button bg-[#35D07F] hover:bg-[#35D07F]/90 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors"
               onClick={() => {
                 // Wallet connection logic would go here
                 console.log("Connect wallet clicked")
@@ -95,7 +95,7 @@ export default function Header() {
 
           {/* Mobile Menu Button */}
           <motion.button
-            className="md:hidden text-white"
+            className="md:hidden text-gray-900"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -114,25 +114,25 @@ export default function Header() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="md:hidden bg-gray-900 border-t border-gray-800"
+            className="md:hidden bg-white border-t border-gray-100"
           >
             <div className="container mx-auto px-4 py-4 space-y-4">
               {navItems.map((item, index) => (
                 <motion.a
                   key={item.name}
                   href={item.href}
-                  className="block text-gray-300 py-2 font-medium"
+                  className="block text-gray-700 py-2 font-medium"
                   onClick={() => setMobileMenuOpen(false)}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1, duration: 0.3 }}
+                  transition={{ delay: index * 0.05, duration: 0.2 }}
                 >
                   {item.name}
                 </motion.a>
               ))}
-              <div className="pt-2 border-t border-gray-800">
+              <div className="pt-2 border-t border-gray-100">
                 <motion.button
-                  className="mt-4 w-full connect-wallet-button bg-[#35D07F] hover:bg-[#35D07F]/90 text-black rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                  className="mt-4 w-full connect-wallet-button bg-[#35D07F] hover:bg-[#35D07F]/90 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors"
                   onClick={() => {
                     setMobileMenuOpen(false)
                     // Wallet connection logic would go here
@@ -140,7 +140,7 @@ export default function Header() {
                   }}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4, duration: 0.3 }}
+                  transition={{ duration: 0.2 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   Connect Wallet
