@@ -52,7 +52,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
           size: Math.random() * 3 + 1,
           speedX: Math.cos(angle) * (Math.random() * 2 + 1),
           speedY: Math.sin(angle) * (Math.random() * 2 + 1),
-          color: i % 3 === 0 ? "#35D07F" : "#ffffff",
+          color: i % 3 === 0 ? "#35D07F" : "#111111",
           opacity: 1,
           fadeSpeed: Math.random() * 0.02 + 0.005,
         })
@@ -95,18 +95,18 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
     // Show logo first
     const logoTimer = setTimeout(() => {
       setShowText(true)
-    }, 1000)
+    }, 500)
 
     // Show particles
     const particlesTimer = setTimeout(() => {
       setShowParticles(true)
-    }, 2000)
+    }, 800)
 
     // After animation completes, trigger the onComplete callback
     const completeTimer = setTimeout(() => {
       setShowLogo(false)
-      setTimeout(onComplete, 500) // Give a little time for exit animation
-    }, 4500)
+      setTimeout(onComplete, 300) // Give a little time for exit animation
+    }, 2500)
 
     return () => {
       clearTimeout(logoTimer)
@@ -119,7 +119,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
     <AnimatePresence>
       {showLogo && (
         <motion.div
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
@@ -132,7 +132,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
           >
-            <Logo size={180} variant="splash" animated darkMode />
+            <Logo size={180} variant="splash" animated />
           </motion.div>
 
           <AnimatePresence>
@@ -150,16 +150,16 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
                   transition={{ duration: 0.8, delay: 0.2 }}
                 >
                   <motion.h1
-                    className="text-7xl font-bold text-white relative"
+                    className="text-7xl font-bold text-gray-900 relative"
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
+                    transition={{ duration: 0.4 }}
                   >
                     <motion.span
                       className="text-[#35D07F] inline-block"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3, delay: 0.8 }}
+                      transition={{ duration: 0.3, delay: 0.2 }}
                     >
                       Sub
                     </motion.span>
@@ -167,7 +167,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
                       className="inline-block"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3, delay: 1.1 }}
+                      transition={{ duration: 0.3, delay: 0.3 }}
                     >
                       Pay
                     </motion.span>
@@ -178,14 +178,14 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
                   className="h-0.5 bg-gradient-to-r from-transparent via-[#35D07F] to-transparent"
                   initial={{ width: 0, opacity: 0 }}
                   animate={{ width: "100%", opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 1.4 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
                 />
 
                 <motion.p
-                  className="text-xl text-gray-400 mt-6 text-center"
+                  className="text-xl text-gray-500 mt-6 text-center"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 1.6 }}
+                  transition={{ duration: 0.4, delay: 0.5 }}
                 >
                   The Future of Web3 Subscription Payments
                 </motion.p>
@@ -197,15 +197,15 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
             className="absolute bottom-10 left-0 right-0"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 2, duration: 0.5 }}
+            transition={{ duration: 0.5 }}
           >
             <div className="flex justify-center">
-              <div className="w-64 h-1 bg-gray-800 rounded-full overflow-hidden">
+              <div className="w-64 h-1 bg-gray-200 rounded-full overflow-hidden">
                 <motion.div
                   className="h-full bg-gradient-to-r from-[#35D07F] to-[#35D07F]/50"
                   initial={{ width: 0 }}
                   animate={{ width: "100%" }}
-                  transition={{ duration: 2, delay: 2, ease: "easeInOut" }}
+                  transition={{ duration: 1.5, ease: "easeInOut" }}
                 />
               </div>
             </div>
