@@ -36,7 +36,7 @@ export default function Home() {
       <AnimatePresence>
         {!showSplash && (
           <motion.div
-            className="min-h-screen flex flex-col"
+            className="min-h-screen flex flex-col bg-black text-white"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
