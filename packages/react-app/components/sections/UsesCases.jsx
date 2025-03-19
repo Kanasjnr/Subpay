@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion"
 import { MonitorSmartphone, BookOpen, Music, VideoIcon, ShoppingBag, Newspaper } from "lucide-react"
-import Image from "next/image"
 
 export default function UseCases() {
   const useCases = [
@@ -88,13 +87,95 @@ export default function UseCases() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <Image
-              src="/placeholder.svg?height=400&width=500"
-              alt="SubPay Use Cases"
-              width={500}
-              height={400}
-              className="rounded-xl shadow-lg"
-            />
+            <div className="relative w-full h-[400px] rounded-xl shadow-lg bg-gradient-to-br from-green-50 to-white overflow-hidden">
+              <motion.div
+                className="absolute inset-0 flex items-center justify-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                <motion.div className="grid grid-cols-2 gap-4 p-8 w-full max-w-md">
+                  {[
+                    { icon: <MonitorSmartphone className="h-10 w-10 text-forest" />, label: "SaaS" },
+                    { icon: <BookOpen className="h-10 w-10 text-forest" />, label: "Education" },
+                    { icon: <Music className="h-10 w-10 text-forest" />, label: "Media" },
+                    { icon: <ShoppingBag className="h-10 w-10 text-forest" />, label: "E-commerce" },
+                  ].map((item, i) => (
+                    <motion.div
+                      key={i}
+                      className="flex flex-col items-center justify-center bg-white p-4 rounded-lg shadow-sm"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 + i * 0.1, duration: 0.5 }}
+                    >
+                      <motion.div
+                        animate={{
+                          scale: [1, 1.1, 1],
+                          rotate: [0, 5, 0],
+                        }}
+                        transition={{
+                          duration: 3,
+                          delay: i * 0.5,
+                          repeat: Number.POSITIVE_INFINITY,
+                          repeatDelay: 1,
+                        }}
+                      >
+                        {item.icon}
+                      </motion.div>
+                      <p className="mt-2 font-medium text-gray-700">{item.label}</p>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </motion.div>
+
+              {/* Animated connection lines */}
+              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 500 400" fill="none">
+                <motion.path
+                  d="M150 200 L350 200"
+                  stroke="#35D07F"
+                  strokeWidth="2"
+                  strokeDasharray="5,5"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: 1, opacity: 0.5 }}
+                  transition={{ duration: 1.5, delay: 0.8 }}
+                />
+                <motion.path
+                  d="M250 100 L250 300"
+                  stroke="#35D07F"
+                  strokeWidth="2"
+                  strokeDasharray="5,5"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: 1, opacity: 0.5 }}
+                  transition={{ duration: 1.5, delay: 1 }}
+                />
+              </svg>
+
+              {/* Animated circles */}
+              {[...Array(5)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute rounded-full bg-forest opacity-10"
+                  style={{
+                    width: 100 + i * 50,
+                    height: 100 + i * 50,
+                    top: "50%",
+                    left: "50%",
+                    x: "-50%",
+                    y: "-50%",
+                  }}
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    opacity: [0.1, 0.15, 0.1],
+                  }}
+                  transition={{
+                    duration: 4,
+                    delay: i * 0.5,
+                    repeat: Number.POSITIVE_INFINITY,
+                    repeatType: "reverse",
+                  }}
+                />
+              ))}
+            </div>
             <div className="absolute -bottom-6 -right-6 bg-forest text-white p-4 rounded-xl shadow-lg">
               <p className="font-medium">Trusted by 500+ businesses</p>
             </div>
