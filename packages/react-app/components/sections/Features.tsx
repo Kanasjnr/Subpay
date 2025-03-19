@@ -55,7 +55,7 @@ export default function Features() {
   ]
 
   return (
-    <section ref={containerRef} id="features" className="py-24 bg-black relative overflow-hidden">
+    <section ref={containerRef} id="features" className="py-24 bg-white relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMzNUQwN0YiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0aDR2MWgtNHYtMXptMC0yaDF2NGgtMXYtNHptMi0yaDF2MWgtMXYtMXptLTIgMmgxdjFoLTF2LTF6bS0yLTJoMXYxaC0xdi0xem0yLTJoMXYxaC0xdi0xem0tMiAyaDF2MWgtMXYtMXptLTItMmgxdjFoLTF2LTF6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
 
@@ -92,16 +92,16 @@ export default function Features() {
             Powerful Features
           </motion.span>
           <motion.h2
-            className="text-3xl md:text-4xl font-bold text-white mb-4"
+            className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.4 }}
           >
             Advanced Web3 Subscription Technology
           </motion.h2>
           <motion.p
-            className="text-lg text-gray-400"
+            className="text-lg text-gray-600"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -116,14 +116,14 @@ export default function Features() {
           {features.map((feature, index) => (
             <motion.div
               key={index}
-              className="bg-gray-900 rounded-xl p-6 border border-gray-800 relative z-10 h-full"
+              className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm relative z-10 h-full"
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
               whileHover={{
                 y: -10,
-                boxShadow: "0 0 30px rgba(53, 208, 127, 0.2)",
+                boxShadow: "0 20px 30px rgba(53, 208, 127, 0.2)",
                 borderColor: "rgba(53, 208, 127, 0.5)",
                 transition: { duration: 0.3 },
               }}
@@ -146,8 +146,8 @@ export default function Features() {
               >
                 {feature.icon}
               </motion.div>
-              <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
-              <p className="text-gray-400">{feature.description}</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">{feature.title}</h3>
+              <p className="text-gray-600">{feature.description}</p>
 
               {/* Animated corner accent */}
               <motion.div
@@ -155,14 +155,14 @@ export default function Features() {
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 0.7 }}
                 viewport={{ once: true }}
-                transition={{ delay: 0.5 + index * 0.1, duration: 0.3 }}
+                transition={{ duration: 0.3 }}
               />
 
               {/* Animated glow effect on hover */}
               <motion.div
                 className="absolute inset-0 rounded-xl bg-[#35D07F] opacity-0 z-[-1]"
                 initial={{ opacity: 0 }}
-                whileHover={{ opacity: 0.1 }}
+                whileHover={{ opacity: 0.05 }}
                 transition={{ duration: 0.3 }}
               />
             </motion.div>
@@ -181,7 +181,7 @@ export default function Features() {
               initial={{ pathLength: 0, opacity: 0 }}
               whileInView={{ pathLength: 1, opacity: 0.2 }}
               viewport={{ once: true }}
-              transition={{ duration: 1.5, delay: 0.5 + i * 0.2 }}
+              transition={{ duration: 1 }}
             />
           ))}
         </svg>
