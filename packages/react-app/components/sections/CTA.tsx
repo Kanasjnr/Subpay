@@ -64,7 +64,7 @@ export default function CTA() {
             <div className="flex flex-col sm:flex-row gap-4">
               <motion.button
                 onClick={() => window.location.href = '#get-started'}
-                className="connect-wallet-button bg-[#35D07F] hover:bg-[#35D07F]/90 text-black rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
+                className="connect-wallet-button bg-[#35D07F] hover:bg-[#35D07F]/90 text-black rounded-lg px-6 py-3 font-medium transition-colors"
                 whileHover={{
                   scale: 1.05,
                   boxShadow: "0 0 15px rgba(53, 208, 127, 0.5)",
@@ -72,11 +72,11 @@ export default function CTA() {
                 whileTap={{ scale: 0.95 }}
               >
                 Get Started
-                <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                <ArrowRight className="ml-2 h-4 w-4" />
               </motion.button>
               <motion.button
                 onClick={() => window.location.href = '#demo'}
-                className="connect-wallet-button border border-[#35D07F] text-[#35D07F] hover:bg-[#35D07F]/10 font-medium text-xs rounded-lg px-3 py-1.5 transition-colors"
+                className="connect-wallet-button border border-[#35D07F] text-[#35D07F] hover:bg-[#35D07F]/10 font-medium rounded-lg px-6 py-3 transition-colors"
                 whileHover={{
                   scale: 1.05,
                   boxShadow: "0 0 15px rgba(53, 208, 127, 0.3)",
