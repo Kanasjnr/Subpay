@@ -1,17 +1,20 @@
-import '@/styles/globals.css';
+import "@/styles/globals.css"
 
-import { AppProvider } from '@/providers/AppProvider';
+export const metadata = {
+  title: 'SubPay - Web3 Payment Solution',
+  description: 'A decentralized payment solution built on Celo',
+}
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="en">
-      <body>
-        <AppProvider>{children}</AppProvider>
+      <body className="min-h-screen bg-background font-sans antialiased">
+        {children}
       </body>
     </html>
-  );
+  )
 }
