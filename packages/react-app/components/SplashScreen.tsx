@@ -106,7 +106,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
     const completeTimer = setTimeout(() => {
       setShowLogo(false)
       setTimeout(onComplete, 300) // Give a little time for exit animation
-    }, 2500)
+    }, 6000) // Changed from 2500 to 6000 for a total of ~6.3 seconds
 
     return () => {
       clearTimeout(logoTimer)
