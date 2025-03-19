@@ -75,7 +75,7 @@ export default function HowItWorks() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.6 }}
           >
             How SubPay Works
           </motion.h2>
@@ -84,7 +84,7 @@ export default function HowItWorks() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.4 }}
+            transition={{ duration: 0.6 }}
           >
             Our protocol simplifies subscription management on the blockchain with a straightforward process for both
             businesses and subscribers.
@@ -101,7 +101,7 @@ export default function HowItWorks() {
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.5, delay: index * 0.2 }}
+                transition={{ duration: 0.5, delay: index * 0.05 }}
               >
                 <motion.div
                   className={`h-14 w-14 shrink-0 rounded-full ${step.color} flex items-center justify-center`}
@@ -114,7 +114,6 @@ export default function HowItWorks() {
                   }}
                   transition={{
                     duration: 3,
-                    delay: index * 1,
                     repeat: Number.POSITIVE_INFINITY,
                     repeatDelay: 2,
                   }}
@@ -128,7 +127,7 @@ export default function HowItWorks() {
                       initial={{ scale: 0 }}
                       whileInView={{ scale: 1 }}
                       viewport={{ once: true }}
-                      transition={{ delay: 0.3 + index * 0.1, type: "spring", stiffness: 300 }}
+                      transition={{ delay: 0.05 + index * 0.05, type: "spring", stiffness: 300 }}
                     >
                       {index + 1}
                     </motion.span>
@@ -145,7 +144,7 @@ export default function HowItWorks() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.6, duration: 0.6 }}
+              transition={{ duration: 0.6 }}
               className="mt-8"
             >
               <motion.a
@@ -230,7 +229,7 @@ export default function HowItWorks() {
                         initial={{ opacity: 0, x: 30 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
-                        transition={{ delay: 0.3 + i * 0.2, duration: 0.5 }}
+                        transition={{ duration: 0.5 }}
                         animate={{
                           backgroundColor:
                             i === 0 ? ["rgb(249 250 251)", "rgb(240 253 244)", "rgb(249 250 251)"] : "rgb(249 250 251)",
