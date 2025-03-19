@@ -53,7 +53,8 @@ export default function Contact() {
               subscription models effectively.
             </p>
 
-           
+            <div className="space-y-6">
+              
 
             
 
