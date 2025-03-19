@@ -61,47 +61,31 @@ export default function CTA() {
               </motion.p>
             </motion.div>
 
-            <motion.div
-              className="flex flex-col sm:flex-row gap-4"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-            >
-              <motion.a
-                href="#get-started"
-                className="inline-flex items-center justify-center bg-[#35D07F] text-black font-medium text-sm rounded-lg px-5 py-2 transition-colors"
+            <div className="flex flex-col sm:flex-row gap-4">
+              <motion.button
+                onClick={() => window.location.href = '#get-started'}
+                className="connect-wallet-button bg-[#35D07F] hover:bg-[#35D07F]/90 text-black rounded-lg px-4 py-2 text-sm font-medium transition-colors"
                 whileHover={{
                   scale: 1.05,
-                  x: 5,
-                  boxShadow: '0 0 20px rgba(53, 208, 127, 0.5)',
+                  boxShadow: "0 0 15px rgba(53, 208, 127, 0.5)",
                 }}
                 whileTap={{ scale: 0.95 }}
               >
                 Get Started
-                <motion.span
-                  initial={{ x: 0 }}
-                  animate={{ x: [0, 5, 0] }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Number.POSITIVE_INFINITY,
-                  }}
-                >
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </motion.span>
-              </motion.a>
-              <motion.a
-                href="#demo"
-                className="inline-flex items-center justify-center border border-[#35D07F]/30 text-[#35D07F] hover:bg-[#35D07F]/10 font-medium text-sm rounded-lg px-5 py-2 transition-colors"
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </motion.button>
+              <motion.button
+                onClick={() => window.location.href = '#demo'}
+                className="connect-wallet-button border border-[#35D07F] text-[#35D07F] hover:bg-[#35D07F]/10 font-medium text-sm rounded-lg px-4 py-2 transition-colors"
                 whileHover={{
                   scale: 1.05,
-                  boxShadow: '0 0 20px rgba(53, 208, 127, 0.3)',
+                  boxShadow: "0 0 15px rgba(53, 208, 127, 0.3)",
                 }}
                 whileTap={{ scale: 0.95 }}
               >
                 Schedule Demo
-              </motion.a>
-            </motion.div>
+              </motion.button>
+            </div>
           </div>
         </div>
       </div>
