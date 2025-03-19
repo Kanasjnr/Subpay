@@ -71,7 +71,7 @@ export default function FAQ() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.1, duration: 0.6 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
             >
               <button
                 className={`w-full flex justify-between items-center text-left p-5 rounded-lg ${
@@ -100,7 +100,7 @@ export default function FAQ() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.6, duration: 0.6 }}
+          transition={{ duration: 0.6 }}
         >
           <p className="text-gray-600 mb-4">Still have questions?</p>
           <a
