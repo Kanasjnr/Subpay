@@ -140,18 +140,6 @@ export default function HowItWorks() {
             ))}
 
             {/* Connecting lines between steps */}
-            <motion.div
-              className="absolute left-[7px] top-0 bottom-0 w-0.5 bg-gray-200 hidden md:block"
-              style={{
-                height: "calc(100% - 120px)",
-                top: "60px",
-                left: "calc(50% - 150px)",
-              }}
-              initial={{ height: 0 }}
-              whileInView={{ height: "calc(100% - 120px)" }}
-              viewport={{ once: true }}
-              transition={{ duration: 1, delay: 0.5 }}
-            />
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -247,11 +235,11 @@ export default function HowItWorks() {
                           backgroundColor:
                             i === 0 ? ["rgb(249 250 251)", "rgb(240 253 244)", "rgb(249 250 251)"] : "rgb(249 250 251)",
                         }}
-                        // transition={{
-                        //   duration: 3,
-                        //   repeat: Number.POSITIVE_INFINITY,
-                        //   repeatDelay: 2,
-                        // }}
+                        transition={{
+                          duration: 3,
+                          repeat: Number.POSITIVE_INFINITY,
+                          repeatDelay: 2,
+                        }}
                       >
                         <div>
                           <p className="font-medium text-gray-900">{plan.name}</p>
