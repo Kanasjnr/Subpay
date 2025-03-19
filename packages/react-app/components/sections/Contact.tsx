@@ -92,8 +92,7 @@ export default function Contact() {
                   <h4 className="text-base font-medium text-gray-900">Email Us</h4>
                   <p className="mt-1 text-gray-600">
                     info@subpay.io
-                    <br />
-                    support@subpay.io
+                    
                   </p>
                 </div>
               </div>
