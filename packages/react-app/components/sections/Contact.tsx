@@ -54,21 +54,7 @@ export default function Contact() {
             </p>
 
             <div className="space-y-6">
-              <div className="flex items-start">
-                <div className="flex-shrink-0 mt-1">
-                  <MapPin className="h-6 w-6 text-forest" />
-                </div>
-                <div className="ml-4">
-                  <h4 className="text-base font-medium text-gray-900">Our Location</h4>
-                  <p className="mt-1 text-gray-600">
-                    123 Blockchain Boulevard
-                    <br />
-                    San Francisco, CA 94105
-                    <br />
-                    United States
-                  </p>
-                </div>
-              </div>
+              
 
               <div className="flex items-start">
                 <div className="flex-shrink-0 mt-1">
