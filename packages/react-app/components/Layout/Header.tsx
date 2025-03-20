@@ -6,6 +6,7 @@ import { Menu, X } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import Logo from "@/components/ui/Logo"
+import { ConnectButton } from "@rainbow-me/rainbowkit"
 
 const navItems = [
   { name: "Features", href: "#features" },
@@ -71,27 +72,7 @@ export default function Header() {
           </nav>
 
           {/* Action Button */}
-          <motion.div
-            className="hidden md:flex items-center"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-          >
-            <motion.button
-              className="connect-wallet-button bg-[#35D07F] hover:bg-[#35D07F]/90 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-              onClick={() => {
-                // Wallet connection logic would go here
-                console.log("Connect wallet clicked")
-              }}
-              whileHover={{
-                scale: 1.05,
-                boxShadow: "0 0 15px rgba(53, 208, 127, 0.5)",
-              }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Connect Wallet
-            </motion.button>
-          </motion.div>
+         <ConnectButton/>
 
           {/* Mobile Menu Button */}
           <motion.button
