@@ -77,35 +77,31 @@ export default function Features() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div
           className="text-center max-w-3xl mx-auto mb-16"
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 1, y: 0 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
         >
           <motion.span
-            className="inline-block py-1 px-3 rounded-full bg-[#35D07F]/20 text-[#35D07F] text-sm font-medium mb-6"
-            initial={{ opacity: 0, scale: 0.8 }}
+            className="inline-block py-1 px-3 rounded-full bg-[#35D07F]/20 text-[#35D07F] text-sm font-bold mb-6"
+            initial={{ opacity: 1, scale: 1 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.4 }}
           >
             Powerful Features
           </motion.span>
           <motion.h2
             className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 1, y: 0 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.4 }}
           >
             Advanced Web3 Subscription Technology
           </motion.h2>
           <motion.p
-            className="text-lg text-gray-600"
-            initial={{ opacity: 0, y: 20 }}
+            className="text-lg text-gray-600 font-medium"
+            initial={{ opacity: 1, y: 0 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
           >
             SubPay combines cutting-edge blockchain technology with user-friendly design to create the ultimate
             subscription payment solution.
@@ -117,15 +113,13 @@ export default function Features() {
             <motion.div
               key={index}
               className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm relative z-10 h-full"
-              initial={{ opacity: 0, y: 50 }}
+              initial={{ opacity: 1, y: 0 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
               whileHover={{
                 y: -10,
                 boxShadow: "0 20px 30px rgba(53, 208, 127, 0.2)",
                 borderColor: "rgba(53, 208, 127, 0.5)",
-                transition: { duration: 0.3 },
               }}
             >
               <motion.div
@@ -139,23 +133,21 @@ export default function Features() {
                 }}
                 transition={{
                   duration: 3,
-                  delay: index * 0.5,
                   repeat: Number.POSITIVE_INFINITY,
                   repeatDelay: 1,
                 }}
               >
-                {feature.icon}
+                <div className="stroke-[2.5]">{feature.icon}</div>
               </motion.div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">{feature.title}</h3>
-              <p className="text-gray-600">{feature.description}</p>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
+              <p className="text-gray-600 font-medium">{feature.description}</p>
 
               {/* Animated corner accent */}
               <motion.div
                 className="absolute top-0 right-0 w-0 h-0 border-t-[20px] border-r-[20px] border-t-[#35D07F] border-r-transparent opacity-0"
-                initial={{ opacity: 0 }}
+                initial={{ opacity: 0.7 }}
                 whileInView={{ opacity: 0.7 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.3 }}
               />
 
               {/* Animated glow effect on hover */}
@@ -163,7 +155,6 @@ export default function Features() {
                 className="absolute inset-0 rounded-xl bg-[#35D07F] opacity-0 z-[-1]"
                 initial={{ opacity: 0 }}
                 whileHover={{ opacity: 0.05 }}
-                transition={{ duration: 0.3 }}
               />
             </motion.div>
           ))}
@@ -178,10 +169,9 @@ export default function Features() {
               stroke="#35D07F"
               strokeWidth="1"
               strokeDasharray="5,5"
-              initial={{ pathLength: 0, opacity: 0 }}
+              initial={{ pathLength: 1, opacity: 0.2 }}
               whileInView={{ pathLength: 1, opacity: 0.2 }}
               viewport={{ once: true }}
-              transition={{ duration: 1 }}
             />
           ))}
         </svg>

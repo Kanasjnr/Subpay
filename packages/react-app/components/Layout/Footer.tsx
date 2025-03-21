@@ -1,9 +1,9 @@
-"use client"
+'use client';
 
-import Link from "next/link"
-import { motion } from "framer-motion"
-import { Facebook, Twitter, Linkedin, Github } from "lucide-react"
-import Logo from "@/components/ui/Logo"
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { Facebook, Twitter, Linkedin, Github } from 'lucide-react';
+import Logo from '@/components/ui/Logo';
 
 export default function Footer() {
   return (
@@ -17,15 +17,15 @@ export default function Footer() {
               <span className="font-bold text-xl text-gray-900">SubPay</span>
             </Link>
             <p className="mt-4 text-sm text-gray-600 max-w-xs">
-              The future of subscription payments on the blockchain. Empowering businesses with automated recurring
-              transactions.
+              The future of subscription payments on the blockchain. Empowering
+              businesses with automated recurring transactions.
             </p>
             <div className="mt-6 flex space-x-4">
               <motion.a
                 href="#"
                 className="text-gray-500 hover:text-[#35D07F] transition-colors"
                 aria-label="Twitter"
-                whileHover={{ scale: 1.1, color: "#35D07F" }}
+                whileHover={{ scale: 1.1, color: '#35D07F' }}
               >
                 <Twitter size={20} />
               </motion.a>
@@ -33,7 +33,7 @@ export default function Footer() {
                 href="#"
                 className="text-gray-500 hover:text-[#35D07F] transition-colors"
                 aria-label="LinkedIn"
-                whileHover={{ scale: 1.1, color: "#35D07F" }}
+                whileHover={{ scale: 1.1, color: '#35D07F' }}
               >
                 <Linkedin size={20} />
               </motion.a>
@@ -41,7 +41,7 @@ export default function Footer() {
                 href="#"
                 className="text-gray-500 hover:text-[#35D07F] transition-colors"
                 aria-label="GitHub"
-                whileHover={{ scale: 1.1, color: "#35D07F" }}
+                whileHover={{ scale: 1.1, color: '#35D07F' }}
               >
                 <Github size={20} />
               </motion.a>
@@ -49,7 +49,7 @@ export default function Footer() {
                 href="#"
                 className="text-gray-500 hover:text-[#35D07F] transition-colors"
                 aria-label="Facebook"
-                whileHover={{ scale: 1.1, color: "#35D07F" }}
+                whileHover={{ scale: 1.1, color: '#35D07F' }}
               >
                 <Facebook size={20} />
               </motion.a>
@@ -58,32 +58,38 @@ export default function Footer() {
 
           {/* Product Links */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4">Product</h3>
+            <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4">
+              Product
+            </h3>
             <ul className="space-y-3">
-              {["Features", "Integrations", "Pricing", "FAQ", "Roadmap"].map((item) => (
-                <li key={item}>
-                  <motion.a
-                    href="#"
-                    className="text-sm text-gray-600 hover:text-[#35D07F] transition-colors"
-                    whileHover={{ x: 5, color: "#35D07F" }}
-                  >
-                    {item}
-                  </motion.a>
-                </li>
-              ))}
+              {['Features', 'Integrations', 'Pricing', 'FAQ', 'Roadmap'].map(
+                (item) => (
+                  <li key={item}>
+                    <motion.a
+                      href="#"
+                      className="text-sm text-gray-600 hover:text-[#35D07F] transition-colors"
+                      whileHover={{ x: 5, color: '#35D07F' }}
+                    >
+                      {item}
+                    </motion.a>
+                  </li>
+                )
+              )}
             </ul>
           </div>
 
           {/* Company Links */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4">Company</h3>
+            <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4">
+              Company
+            </h3>
             <ul className="space-y-3">
-              {["About", "Blog", "Jobs", "Press", "Partners"].map((item) => (
+              {['About', 'Blog'].map((item) => (
                 <li key={item}>
                   <motion.a
                     href="#"
                     className="text-sm text-gray-600 hover:text-[#35D07F] transition-colors"
-                    whileHover={{ x: 5, color: "#35D07F" }}
+                    whileHover={{ x: 5, color: '#35D07F' }}
                   >
                     {item}
                   </motion.a>
@@ -94,14 +100,16 @@ export default function Footer() {
 
           {/* Legal Links */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4">Legal</h3>
+            <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4">
+              Legal
+            </h3>
             <ul className="space-y-3">
-              {["Privacy", "Terms", "Security", "Licenses"].map((item) => (
+              {['Privacy', 'Terms'].map((item) => (
                 <li key={item}>
                   <motion.a
                     href="#"
                     className="text-sm text-gray-600 hover:text-[#35D07F] transition-colors"
-                    whileHover={{ x: 5, color: "#35D07F" }}
+                    whileHover={{ x: 5, color: '#35D07F' }}
                   >
                     {item}
                   </motion.a>
@@ -134,11 +142,11 @@ export default function Footer() {
 
         <div className="mt-12 pt-8 border-t border-gray-200">
           <p className="text-sm text-gray-500">
-            &copy; {new Date().getFullYear()} SubPay Protocol. All rights reserved.
+            &copy; {new Date().getFullYear()} SubPay Protocol. All rights
+            reserved.
           </p>
         </div>
       </div>
     </footer>
-  )
+  );
 }
-

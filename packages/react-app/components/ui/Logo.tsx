@@ -21,6 +21,9 @@ export default function Logo({
   const baseColor = darkMode ? "#ffffff" : "#111111"
   const accentColor = "#35D07F"
   const glowColor = "rgba(53, 208, 127, 0.6)"
+  const circleSize = size * 0.8
+  const center = size / 2
+  const radius = circleSize / 2
 
   return (
     <motion.div
@@ -216,6 +219,35 @@ export default function Logo({
           ))}
         </svg>
       )}
+
+      {/* Circle for the "S" symbol */}
+      <motion.circle
+        cx={center}
+        cy={center}
+        r={radius}
+        fill="none"
+        stroke="#35D07F"
+        strokeWidth="2"
+        initial={animated ? { pathLength: 0 } : false}
+        animate={animated ? { pathLength: 1 } : false}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      />
+
+      {/* "S" text */}
+      <motion.text
+        x="50%"
+        y="50%"
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fill="#35D07F"
+        fontSize={size * 0.4}
+        fontWeight="bold"
+        initial={animated ? { opacity: 0, y: 10 } : false}
+        animate={animated ? { opacity: 1, y: 0 } : false}
+        transition={{ duration: 0.3, delay: 0.4 }}
+      >
+        S
+      </motion.text>
     </motion.div>
   )
 }

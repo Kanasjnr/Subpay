@@ -2,11 +2,15 @@
 
 import '@rainbow-me/rainbowkit/styles.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { RainbowKitProvider, getDefaultConfig } from '@rainbow-me/rainbowkit';
+import {
+  RainbowKitProvider,
+  getDefaultConfig,
+  lightTheme,
+} from '@rainbow-me/rainbowkit';
 import { WagmiProvider, http } from 'wagmi';
 import { celo, celoAlfajores } from 'wagmi/chains';
-
-const projectId = process.env.WC_PROJECT_ID ?? '044601f65212332475a09bc14ceb3c34';
+const projectId =
+  process.env.WC_PROJECT_ID ?? '044601f65212332475a09bc14ceb3c34';
 
 const config = getDefaultConfig({
   appName: 'Subpay',
@@ -24,7 +28,15 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider>
+        <RainbowKitProvider
+          theme={lightTheme({
+            accentColor: '#35D07F', // Green color
+            accentColorForeground: 'white',
+            borderRadius: 'small',
+            fontStack: 'system',
+            overlayBlur: 'small',
+          })}
+        >
           {children}
         </RainbowKitProvider>
       </QueryClientProvider>

@@ -22,7 +22,7 @@ export default function CTA() {
               scale: [1, 1.5, 1],
             }}
             transition={{
-              duration: 5 + Math.random() * 5,
+              duration: 3,
               repeat: Number.POSITIVE_INFINITY,
               repeatType: 'reverse',
             }}
@@ -38,14 +38,14 @@ export default function CTA() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.3 }}
             >
               <motion.h2
                 className="text-3xl md:text-4xl font-bold text-white mb-4"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.2 }}
+                transition={{ duration: 0.3 }}
               >
                 Ready to Transform Your Subscription Business?
               </motion.h2>
@@ -54,7 +54,7 @@ export default function CTA() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.4 }}
+                transition={{ duration: 0.3 }}
               >
                 Join thousands of businesses already using SubPay to manage
                 their subscription payments efficiently on the blockchain.
