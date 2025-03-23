@@ -412,15 +412,18 @@ export default function Hero() {
             <motion.div
               className="absolute -top-6 -right-6 bg-[#35D07F] text-white p-4 rounded-xl shadow-lg z-10"
               initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
               animate={{
-                y: [0, -10, 0],
-                transition: {
-                  duration: 4,
+                opacity: 1,
+                scale: 1,
+                y: [0, 10, 0]
+              }}
+              transition={{
+                duration: 0.5,
+                y: {
+                  duration: 5,
                   repeat: Number.POSITIVE_INFINITY,
-                  repeatType: "reverse",
-                },
+                  repeatType: "reverse"
+                }
               }}
             >
               <div className="flex items-center">
@@ -437,15 +440,18 @@ export default function Hero() {
             <motion.div
               className="absolute -bottom-6 -left-6 bg-white p-4 rounded-xl shadow-lg border border-gray-100 z-10"
               initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
               animate={{
-                y: [0, 10, 0],
-                transition: {
+                opacity: 1,
+                scale: 1,
+                y: [0, 10, 0]
+              }}
+              transition={{
+                duration: 0.5,
+                y: {
                   duration: 5,
                   repeat: Number.POSITIVE_INFINITY,
-                  repeatType: "reverse",
-                },
+                  repeatType: "reverse"
+                }
               }}
             >
               <div className="flex items-center">

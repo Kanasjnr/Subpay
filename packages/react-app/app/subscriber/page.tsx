@@ -1,32 +1,76 @@
-"use client"
+'use client';
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { useAccount } from "wagmi"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import DashboardLayout from "@/components/Layout/DashboardLayout"
-import { PlanList } from "@/components/subscription/PlanList"
-import { SubscriptionList } from "@/components/subscription/SubscriptionList"
-import { OpenDisputeForm } from "@/components/subscription/OpenDisputeForm"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useSubPay } from "@/hooks/useSubPay"
-import { Coins, DollarSign, Euro } from "lucide-react"
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAccount } from 'wagmi';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import DashboardLayout from '@/components/Layout/DashboardLayout';
+import { PlanList } from '@/components/subscription/PlanList';
+import { SubscriptionList } from '@/components/subscription/SubscriptionList';
+import { OpenDisputeForm } from '@/components/subscription/OpenDisputeForm';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { useSubPay } from '@/hooks/useSubPay';
+import { Coins, DollarSign, Euro } from 'lucide-react';
 
 export default function SubscriberDashboard() {
-  const { address } = useAccount()
-  const router = useRouter()
-  const { cUSDBalance, cEURBalance, subscriberSubscriptions } = useSubPay()
-  const [selectedSubscriptionId, setSelectedSubscriptionId] = useState<bigint | null>(null)
-  const [showDisputeModal, setShowDisputeModal] = useState(false)
+  const { address } = useAccount();
+  const router = useRouter();
+  const { cUSDBalance, cEURBalance, subscriberSubscriptions, getSubscriptionDetails } = useSubPay();
+  const [selectedSubscriptionId, setSelectedSubscriptionId] = useState<bigint | null>(null);
+  const [showDisputeModal, setShowDisputeModal] = useState(false);
+  const [subscriptionStats, setSubscriptionStats] = useState({ active: 0, canceled: 0 });
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
     if (!address) {
-      router.push("/")
+      router.push('/');
     }
-  }, [address, router])
+  }, [address, router]);
 
-  if (!address) return null
+  useEffect(() => {
+    const fetchSubscriptionStats = async () => {
+      if (!subscriberSubscriptions || !Array.isArray(subscriberSubscriptions) || hasInitialized) return;
+      
+      try {
+        const details = await Promise.all(
+          subscriberSubscriptions.map(async (id) => {
+            const subscription = await getSubscriptionDetails(id);
+            return subscription?.active;
+          })
+        );
+        
+        const stats = details.reduce(
+          (acc, isActive) => ({
+            active: acc.active + (isActive ? 1 : 0),
+            canceled: acc.canceled + (isActive ? 0 : 1),
+          }),
+          { active: 0, canceled: 0 }
+        );
+        
+        setSubscriptionStats(stats);
+        setHasInitialized(true);
+      } catch (error) {
+        console.error("Error fetching subscription stats:", error);
+      }
+    };
+
+    fetchSubscriptionStats();
+  }, [subscriberSubscriptions, getSubscriptionDetails, hasInitialized]);
+
+  // Reset initialization when subscriptions change
+  useEffect(() => {
+    if (subscriberSubscriptions) {
+      setHasInitialized(false);
+    }
+  }, [subscriberSubscriptions]);
+
+  if (!address) return null;
 
   return (
     <DashboardLayout type="subscriber">
@@ -34,7 +78,9 @@ export default function SubscriberDashboard() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">Welcome Back</h1>
-            <p className="text-muted-foreground mt-1">Here's an overview of your subscriptions</p>
+            <p className="text-muted-foreground mt-1">
+              Here&apos;s an overview of your subscriptions
+            </p>
           </div>
           <div className="flex items-center space-x-2">
             <span className="text-sm text-muted-foreground">Wallet:</span>
@@ -54,9 +100,15 @@ export default function SubscriberDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">
-                {cUSDBalance ? Number(cUSDBalance.formatted).toFixed(2) : "0.00"}
+                {typeof cUSDBalance === 'object' &&
+                cUSDBalance &&
+                'formatted' in cUSDBalance
+                  ? Number(cUSDBalance.formatted).toFixed(2)
+                  : '0.00'}
               </div>
-              <p className="text-sm text-muted-foreground mt-1">Available for subscriptions</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Available for subscriptions
+              </p>
             </CardContent>
           </Card>
 
@@ -69,9 +121,15 @@ export default function SubscriberDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">
-                {cEURBalance ? Number(cEURBalance.formatted).toFixed(2) : "0.00"}
+                {typeof cEURBalance === 'object' &&
+                cEURBalance &&
+                'formatted' in cEURBalance
+                  ? Number(cEURBalance.formatted).toFixed(2)
+                  : '0.00'}
               </div>
-              <p className="text-sm text-muted-foreground mt-1">Available for subscriptions</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Available for subscriptions
+              </p>
             </CardContent>
           </Card>
 
@@ -79,12 +137,24 @@ export default function SubscriberDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Coins className="h-5 w-5 text-yellow-500" />
-                Total Subscriptions
+                Subscriptions Overview
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{subscriberSubscriptions ? subscriberSubscriptions.length : 0}</div>
-              <p className="text-sm text-muted-foreground mt-1">Active subscriptions</p>
+              <div className="space-y-4">
+                <div>
+                  <div className="text-2xl font-bold text-green-500">
+                    {subscriptionStats.active}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Active subscriptions</p>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-red-500">
+                    {subscriptionStats.canceled}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Canceled subscriptions</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -105,8 +175,8 @@ export default function SubscriberDashboard() {
                 <SubscriptionList
                   type="subscriber"
                   onOpenDispute={(subscriptionId) => {
-                    setSelectedSubscriptionId(subscriptionId)
-                    setShowDisputeModal(true)
+                    setSelectedSubscriptionId(subscriptionId);
+                    setShowDisputeModal(true);
                   }}
                 />
               </TabsContent>
@@ -122,9 +192,12 @@ export default function SubscriberDashboard() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">
-                      If you're experiencing issues with a subscription, you can open a dispute to resolve the problem.
+                      If you&apos;re experiencing issues with a subscription,
+                      you can open a dispute to resolve the problem.
                     </p>
-                    <div className="mt-4">{/* Disputes list will be implemented here */}</div>
+                    <div className="mt-4">
+                      {/* Disputes list will be implemented here */}
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -141,12 +214,12 @@ export default function SubscriberDashboard() {
               <OpenDisputeForm
                 subscriptionId={selectedSubscriptionId}
                 onSuccess={() => {
-                  setShowDisputeModal(false)
-                  setSelectedSubscriptionId(null)
+                  setShowDisputeModal(false);
+                  setSelectedSubscriptionId(null);
                 }}
                 onCancel={() => {
-                  setShowDisputeModal(false)
-                  setSelectedSubscriptionId(null)
+                  setShowDisputeModal(false);
+                  setSelectedSubscriptionId(null);
                 }}
               />
             )}
@@ -154,6 +227,5 @@ export default function SubscriberDashboard() {
         </Dialog>
       </div>
     </DashboardLayout>
-  )
+  );
 }
-

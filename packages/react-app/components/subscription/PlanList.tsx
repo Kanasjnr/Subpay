@@ -59,12 +59,12 @@ export function PlanList({ type }: PlanListProps) {
         let planIds: bigint[] = []
 
         if (type === "business") {
-          planIds = merchantPlans || []
+          planIds = Array.from(merchantPlans || [])
         } else {
           // For subscribers, get all available plans
           console.log("Fetching all available plans for subscribers")
           const allPlans = await getAllPlans(20) // Limit to 20 plans for performance
-          planIds = allPlans || []
+          planIds = Array.from(allPlans || [])
         }
 
         console.log("Plan IDs:", planIds)

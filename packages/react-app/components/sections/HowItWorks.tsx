@@ -1,48 +1,62 @@
-"use client"
+'use client';
 
-import { useRef } from "react"
-import { motion, useScroll, useTransform } from "framer-motion"
-import { CheckCircle2, Wallet, FileText, CreditCard, BarChart4 } from "lucide-react"
-import Logo from "@/components/ui/Logo"
+import { useRef } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import {
+  CheckCircle2,
+  Wallet,
+  FileText,
+  CreditCard,
+  BarChart4,
+} from 'lucide-react';
+import Logo from '@/components/ui/Logo';
 
 export default function HowItWorks() {
-  const containerRef = useRef(null)
+  const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start end", "end start"],
-  })
+    offset: ['start end', 'end start'],
+  });
 
-  const y = useTransform(scrollYProgress, [0, 1], [100, -100])
+  const y = useTransform(scrollYProgress, [0, 1], [100, -100]);
 
   const steps = [
     {
       icon: <Wallet className="h-6 w-6" />,
-      title: "Connect Wallet",
-      description: "Connect your blockchain wallet to the SubPay platform to get started.",
-      color: "bg-blue-100 text-blue-600",
+      title: 'Connect Wallet',
+      description:
+        'Connect your blockchain wallet to the SubPay platform to get started.',
+      color: 'bg-blue-100 text-blue-600',
     },
     {
       icon: <FileText className="h-6 w-6" />,
-      title: "Create Subscription",
-      description: "Businesses create subscription plans with customizable parameters.",
-      color: "bg-purple-100 text-purple-600",
+      title: 'Create Subscription',
+      description:
+        'Businesses create subscription plans with customizable parameters.',
+      color: 'bg-purple-100 text-purple-600',
     },
     {
       icon: <CreditCard className="h-6 w-6" />,
-      title: "Authorize Payment",
-      description: "Users authorize recurring payments with full control over terms.",
-      color: "bg-amber-100 text-amber-600",
+      title: 'Authorize Payment',
+      description:
+        'Users authorize recurring payments with full control over terms.',
+      color: 'bg-amber-100 text-amber-600',
     },
     {
       icon: <BarChart4 className="h-6 w-6" />,
-      title: "Automated Billing",
-      description: "Smart contracts execute scheduled payments based on subscription terms.",
-      color: "bg-green-100 text-green-600",
+      title: 'Automated Billing',
+      description:
+        'Smart contracts execute scheduled payments based on subscription terms.',
+      color: 'bg-green-100 text-green-600',
     },
-  ]
+  ];
 
   return (
-    <section ref={containerRef} id="how-it-works" className="py-24 bg-white relative overflow-hidden">
+    <section
+      ref={containerRef}
+      id="how-it-works"
+      className="py-24 bg-white relative overflow-hidden"
+    >
       {/* Animated background elements */}
       <motion.div
         className="absolute top-0 right-0 w-1/3 h-1/3 bg-green-50 rounded-bl-full opacity-50"
@@ -86,8 +100,8 @@ export default function HowItWorks() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            Our protocol simplifies subscription management on the blockchain with a straightforward process for both
-            businesses and subscribers.
+            Our protocol simplifies subscription management on the blockchain
+            with a straightforward process for both businesses and subscribers.
           </motion.p>
         </motion.div>
 
@@ -100,16 +114,16 @@ export default function HowItWorks() {
                 className="flex gap-4"
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
+                viewport={{ once: true, margin: '-100px' }}
                 transition={{ duration: 0.5, delay: index * 0.05 }}
               >
                 <motion.div
                   className={`h-14 w-14 shrink-0 rounded-full ${step.color} flex items-center justify-center`}
                   animate={{
                     boxShadow: [
-                      "0px 0px 0px rgba(0,0,0,0)",
-                      "0px 0px 20px rgba(0,0,0,0.1)",
-                      "0px 0px 0px rgba(0,0,0,0)",
+                      '0px 0px 0px rgba(0,0,0,0)',
+                      '0px 0px 20px rgba(0,0,0,0.1)',
+                      '0px 0px 0px rgba(0,0,0,0)',
                     ],
                   }}
                   transition={{
@@ -127,11 +141,17 @@ export default function HowItWorks() {
                       initial={{ scale: 0 }}
                       whileInView={{ scale: 1 }}
                       viewport={{ once: true }}
-                      transition={{ delay: 0.05 + index * 0.05, type: "spring", stiffness: 300 }}
+                      transition={{
+                        delay: 0.05 + index * 0.05,
+                        type: 'spring',
+                        stiffness: 300,
+                      }}
                     >
                       {index + 1}
                     </motion.span>
-                    <h3 className="font-semibold text-xl text-gray-900">{step.title}</h3>
+                    <h3 className="font-semibold text-xl text-gray-900">
+                      {step.title}
+                    </h3>
                   </div>
                   <p className="mt-2 text-gray-600">{step.description}</p>
                 </div>
@@ -161,9 +181,17 @@ export default function HowItWorks() {
                   viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
                   animate={{ x: [0, 5, 0] }}
-                  transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Number.POSITIVE_INFINITY,
+                  }}
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M14 5l7 7m0 0l-7 7m7-7H3"
+                  />
                 </motion.svg>
               </motion.a>
             </motion.div>
@@ -183,21 +211,23 @@ export default function HowItWorks() {
               animate={{
                 y: [0, -10, 0],
                 boxShadow: [
-                  "0px 10px 30px rgba(0,0,0,0.1)",
-                  "0px 30px 40px rgba(0,0,0,0.2)",
-                  "0px 10px 30px rgba(0,0,0,0.1)",
+                  '0px 10px 30px rgba(0,0,0,0.1)',
+                  '0px 30px 40px rgba(0,0,0,0.2)',
+                  '0px 10px 30px rgba(0,0,0,0.1)',
                 ],
               }}
               transition={{
                 duration: 6,
                 repeat: Number.POSITIVE_INFINITY,
-                repeatType: "reverse",
+                repeatType: 'reverse',
               }}
             >
               <div className="flex justify-between items-center mb-8">
                 <div className="flex items-center">
                   <Logo size={36} className="mr-3" animated={false} />
-                  <h3 className="text-xl font-bold text-gray-900">SubPay Dashboard</h3>
+                  <h3 className="text-xl font-bold text-gray-900">
+                    SubPay Dashboard
+                  </h3>
                 </div>
                 <motion.div
                   className="flex items-center"
@@ -210,18 +240,37 @@ export default function HowItWorks() {
                   }}
                 >
                   <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                  <span className="text-sm text-green-600 font-medium">Live</span>
+                  <span className="text-sm text-green-600 font-medium">
+                    Live
+                  </span>
                 </motion.div>
               </div>
 
               <div className="space-y-6">
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-3">Active Subscription Plans</h4>
+                  <h4 className="text-sm font-medium text-gray-500 mb-3">
+                    Active Subscription Plans
+                  </h4>
                   <div className="space-y-3">
                     {[
-                      { name: "Basic Plan", price: "9.99 cUSD", status: "Active", users: 842 },
-                      { name: "Pro Plan", price: "29.99 cUSD", status: "Active", users: 367 },
-                      { name: "Enterprise", price: "99.99 cUSD", status: "Active", users: 124 },
+                      {
+                        name: 'Basic Plan',
+                        price: '9.99 cUSD',
+                        status: 'Active',
+                        users: 842,
+                      },
+                      {
+                        name: 'Pro Plan',
+                        price: '29.99 cUSD',
+                        status: 'Active',
+                        users: 367,
+                      },
+                      {
+                        name: 'Enterprise',
+                        price: '99.99 cUSD',
+                        status: 'Active',
+                        users: 124,
+                      },
                     ].map((plan, i) => (
                       <motion.div
                         key={i}
@@ -229,24 +278,40 @@ export default function HowItWorks() {
                         initial={{ opacity: 0, x: 30 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
-                        transition={{ duration: 0.5 }}
                         animate={{
                           backgroundColor:
-                            i === 0 ? ["rgb(249 250 251)", "rgb(240 253 244)", "rgb(249 250 251)"] : "rgb(249 250 251)",
+                            i === 0
+                              ? [
+                                  'rgb(249 250 251)',
+                                  'rgb(240 253 244)',
+                                  'rgb(249 250 251)',
+                                ]
+                              : 'rgb(249 250 251)',
                         }}
                         transition={{
-                          duration: 3,
-                          repeat: Number.POSITIVE_INFINITY,
-                          repeatDelay: 2,
+                          duration: 0.5,
+                          backgroundColor: {
+                            duration: 3,
+                            repeat: Number.POSITIVE_INFINITY,
+                            repeatDelay: 2,
+                          },
                         }}
                       >
                         <div>
-                          <p className="font-medium text-gray-900">{plan.name}</p>
-                          <p className="text-sm text-gray-500">{plan.price} / month</p>
+                          <p className="font-medium text-gray-900">
+                            {plan.name}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {plan.price} / month
+                          </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-medium text-green-600">{plan.status}</p>
-                          <p className="text-xs text-gray-500">{plan.users} subscribers</p>
+                          <p className="text-sm font-medium text-green-600">
+                            {plan.status}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {plan.users} subscribers
+                          </p>
                         </div>
                       </motion.div>
                     ))}
@@ -255,7 +320,9 @@ export default function HowItWorks() {
 
                 <div className="pt-4 border-t border-gray-100">
                   <div className="flex justify-between mb-3">
-                    <h4 className="text-sm font-medium text-gray-500">Monthly Revenue</h4>
+                    <h4 className="text-sm font-medium text-gray-500">
+                      Monthly Revenue
+                    </h4>
                     <motion.span
                       className="text-sm font-medium text-green-600"
                       animate={{
@@ -273,9 +340,9 @@ export default function HowItWorks() {
                     <motion.div
                       className="bg-gradient-to-r from-green-400 to-forest h-full"
                       initial={{ width: 0 }}
-                      whileInView={{ width: "75%" }}
+                      whileInView={{ width: '75%' }}
                       viewport={{ once: true }}
-                      transition={{ duration: 1.5, ease: "easeOut" }}
+                      transition={{ duration: 1.5, ease: 'easeOut' }}
                     />
                   </div>
                 </div>
@@ -292,7 +359,7 @@ export default function HowItWorks() {
               transition={{
                 duration: 8,
                 repeat: Number.POSITIVE_INFINITY,
-                repeatType: "reverse",
+                repeatType: 'reverse',
               }}
             />
             <motion.div
@@ -304,7 +371,7 @@ export default function HowItWorks() {
               transition={{
                 duration: 10,
                 repeat: Number.POSITIVE_INFINITY,
-                repeatType: "reverse",
+                repeatType: 'reverse',
               }}
             />
             <motion.div
@@ -316,7 +383,7 @@ export default function HowItWorks() {
               transition={{
                 duration: 4,
                 repeat: Number.POSITIVE_INFINITY,
-                repeatType: "reverse",
+                repeatType: 'reverse',
               }}
             >
               <CheckCircle2 className="h-12 w-12 text-forest" />
@@ -325,6 +392,5 @@ export default function HowItWorks() {
         </div>
       </div>
     </section>
-  )
+  );
 }
-
