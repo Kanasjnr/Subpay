@@ -31,7 +31,20 @@ const nextConfig = {
       encoding: require.resolve('encoding'),
     };
     return config;
-  }
+  },
+  env: {
+    NEXT_PUBLIC_SUBPAY_CONTRACT_ADDRESS: process.env.NEXT_PUBLIC_SUBPAY_CONTRACT_ADDRESS || '0x089D37C1Ca872221E37487c1F2D006907561B1fd',
+    NEXT_PUBLIC_CUSD_ADDRESS: process.env.NEXT_PUBLIC_CUSD_ADDRESS || '0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1',
+    NEXT_PUBLIC_CEUR_ADDRESS: process.env.NEXT_PUBLIC_CEUR_ADDRESS || '0x10c892A6EC43a53E45D0B916B4b7D383B1b78C0F',
+  },
+  // Configure static and dynamic rendering
+  experimental: {
+    appDir: true,
+  },
+  // Disable automatic static optimization for specific pages
+  unstable_runtimeJS: true,
+  // Use server-side rendering by default
+  output: 'standalone',
 }
 
 module.exports = withPWA(nextConfig)
