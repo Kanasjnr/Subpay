@@ -1,11 +1,11 @@
-# CeloSubPay: A DeFi-Based Subscription Payment Protocol
+# SubPay: A DeFi-Based Subscription Payment Protocol
 
 ##  Project Description
 CeloSubPay is a decentralized finance (DeFi) protocol that enables automated, recurring subscription payments using stablecoins. It bridges the gap between traditional subscription models and blockchain technology, offering businesses an efficient way to manage subscriptions while giving users full control over their payments.
 
 ### Key Features
 - **Smart Contract-Based Subscriptions** – Automates recurring payments with user-defined parameters.
-- **Stablecoin Integration** – Eliminates volatility concerns with cUSD and cEUR payments.
+- **Stablecoin Integration** – Eliminates volatility concerns with Stable coin payments.
 - **AI-Powered Risk Management** – Credit risk assessment, fraud detection, and payment optimization.
 - **Business Management Dashboard** – Tools for creating, monitoring, and managing subscriptions.
 - **User Sovereignty** – Transparent billing, easy modifications, and full user control over payments.
@@ -22,7 +22,7 @@ The current Web3 ecosystem lacks efficient subscription payment solutions due to
 -  **Complex User Experience** – Many existing crypto subscription models require manual renewals.
 -  **Cross-Border Limitations** – High fees and regulatory barriers for global transactions.
 
-**CeloSubPay solves these issues by enabling smart contract-driven, stablecoin-based, and AI-optimized subscription payments.**
+**SubPay solves these issues by enabling smart contract-driven, stablecoin-based, and AI-optimized subscription payments.**
 
 ---
 
@@ -47,10 +47,11 @@ The current Web3 ecosystem lacks efficient subscription payment solutions due to
 ##  Competitive Advantages
 - **Cost Efficiency:** Lower fees compared to traditional processors.
 - **AI-Driven Risk Management:** Unique fraud detection and credit scoring features.
-- **📱 Mobile-First Design:** Built for Celo’s mobile-friendly blockchain.
-- **🌎 Global Accessibility:** Borderless payments with stablecoin support.
-- **🛡️ Security & Transparency:** Immutable smart contract-based billing.
-- **⚙️ Programmable Subscriptions:** Dynamic pricing, usage-based billing, and DAO membership models.
+- **Mobile-First Design:** Built for Celo’s mobile-friendly blockchain.
+
+- **Global Accessibility:** Borderless payments with stablecoin support.
+- **Security & Transparency:** Immutable smart contract-based billing.
+- **⚙Programmable Subscriptions:** Dynamic pricing, usage-based billing, and DAO membership models.
 
 ---
 
@@ -102,7 +103,7 @@ $ yarn install
 ### Deploy Smart Contracts
 ```sh
 $ npx hardhat compile
-$ npx hardhat run scripts/deploy.js --network alfajores
+$ npx hardhat run scripts/deploy.js --network 
 ```
 
 ### Run the Frontend
