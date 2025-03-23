@@ -9,11 +9,22 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useSubPay } from "@/hooks/useSubPay"
 import { useToast } from "@/hooks/use-toast"
+import { useAccount } from "wagmi"
+import { Textarea } from "@/components/ui/textarea"
+import { Card } from "@/components/ui/card"
+import { Loader2 } from "lucide-react"
 
 interface CreatePlanModalProps {
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
+}
+
+// Use the CUSD_ADDRESS from environment variables
+const CUSD_ADDRESS = process.env.NEXT_PUBLIC_CUSD_ADDRESS as `0x${string}`
+
+if (!CUSD_ADDRESS) {
+  throw new Error('CUSD_ADDRESS not found in environment variables')
 }
 
 export function CreatePlanModal({ isOpen, onClose, onSuccess }: CreatePlanModalProps) {
@@ -31,9 +42,6 @@ export function CreatePlanModal({ isOpen, onClose, onSuccess }: CreatePlanModalP
     e.preventDefault()
 
     try {
-      // Use the CUSD token address as default payment token
-      const CUSD_ADDRESS = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1" as `0x${string}`
-
       await createPlan(
         CUSD_ADDRESS,
         formData.amount,

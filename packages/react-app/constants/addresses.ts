@@ -1,1 +1,6 @@
-export const SUBPAY_ADDRESS = "0x1D0CB90Feb6eb94AeCC3aCBF9C958D3409916831" as const 
+// Get the contract address from environment variables
+export const SUBPAY_ADDRESS = process.env.NEXT_PUBLIC_SUBPAY_CONTRACT_ADDRESS as `0x${string}`
+
+if (!SUBPAY_ADDRESS) {
+  throw new Error('SUBPAY_CONTRACT_ADDRESS not found in environment variables')
+} 

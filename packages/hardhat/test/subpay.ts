@@ -2,12 +2,15 @@ import { ethers } from "hardhat"
 import { expect } from "chai"
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers"
 import { time } from "@nomicfoundation/hardhat-network-helpers"
+import dotenv from "dotenv"
+
+// Load environment variables
+dotenv.config()
+
+const CUSD_ADDRESS = process.env.CUSD_ADDRESS 
+const CEUR_ADDRESS = process.env.CEUR_ADDRESS 
 
 describe("SubPay", () => {
-  // Constants for cUSD and cEUR addresses
-  const CUSD_ADDRESS = "0x874069fa1eb16d44d622f2e0ca25eea172369bc1"
-  const CEUR_ADDRESS = "0x10c892a6ec43a53e45d0b916b4b7d383b1b78c0f"
-
   // Test fixture to deploy the contract and set up test environment
   async function deploySubPayFixture() {
     const [owner, feeCollector, merchant, subscriber, arbitrator, oracle, provider] = await ethers.getSigners()

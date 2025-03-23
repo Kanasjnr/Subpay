@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -26,8 +26,6 @@ export function PlanList({ type }: PlanListProps) {
   const { toast } = useToast()
   const { merchantPlans, getPlanDetails, subscribe, isSubscribing, refetchMerchantPlans, getAllPlans } = useSubPay()
 
-  const hasInitialized = useRef(false)
-
   // Helper function to check if value is a bigint array
   const isBigIntArray = (value: unknown): value is bigint[] => {
     return Array.isArray(value) && value.every((item) => typeof item === "bigint")
@@ -49,43 +47,47 @@ export function PlanList({ type }: PlanListProps) {
 
   // Effect for fetching plan details
   useEffect(() => {
-    if (!address || hasInitialized.current) return
+    let mounted = true
 
     const fetchPlans = async () => {
-      console.log("Fetching plans for type:", type)
+      if (!address) {
+        setLoading(false)
+        return
+      }
+
       try {
         setLoading(true)
-        // Determine which plans to fetch based on type
         let planIds: bigint[] = []
 
         if (type === "business") {
           if (!merchantPlans) {
-            setPlans([])
-            setLoading(false)
+            if (mounted) {
+              setPlans([])
+              setLoading(false)
+            }
             return
           }
           planIds = Array.from(merchantPlans)
         } else {
-          // For subscribers, get all available plans
-          console.log("Fetching all available plans for subscribers")
-          const allPlans = await getAllPlans(20) // Limit to 20 plans for performance
-          if (!allPlans) {
-            setPlans([])
-            setLoading(false)
+          const allPlans = await getAllPlans(20)
+          if (!allPlans || !mounted) {
+            if (mounted) {
+              setPlans([])
+              setLoading(false)
+            }
             return
           }
-          planIds = Array.from(allPlans)
+          planIds = allPlans // Already filtered for valid plans
         }
 
-        // Only proceed if we have valid plan IDs
         if (!isBigIntArray(planIds) || planIds.length === 0) {
-          console.log("No valid plan IDs found, setting empty plans array")
-          setPlans([])
-          setLoading(false)
+          if (mounted) {
+            setPlans([])
+            setLoading(false)
+          }
           return
         }
 
-        // Fetch all plan details in parallel
         const details = await Promise.all(
           planIds.map(async (id) => {
             try {
@@ -109,33 +111,33 @@ export function PlanList({ type }: PlanListProps) {
           }),
         )
 
-        const validPlans = details.filter((plan): plan is any => plan !== null)
-        setPlans(validPlans)
-        hasInitialized.current = true
+        if (mounted) {
+          const validPlans = details.filter((plan): plan is any => plan !== null)
+          setPlans(validPlans)
+        }
       } catch (error) {
         console.error("Error fetching plans:", error)
-        toast({
-          title: "Error",
-          description: "Failed to fetch plans. Please try again later.",
-          variant: "destructive",
-        })
-        setPlans([])
+        if (mounted) {
+          toast({
+            title: "Error",
+            description: "Failed to fetch plans. Please try again later.",
+            variant: "destructive",
+          })
+          setPlans([])
+        }
       } finally {
-        setLoading(false)
+        if (mounted) {
+          setLoading(false)
+        }
       }
     }
 
     fetchPlans()
-  }, [address, type, merchantPlans, getPlanDetails, getAllPlans, toast])
 
-  // Reset initialization when dependencies change
-  useEffect(() => {
-    if (type === "business" && merchantPlans) {
-      hasInitialized.current = false
-    } else if (type === "subscriber") {
-      hasInitialized.current = false
+    return () => {
+      mounted = false
     }
-  }, [type, merchantPlans])
+  }, [address, type, merchantPlans])
 
   if (!address) {
     return <Empty title="Connect Wallet" message="Please connect your wallet to view plans" />
@@ -194,7 +196,6 @@ export function PlanList({ type }: PlanListProps) {
                 onSuccess={() => {
                   setShowCreateModal(false)
                   refetchMerchantPlans()
-                  hasInitialized.current = false // Reset initialization to trigger a refetch
                 }}
               />
             </DialogContent>
