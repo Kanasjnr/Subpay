@@ -713,7 +713,6 @@ export function useSubPay(): SubPayHook {
     }
   }
 
-  // Replace the getPaymentHistory function with this improved version
   // Get payment history for a user
   const getPaymentHistory = async (user: `0x${string}`, limit: number): Promise<PaymentRecord[] | undefined> => {
     if (!publicClient) return undefined
@@ -721,7 +720,97 @@ export function useSubPay(): SubPayHook {
     try {
       console.log("Fetching payment history for user:", user, "with limit:", limit)
 
-      // First try the direct contract call
+      // First try to get payment events from the blockchain
+      console.log("Trying to get payment events from blockchain logs...")
+
+      try {
+        const currentBlock = await publicClient.getBlockNumber()
+        const fromBlock = currentBlock - BigInt(100000) // Look back further in history
+        console.log(`Searching for events from block ${fromBlock} to ${currentBlock}`)
+
+        // Get both PaymentProcessed and PaymentRecorded events
+        const [processedEvents, recordedEvents] = await Promise.all([
+          publicClient.getContractEvents({
+            address: SUBPAY_ADDRESS as `0x${string}`,
+            abi: SUBPAY_ABI,
+            eventName: "PaymentProcessed",
+            fromBlock,
+            toBlock: "latest",
+          }),
+          publicClient.getContractEvents({
+            address: SUBPAY_ADDRESS as `0x${string}`,
+            abi: SUBPAY_ABI,
+            eventName: "PaymentRecorded",
+            fromBlock,
+            toBlock: "latest",
+          })
+        ])
+
+        console.log("PaymentProcessed events found:", processedEvents)
+        console.log("PaymentRecorded events found:", recordedEvents)
+
+        // Combine and process both types of events
+        const paymentRecords: PaymentRecord[] = []
+        const seenTxHashes = new Set<string>()
+
+        // Process PaymentProcessed events first (these have the correct token address)
+        processedEvents
+          .filter((event) => {
+            const args = event.args as any
+            return args.subscriber && args.subscriber.toLowerCase() === user.toLowerCase()
+          })
+          .forEach((event) => {
+            const args = event.args as any
+            const txHash = event.transactionHash || "Unknown"
+            if (!seenTxHashes.has(txHash)) {
+              seenTxHashes.add(txHash)
+              paymentRecords.push({
+                timestamp: BigInt(event.blockNumber || 0),
+                success: true,
+                amount: args.amount || BigInt(0),
+                token: CUSD_ADDRESS as `0x${string}`,
+                metadata: txHash,
+              })
+            }
+          })
+
+        // Process PaymentRecorded events (only if we haven't seen the transaction)
+        recordedEvents
+          .filter((event) => {
+            const args = event.args as any
+            return args.user && args.user.toLowerCase() === user.toLowerCase()
+          })
+          .forEach((event) => {
+            const args = event.args as any
+            const txHash = event.transactionHash || "Unknown"
+            if (!seenTxHashes.has(txHash)) {
+              seenTxHashes.add(txHash)
+              paymentRecords.push({
+                timestamp: BigInt(event.blockNumber || 0),
+                success: args.success || false,
+                amount: args.amount || BigInt(0),
+                token: args.token || CUSD_ADDRESS as `0x${string}`,
+                metadata: txHash,
+              })
+            }
+          })
+
+        // If we found events, sort and return them
+        if (paymentRecords.length > 0) {
+          // Sort by timestamp (newest first) and limit
+          const sortedRecords = paymentRecords
+            .sort((a, b) => (b.timestamp > a.timestamp ? 1 : -1))
+            .slice(0, limit)
+
+          console.log("Found payment records from events:", sortedRecords)
+          return sortedRecords
+        }
+      } catch (eventsError) {
+        console.error("Error fetching payment events:", eventsError)
+      }
+
+      // Fallback: Try the direct contract call if no events were found
+      console.log("No events found, trying contract storage...")
       try {
         const data = await publicClient.readContract({
           address: SUBPAY_ADDRESS as `0x${string}`,
@@ -738,49 +827,6 @@ export function useSubPay(): SubPayHook {
         }
       } catch (contractError) {
         console.error("Error calling getPaymentHistory contract method:", contractError)
-        // Continue to fallback method
-      }
-
-      // Fallback: Try to get payment events from the blockchain
-      console.log("Trying to get payment events from blockchain logs...")
-
-      try {
-        // Look for PaymentProcessed events in the last 10000 blocks
-        const events = await publicClient.getContractEvents({
-          address: SUBPAY_ADDRESS as `0x${string}`,
-          abi: SUBPAY_ABI,
-          eventName: "PaymentProcessed",
-          fromBlock: BigInt(await publicClient.getBlockNumber()) - BigInt(10000),
-          toBlock: "latest",
-        })
-
-        console.log("Payment events found:", events)
-
-        if (events && events.length > 0) {
-          // Convert events to PaymentRecord format
-          const paymentRecords: PaymentRecord[] = events
-            .filter((event) => {
-              // Filter events for this user
-              const args = event.args as any
-              return args.subscriber && args.subscriber.toLowerCase() === user.toLowerCase()
-            })
-            .map((event) => {
-              const args = event.args as any
-              return {
-                timestamp: BigInt(event.blockNumber || 0),
-                success: true, // If the event was emitted, the payment was successful
-                amount: args.amount || BigInt(0),
-                token: args.token || "0x0000000000000000000000000000000000000000",
-                metadata: args.metadata || `Transaction: ${event.transactionHash}`,
-              }
-            })
-            .slice(0, limit)
-
-          console.log("Converted payment records:", paymentRecords)
-          return paymentRecords
-        }
-      } catch (eventsError) {
-        console.error("Error fetching payment events:", eventsError)
       }
 
       // If we reach here, we couldn't get any payment data

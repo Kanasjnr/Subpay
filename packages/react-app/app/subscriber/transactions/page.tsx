@@ -30,10 +30,31 @@ export default function TransactionsPage() {
   const [search, setSearch] = useState("")
   const [transactions, setTransactions] = useState<any[]>([])
   const { getPaymentHistory } = useSubPay()
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const { toast } = useToast()
   const [refreshKey, setRefreshKey] = useState(0)
   const [debugInfo, setDebugInfo] = useState<string>("")
+
+  // Helper function to safely convert BigInt to string for JSON
+  const convertBigIntToString = (obj: any): any => {
+    if (obj === null || obj === undefined) {
+      return obj;
+    }
+    if (typeof obj === 'bigint') {
+      return obj.toString();
+    }
+    if (Array.isArray(obj)) {
+      return obj.map(convertBigIntToString);
+    }
+    if (typeof obj === 'object') {
+      const converted: any = {};
+      for (const key in obj) {
+        converted[key] = convertBigIntToString(obj[key]);
+      }
+      return converted;
+    }
+    return obj;
+  }
 
   // Memoize the fetch function to prevent recreating it on every render
   const fetchTransactions = useCallback(async () => {
@@ -46,35 +67,36 @@ export default function TransactionsPage() {
 
       // Try to get real payment history with a higher limit to ensure we get all transactions
       const paymentHistory = await getPaymentHistory(address as `0x${string}`, 50)
-      console.log("Raw payment history response:", paymentHistory)
-
-      // Update debug info
-      setDebugInfo(`Raw payment history: ${JSON.stringify(paymentHistory, null, 2)}`)
+      
+      // Convert BigInt values to strings before JSON stringify
+      const safePaymentHistory = convertBigIntToString(paymentHistory)
+      setDebugInfo(`Raw payment history: ${JSON.stringify(safePaymentHistory, null, 2)}`)
 
       // Ensure paymentHistory is an array (even if empty)
-      const safePaymentHistory = Array.isArray(paymentHistory) ? paymentHistory : []
+      const processedHistory = Array.isArray(paymentHistory) ? paymentHistory : []
 
-      if (safePaymentHistory.length > 0) {
+      if (processedHistory.length > 0) {
         // If we have real payment history, use it
-        const formattedTransactions = safePaymentHistory.map((payment, index) => {
-          console.log(`Processing payment record ${index}:`, payment)
+        console.log("Raw payment history before formatting:", processedHistory);
+        const formattedTransactions = processedHistory.map((payment, index) => {
+          console.log(`Processing payment ${index}:`, payment);
+          console.log(`Payment metadata (transaction hash):`, payment.metadata);
+
           return {
             id: index,
             date: payment.timestamp ? new Date(Number(payment.timestamp) * 1000).toLocaleDateString() : "Unknown",
-            planName: payment.metadata || "Subscription Payment",
+            planName: "Subscription Payment",
             merchant: payment.token || "Unknown",
             amount: payment.amount ? safeFormatEther(payment.amount) + " cUSD" : "0 cUSD",
             status: payment.success ? "Success" : "Failed",
             txHash: payment.metadata || "Unknown",
-          }
-        })
+          };
+        });
 
-        console.log("Formatted transactions:", formattedTransactions)
-        setTransactions(formattedTransactions)
+        console.log("Formatted transactions:", formattedTransactions);
+        setTransactions(formattedTransactions);
       } else {
-        console.log("No payment history found, setting empty array")
-        setDebugInfo("No payment history found. The contract returned an empty array or undefined.")
-        setTransactions([])
+        setTransactions([]);
       }
     } catch (error) {
       console.error("Error fetching transactions:", error)
@@ -90,12 +112,12 @@ export default function TransactionsPage() {
     }
   }, [address, getPaymentHistory, toast])
 
-  // Use a separate effect for the initial fetch
+  // Use a separate effect for the initial fetch and refresh
   useEffect(() => {
     if (address) {
       fetchTransactions()
     }
-  }, [address, fetchTransactions, refreshKey])
+  }, [address, refreshKey])
 
   // Memoize filtered transactions to prevent recalculation on every render
   const filteredTransactions = useMemo(() => {
@@ -223,7 +245,7 @@ export default function TransactionsPage() {
                       </div>
                       <div className="font-mono truncate">
                         <a
-                          href={`https://explorer.celo.org/mainnet/tx/${tx.txHash}`}
+                          href={`https://celo-alfajores.blockscout.com/tx/${tx.txHash}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-primary hover:underline"
