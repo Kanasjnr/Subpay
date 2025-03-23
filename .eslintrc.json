@@ -1,3 +1,6 @@
 {
-  "extends": ["oclif", "oclif-typescript", "prettier"]
+  "extends": [
+    "next/core-web-vitals",
+    "prettier"
+  ]
 }

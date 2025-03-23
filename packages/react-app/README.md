@@ -1,28 +1,87 @@
-# React Framework + NextJS | Celo Composer
+# CeloSubPay PWA
 
-Celo Composer support React boilerplate template with TailwindCSS. This is a starter kit with no additional boilerplate code. It's a perfect starter kit to get your project started on Celo blockchain.
+A Progressive Web App for managing DeFi-based subscription payments on the Celo blockchain.
 
-## Setup & Installation
+## Features
 
+- **Wallet Integration**: Connect your crypto wallet using RainbowKit
+- **Role-based Access**: Support for both Subscribers and Business users
+- **Subscription Management**: Create, manage, and cancel subscription plans
+- **Real-time Analytics**: Track revenue, active users, and churn rate
+- **Offline Support**: Access basic features without internet connection
+- **Push Notifications**: Receive updates about payments and subscription status
+- **Responsive Design**: Seamless experience across desktop and mobile devices
 
-### Set environment variables
+## Tech Stack
 
-Create a copy of `.env.example` and rename it to `.env`.
+- Next.js 15
+- Tailwind CSS
+- RainbowKit
+- Wagmi
+- Framer Motion
+- Radix UI
+- TypeScript
 
-#### Add Wallet Connect ID
+## Getting Started
 
-Create a WalletConnect Cloud Project ID from [WalletConnect Cloud](https://cloud.walletconnect.com/)
+1. Install dependencies:
+   ```bash
+   yarn install
+   ```
 
-Provide the WalletConnect Cloud Project ID in your `.env` file to use WalletConnect in your project. As shown in the `.env.example` file.
+2. Set up environment variables:
+   ```bash
+   cp .env.template .env.local
+   ```
+   Fill in the required environment variables:
+   - `NEXT_PUBLIC_SUBPAY_CONTRACT_ADDRESS`: Your deployed CeloSubPay contract address
+   - `NEXT_PUBLIC_VAPID_PUBLIC_KEY`: Your VAPID public key for push notifications
 
-```typescript
-NEXT_PUBLIC_WC_PROJECT_ID=YOUR_EXAMPLE_PROJECT_ID;
+3. Run the development server:
+   ```bash
+   yarn dev
+   ```
+
+4. Build for production:
+   ```bash
+   yarn build
+   ```
+
+5. Start the production server:
+   ```bash
+   yarn start
+   ```
+
+## Project Structure
+
+```
+packages/react-app/
+├── app/                    # Next.js app directory
+│   ├── business/          # Business dashboard pages
+│   ├── subscriber/        # Subscriber dashboard pages
+│   └── layout.tsx         # Root layout with PWA meta tags
+├── components/            # Reusable UI components
+│   └── ui/               # Base UI components
+├── hooks/                # Custom React hooks
+│   ├── useSubPay.ts      # Smart contract interaction
+│   └── usePushNotifications.ts  # Push notification management
+├── lib/                  # Utility functions and constants
+├── public/              # Static assets
+│   ├── icons/          # PWA icons
+│   ├── manifest.json   # PWA manifest
+│   └── sw.js           # Service worker
+└── styles/             # Global styles
 ```
 
+## Contributing
 
-### Install dependencies
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-Install all the required dependencies to run the dApp.
+## License
 
 Using **yarn**
 

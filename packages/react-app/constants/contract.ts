@@ -1,0 +1,1 @@
+export const SUBPAY_CONTRACT_ADDRESS = '0x1D0CB90Feb6eb94AeCC3aCBF9C958D3409916831' // Replace with actual deployed contract address 
