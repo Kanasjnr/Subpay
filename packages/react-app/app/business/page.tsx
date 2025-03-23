@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback, useMemo } from "react"
+import { useEffect, useState, useCallback, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useAccount } from "wagmi"
 import { Card, CardContent } from "@/components/ui/card"
@@ -31,114 +31,60 @@ export default function BusinessDashboard() {
   const { address } = useAccount()
   const router = useRouter()
   const { merchantPlans, getPlanDetails } = useSubPay()
-  const [plans, setPlans] = useState<any[]>([])
+  const [stats, setStats] = useState({ monthlyRevenue: 0, activePlans: 0, totalPlans: 0 })
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [refreshKey, setRefreshKey] = useState(0)
+  const hasInitialized = useRef(false)
 
-  // Memoize the fetch function to prevent recreating it on every render
-  const fetchPlans = useCallback(async () => {
-    if (!address || !merchantPlans) {
-      setPlans([])
-      setLoading(false)
+  useEffect(() => {
+    if (!address) {
+      router.push("/")
       return
     }
 
-    try {
-      setLoading(true)
-      setError(null)
-
-      if (merchantPlans.length === 0) {
-        setPlans([])
-        setLoading(false)
+    const calculateStats = async () => {
+      if (!merchantPlans || hasInitialized.current) {
         return
       }
 
-      // Create a map to track which plans we've already processed
-      const processedPlans = new Map()
-      const planPromises = []
-
-      for (const planId of merchantPlans) {
-        // Skip if we've already processed this plan
-        if (processedPlans.has(planId.toString())) continue
-        processedPlans.set(planId.toString(), true)
-
-        // Add the promise to our array
-        planPromises.push(
-          getPlanDetails(planId)
-            .then((plan) => {
-              if (!plan) return null
-
-              return {
-                id: planId,
-                merchant: plan.merchant,
-                paymentToken: plan.paymentToken,
-                amount: plan.amount,
-                frequency: plan.frequency,
-                trialPeriod: plan.trialPeriod,
-                active: plan.active,
-                metadata: plan.metadata || `Plan #${planId.toString()}`,
-              }
-            })
-            .catch((err) => {
-              console.error(`Error fetching plan ${planId.toString()}:`, err)
-              return null
-            }),
-        )
-      }
-
-      // Wait for all promises to resolve
-      const planDetails = await Promise.all(planPromises)
-      const validPlans = planDetails.filter((plan): plan is any => plan !== null)
-
-      setPlans(validPlans)
-    } catch (error) {
-      console.error("Error fetching plans:", error)
-      setError("Failed to load subscription plans. Please try again.")
-    } finally {
-      setLoading(false)
-    }
-  }, [address, merchantPlans, getPlanDetails])
-
-  // Use a separate effect for the initial fetch
-  useEffect(() => {
-    if (address) {
-      fetchPlans()
-    } else {
-      router.push("/")
-    }
-  }, [address, router, fetchPlans, refreshKey])
-
-  // Memoize calculated values
-  const stats = useMemo(() => {
-    // Calculate stats safely
-    const monthlyRevenue = plans.reduce((acc, plan) => {
-      if (!plan.amount) return acc
       try {
-        return acc + Number(safeFormatEther(plan.amount))
+        setLoading(true)
+        const planDetails = await Promise.all(
+          merchantPlans.map(id => getPlanDetails(id))
+        )
+
+        const validPlans = planDetails.filter((plan): plan is NonNullable<typeof plan> => plan !== undefined)
+        
+        const monthlyRevenue = validPlans.reduce((acc, plan) => {
+          if (!plan.amount || !plan.active) return acc
+          try {
+            return acc + Number(formatEther(plan.amount))
+          } catch (error) {
+            return acc
+          }
+        }, 0)
+
+        setStats({
+          monthlyRevenue,
+          activePlans: validPlans.filter(p => p.active).length,
+          totalPlans: validPlans.length
+        })
+        hasInitialized.current = true
       } catch (error) {
-        return acc
+        console.error("Error calculating stats:", error)
+      } finally {
+        setLoading(false)
       }
-    }, 0)
-
-    const activePlans = plans.filter((p) => p.active).length
-    const totalPlans = plans.length
-
-    return {
-      monthlyRevenue,
-      activePlans,
-      totalPlans,
     }
-  }, [plans])
 
-  const handleCreatePlan = () => {
-    setIsCreateModalOpen(true)
-  }
+    calculateStats()
+  }, [address, router, merchantPlans, getPlanDetails])
 
-  const handleCreateSuccess = () => {
-    setRefreshKey((prev) => prev + 1)
-  }
+  // Reset initialization when merchant plans change
+  useEffect(() => {
+    if (merchantPlans) {
+      hasInitialized.current = false
+    }
+  }, [merchantPlans])
 
   if (!address) return null
 
@@ -148,22 +94,9 @@ export default function BusinessDashboard() {
         <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Loading your plans...</p>
+            <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
           </div>
         </div>
-      </DashboardLayout>
-    )
-  }
-
-  if (error) {
-    return (
-      <DashboardLayout type="business">
-        <Error
-          className="h-[calc(100vh-4rem)]"
-          title="Failed to load plans"
-          message={error}
-          onRetry={() => setRefreshKey((prev) => prev + 1)}
-        />
       </DashboardLayout>
     )
   }
@@ -176,8 +109,8 @@ export default function BusinessDashboard() {
             <h1 className="text-3xl font-bold">Business Dashboard</h1>
             <p className="text-muted-foreground mt-1">Overview of your subscription business</p>
           </div>
-          <Button onClick={handleCreatePlan} className="bg-primary hover:bg-primary/90">
-            + New Plan
+          <Button onClick={() => router.push('/business/plans')} className="bg-primary hover:bg-primary/90">
+            Manage Plans
           </Button>
         </div>
 
@@ -246,86 +179,7 @@ export default function BusinessDashboard() {
 
         {/* Analytics Charts */}
         <AnalyticsCharts />
-
-        {/* Plans Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {plans.length === 0 ? (
-            <div className="col-span-3">
-              <Empty
-                title="No subscription plans"
-                message="Create your first subscription plan to start earning recurring revenue."
-                action={{
-                  label: "Create Plan",
-                  onClick: handleCreatePlan,
-                }}
-                icon={<Coins className="h-12 w-12 text-muted-foreground" />}
-              />
-            </div>
-          ) : (
-            plans.map((plan) => (
-              <Card key={plan.id ? plan.id.toString() : "unknown"} className="card-hover">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <div>
-                      <h3 className="text-lg font-semibold">
-                        {plan.metadata || (plan.id ? `Plan #${plan.id.toString()}` : "Unknown Plan")}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {plan.active ? "Active subscription plan" : "Inactive plan"}
-                      </p>
-                    </div>
-                    <span className={`status-badge ${plan.active ? "success" : "error"}`}>
-                      {plan.active ? "Active" : "Inactive"}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Price</p>
-                      <p className="font-medium">{safeFormatEther(plan.amount)} cUSD</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Billing</p>
-                      <p className="font-medium">
-                        Every {plan.frequency ? Number(plan.frequency) / 86400 : "N/A"} days
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Trial Period</p>
-                      <p className="font-medium">
-                        {plan.trialPeriod && Number(plan.trialPeriod) > 0
-                          ? `${Number(plan.trialPeriod) / 86400} days`
-                          : "No trial"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Token</p>
-                      <p className="font-medium truncate" title={plan.paymentToken}>
-                        {plan.paymentToken
-                          ? `${plan.paymentToken.slice(0, 6)}...${plan.paymentToken.slice(-4)}`
-                          : "Unknown"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex justify-end space-x-2">
-                    <Button variant="outline" size="sm">
-                      Edit
-                    </Button>
-                    <Button variant="destructive" size="sm" disabled={!plan.active}>
-                      Deactivate
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
       </div>
-
-      <CreatePlanModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSuccess={handleCreateSuccess}
-      />
     </DashboardLayout>
   )
 }

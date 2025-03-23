@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { useAccount } from "wagmi"
 import { Search } from "lucide-react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -19,6 +19,7 @@ interface Subscriber {
   address: `0x${string}`
   subscriptionId: bigint
   planId: bigint
+  planName: string
   startTime: bigint
   lastPaymentTime: bigint
   nextPaymentTime: bigint
@@ -27,17 +28,15 @@ interface Subscriber {
 
 export default function SubscribersPage() {
   const { address } = useAccount()
-  const [search, setSearch] = useState("")
+  const { merchantPlans, getPlanDetails, getSubscriptionDetails } = useSubPay()
   const [subscribers, setSubscribers] = useState<Subscriber[]>([])
-  const { merchantPlans, getSubscriptionDetails, getPlanDetails, refetchMerchantPlans } = useSubPay()
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState("")
+  const hasInitialized = useRef(false)
   const { toast } = useToast()
-  const [refreshKey, setRefreshKey] = useState(0)
 
-  // Memoize the fetch function to prevent recreating it on every render
   const fetchSubscribers = useCallback(async () => {
-    if (!address || !merchantPlans) {
-      setLoading(false)
+    if (!address || !merchantPlans || hasInitialized.current) {
       return
     }
 
@@ -46,60 +45,30 @@ export default function SubscribersPage() {
       console.log("Fetching subscribers for merchant plans:", merchantPlans)
 
       const allSubscribers: Subscriber[] = []
-      const checkedSubscriptions = new Set() // Track which subscriptions we've already checked
-
-      // For each plan, we need to find all active subscriptions
       for (const planId of merchantPlans) {
-        // Get plan details to check if it's active
         const plan = await getPlanDetails(planId)
-        if (!plan || !plan.active) {
-          continue
-        }
+        if (!plan) continue
 
-        // Check a limited range of subscription IDs
-        // This is more efficient than checking all possible IDs
-        const startId = 1
-        const maxChecks = 10 // Limit how many we check to avoid excessive calls
+        // Get all subscribers for this plan
+        const subscriptions = await getSubscriptionDetails(planId)
+        if (!subscriptions) continue
 
-        for (let i = startId; i <= startId + maxChecks; i++) {
-          try {
-            const subscriptionId = BigInt(i)
-
-            // Skip if we've already checked this subscription
-            if (checkedSubscriptions.has(i)) continue
-            checkedSubscriptions.add(i)
-
-            const subscription = await getSubscriptionDetails(subscriptionId)
-
-            // If this subscription is for our plan and is active
-            if (
-              subscription &&
-              subscription.planId === planId &&
-              subscription.active &&
-              subscription.subscriber !== "0x0000000000000000000000000000000000000000"
-            ) {
-              console.log("Found subscriber:", subscription.subscriber)
-
-              allSubscribers.push({
-                id: `${subscription.subscriber}-${subscriptionId.toString()}`,
-                address: subscription.subscriber,
-                subscriptionId,
-                planId,
-                startTime: subscription.startTime,
-                lastPaymentTime: subscription.lastPaymentTime,
-                nextPaymentTime: subscription.nextPaymentTime,
-                active: subscription.active,
-              })
-            }
-          } catch (error) {
-            // If we get an error for this ID, just continue to the next one
-            console.log(`Error checking subscription ID ${i}, continuing...`)
-          }
-        }
+        // Add subscriber info
+        allSubscribers.push({
+          id: `${planId}-${subscriptions.subscriber}`,
+          address: subscriptions.subscriber,
+          subscriptionId: planId,
+          planId: subscriptions.planId,
+          planName: plan.metadata || `Plan #${planId.toString()}`,
+          startTime: subscriptions.startTime,
+          lastPaymentTime: subscriptions.lastPaymentTime,
+          nextPaymentTime: subscriptions.nextPaymentTime,
+          active: subscriptions.active
+        })
       }
 
-      console.log("All subscribers found:", allSubscribers)
       setSubscribers(allSubscribers)
+      hasInitialized.current = true
     } catch (error) {
       console.error("Error fetching subscribers:", error)
       toast({
@@ -110,25 +79,24 @@ export default function SubscribersPage() {
     } finally {
       setLoading(false)
     }
-  }, [address, merchantPlans, getPlanDetails, getSubscriptionDetails, toast])
+  }, [address, merchantPlans, getPlanDetails, getSubscriptionDetails])
 
-  // Use a separate effect for the initial fetch
+  // Initial fetch
   useEffect(() => {
-    if (address) {
-      fetchSubscribers()
+    fetchSubscribers()
+  }, [fetchSubscribers])
+
+  // Reset initialization when merchant plans change
+  useEffect(() => {
+    if (merchantPlans) {
+      hasInitialized.current = false
     }
-  }, [address, fetchSubscribers, refreshKey])
+  }, [merchantPlans])
 
   // Memoize filtered subscribers to prevent recalculation on every render
   const filteredSubscribers = useMemo(() => {
     return subscribers.filter((subscriber) => subscriber.address.toLowerCase().includes(search.toLowerCase()))
   }, [subscribers, search])
-
-  // Handle refresh button click
-  const handleRefresh = useCallback(() => {
-    refetchMerchantPlans()
-    setRefreshKey((prev) => prev + 1)
-  }, [refetchMerchantPlans])
 
   if (!address) {
     return (
@@ -171,9 +139,6 @@ export default function SubscribersPage() {
                   className="pl-9"
                 />
               </div>
-              <Button onClick={handleRefresh} variant="outline">
-                Refresh
-              </Button>
             </div>
           </CardHeader>
           <CardContent>
@@ -184,7 +149,7 @@ export default function SubscribersPage() {
                 <div className="grid grid-cols-6 gap-4 p-4 bg-muted/50 text-sm font-medium">
                   <div>Subscriber</div>
                   <div>Subscription ID</div>
-                  <div>Plan ID</div>
+                  <div>Plan Name</div>
                   <div>Start Time</div>
                   <div>Next Payment</div>
                   <div>Status</div>
@@ -196,7 +161,7 @@ export default function SubscribersPage() {
                         {subscriber.address.substring(0, 6)}...{subscriber.address.substring(38)}
                       </div>
                       <div>{subscriber.subscriptionId.toString()}</div>
-                      <div>{subscriber.planId.toString()}</div>
+                      <div className="truncate" title={subscriber.planName}>{subscriber.planName}</div>
                       <div>
                         {subscriber.startTime > 0
                           ? formatDistanceToNow(new Date(Number(subscriber.startTime) * 1000), { addSuffix: true })
