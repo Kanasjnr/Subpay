@@ -1,11 +1,11 @@
 {
   "name": "SubPay",
   "short_name": "SubPay",
-  "description": "A decentralized subscription payment platform",
+  "description": "Decentralized Subscription Payment Platform",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#111827",
-  "theme_color": "#111827",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
   "orientation": "portrait",
   "icons": [
     {
