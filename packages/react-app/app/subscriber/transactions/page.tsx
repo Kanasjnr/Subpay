@@ -29,7 +29,7 @@ export default function TransactionsPage() {
   const { address } = useAccount();
   const [search, setSearch] = useState('');
   const [transactions, setTransactions] = useState<any[]>([]);
-  const { getPaymentHistory } = useSubPay();
+  const { getPaymentHistory, getPlanDetails } = useSubPay();
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const [refreshKey, setRefreshKey] = useState(0);
@@ -85,27 +85,52 @@ export default function TransactionsPage() {
       if (processedHistory.length > 0) {
         // If we have real payment history, use it
         console.log('Raw payment history before formatting:', processedHistory);
-        const formattedTransactions = processedHistory.map((payment, index) => {
+        
+        // Create an array to store all formatted transactions
+        const formattedTransactions = [];
+        
+        for (const [index, payment] of processedHistory.entries()) {
           console.log(`Processing payment ${index}:`, payment);
           console.log(`Payment metadata (transaction hash):`, payment.metadata);
           console.log(`Payment timestamp:`, payment.timestamp);
+          console.log(`Payment subscription ID:`, payment.subscriptionId);
 
           // Convert timestamp to Date object (timestamp is in seconds)
           const date = new Date(Number(payment.timestamp) * 1000);
           console.log(`Formatted date:`, date.toLocaleString());
 
-          return {
+          let planName = 'Subscription Payment';
+          if (payment.subscriptionId) {
+            try {
+              const planDetails = await getPlanDetails(BigInt(payment.subscriptionId));
+              console.log('Plan details:', planDetails);
+              if (planDetails && planDetails.metadata) {
+                planName = planDetails.metadata;
+              }
+            } catch (error) {
+              console.error('Error fetching plan details:', error);
+            }
+          }
+
+          formattedTransactions.push({
             id: index,
-            date: date.toLocaleDateString(),
-            planName: 'Subscription Payment',
-            merchant: payment.token || 'Unknown',
+            date: date.toLocaleString('en-GB', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false
+            }),
+            planName,
+            merchant: payment.merchant || payment.token || 'Unknown',
             amount: payment.amount
               ? safeFormatEther(payment.amount) + ' cUSD'
               : '0 cUSD',
             status: payment.success ? 'Success' : 'Failed',
             txHash: payment.metadata || 'Unknown',
-          };
-        });
+          });
+        }
 
         console.log('Formatted transactions:', formattedTransactions);
         setTransactions(formattedTransactions);
@@ -129,7 +154,7 @@ export default function TransactionsPage() {
     } finally {
       setLoading(false);
     }
-  }, [address, getPaymentHistory, toast]);
+  }, [address, getPaymentHistory, getPlanDetails, toast]);
 
   // Use a separate effect for the initial fetch and refresh
   useEffect(() => {
@@ -251,7 +276,7 @@ export default function TransactionsPage() {
             ) : (
               <div className="rounded-md border">
                 <div className="grid grid-cols-6 gap-4 p-4 bg-muted/50 text-sm font-medium">
-                  <div>Date</div>
+                  <div className="col-span-1">Date & Time</div>
                   <div>Plan</div>
                   <div>Merchant</div>
                   <div>Amount</div>

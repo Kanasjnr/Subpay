@@ -39,6 +39,8 @@ interface PaymentRecord {
   amount: bigint
   token: `0x${string}`
   metadata: string
+  subscriptionId: bigint
+  merchant: `0x${string}`
 }
 
 interface Dispute {
@@ -763,13 +765,15 @@ export function useSubPay(): SubPayHook {
           if (!seenTxHashes.has(txHash)) {
             seenTxHashes.add(txHash)
             const block = await publicClient.getBlock({ blockNumber: event.blockNumber })
-            console.log(`Block ${event.blockNumber} timestamp:`, block.timestamp)
+            console.log('PaymentProcessed event args:', args)
             paymentRecords.push({
               timestamp: block.timestamp,
               success: true,
               amount: args.amount || BigInt(0),
               token: CUSD_ADDRESS as `0x${string}`,
               metadata: txHash,
+              subscriptionId: args.subscriptionId,
+              merchant: args.merchant
             })
           }
         }
@@ -784,13 +788,15 @@ export function useSubPay(): SubPayHook {
           if (!seenTxHashes.has(txHash)) {
             seenTxHashes.add(txHash)
             const block = await publicClient.getBlock({ blockNumber: event.blockNumber })
-            console.log(`Block ${event.blockNumber} timestamp:`, block.timestamp)
+            console.log('PaymentRecorded event args:', args)
             paymentRecords.push({
               timestamp: block.timestamp,
               success: args.success || false,
               amount: args.amount || BigInt(0),
               token: args.token || CUSD_ADDRESS as `0x${string}`,
               metadata: txHash,
+              subscriptionId: args.subscriptionId,
+              merchant: args.merchant
             })
           }
         }
