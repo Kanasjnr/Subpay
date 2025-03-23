@@ -1,47 +1,57 @@
-"use client"
+'use client';
 
-import { motion } from "framer-motion"
-import { cn } from "@/lib/utils"
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface LogoProps {
-  size?: number
-  className?: string
-  animated?: boolean
-  variant?: "default" | "splash" | "header"
-  darkMode?: boolean
+  size?: number;
+  className?: string;
+  animated?: boolean;
+  variant?: 'default' | 'splash' | 'header';
+  darkMode?: boolean;
 }
 
 export default function Logo({
   size = 40,
   className,
   animated = true,
-  variant = "default",
+  variant = 'default',
   darkMode = false,
 }: LogoProps) {
-  const baseColor = darkMode ? "#ffffff" : "#111111"
-  const accentColor = "#35D07F"
-  const glowColor = "rgba(53, 208, 127, 0.6)"
-  const circleSize = size * 0.8
-  const center = size / 2
-  const radius = circleSize / 2
+  const baseColor = darkMode ? '#ffffff' : '#111111';
+  const accentColor = '#35D07F';
+  const glowColor = 'rgba(53, 208, 127, 0.6)';
+  const circleSize = size * 0.8;
+  const center = size / 2;
+  const radius = circleSize / 2;
 
   return (
     <motion.div
-      className={cn("relative", className)}
+      className={cn('relative', className)}
       style={{ width: size, height: size }}
       initial={animated ? { opacity: 0 } : { opacity: 1 }}
       animate={animated ? { opacity: 1 } : { opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
       {/* Hexagon base */}
-      <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 100 100"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
         <motion.path
           d="M50 0L93.3 25V75L50 100L6.7 75V25L50 0Z"
           fill={accentColor}
-          initial={animated ? { scale: 0.8, opacity: 0 } : { scale: 1, opacity: 1 }}
-          animate={animated ? { scale: 1, opacity: 1 } : { scale: 1, opacity: 1 }}
-          transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
-          filter={variant === "splash" ? "url(#glow)" : "none"}
+          initial={
+            animated ? { scale: 0.8, opacity: 0 } : { scale: 1, opacity: 1 }
+          }
+          animate={
+            animated ? { scale: 1, opacity: 1 } : { scale: 1, opacity: 1 }
+          }
+          transition={{ duration: 0.8, type: 'spring', stiffness: 100 }}
+          filter={variant === 'splash' ? 'url(#glow)' : 'none'}
         />
 
         {/* Glowing filter */}
@@ -49,7 +59,13 @@ export default function Logo({
           <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="5" result="blur" />
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor={glowColor} floodOpacity="1" />
+            <feDropShadow
+              dx="0"
+              dy="0"
+              stdDeviation="5"
+              floodColor={glowColor}
+              floodOpacity="1"
+            />
           </filter>
         </defs>
       </svg>
@@ -68,8 +84,16 @@ export default function Logo({
           stroke="white"
           strokeWidth="2"
           fill="none"
-          initial={animated ? { pathLength: 0, opacity: 0 } : { pathLength: 1, opacity: 0.8 }}
-          animate={animated ? { pathLength: 1, opacity: 0.8 } : { pathLength: 1, opacity: 0.8 }}
+          initial={
+            animated
+              ? { pathLength: 0, opacity: 0 }
+              : { pathLength: 1, opacity: 0.8 }
+          }
+          animate={
+            animated
+              ? { pathLength: 1, opacity: 0.8 }
+              : { pathLength: 1, opacity: 0.8 }
+          }
           transition={{ duration: 1.2, delay: 0.3 }}
         />
 
@@ -78,8 +102,16 @@ export default function Logo({
           stroke="white"
           strokeWidth="2"
           fill="none"
-          initial={animated ? { pathLength: 0, opacity: 0 } : { pathLength: 1, opacity: 0.8 }}
-          animate={animated ? { pathLength: 1, opacity: 0.8 } : { pathLength: 1, opacity: 0.8 }}
+          initial={
+            animated
+              ? { pathLength: 0, opacity: 0 }
+              : { pathLength: 1, opacity: 0.8 }
+          }
+          animate={
+            animated
+              ? { pathLength: 1, opacity: 0.8 }
+              : { pathLength: 1, opacity: 0.8 }
+          }
           transition={{ duration: 1, delay: 0.6 }}
         />
 
@@ -94,14 +126,22 @@ export default function Logo({
             stroke="white"
             strokeWidth="2"
             strokeDasharray="3 3"
-            initial={animated ? { pathLength: 0, opacity: 0 } : { pathLength: 1, opacity: 0.6 }}
-            animate={animated ? { pathLength: 1, opacity: 0.6 } : { pathLength: 1, opacity: 0.6 }}
+            initial={
+              animated
+                ? { pathLength: 0, opacity: 0 }
+                : { pathLength: 1, opacity: 0.6 }
+            }
+            animate={
+              animated
+                ? { pathLength: 1, opacity: 0.6 }
+                : { pathLength: 1, opacity: 0.6 }
+            }
             transition={{ duration: 0.8, delay: 0.9 + i * 0.2 }}
           />
         ))}
 
         {/* Animated dots */}
-        {variant === "splash" &&
+        {variant === 'splash' &&
           [...Array(3)].map((_, i) => (
             <motion.circle
               key={`dot-${i}`}
@@ -138,14 +178,22 @@ export default function Logo({
           stroke="white"
           strokeWidth="4"
           strokeLinecap="round"
-          initial={animated ? { pathLength: 0, opacity: 0 } : { pathLength: 1, opacity: 1 }}
-          animate={animated ? { pathLength: 1, opacity: 1 } : { pathLength: 1, opacity: 1 }}
+          initial={
+            animated
+              ? { pathLength: 0, opacity: 0 }
+              : { pathLength: 1, opacity: 1 }
+          }
+          animate={
+            animated
+              ? { pathLength: 1, opacity: 1 }
+              : { pathLength: 1, opacity: 1 }
+          }
           transition={{ duration: 1.5, delay: 0.8 }}
         />
       </svg>
 
       {/* Pulsing rings for splash variant */}
-      {variant === "splash" && (
+      {variant === 'splash' && (
         <svg
           className="absolute inset-0"
           width={size}
@@ -178,7 +226,7 @@ export default function Logo({
       )}
 
       {/* Rotating particles for splash variant */}
-      {variant === "splash" && (
+      {variant === 'splash' && (
         <svg
           className="absolute inset-0"
           width={size}
@@ -213,42 +261,12 @@ export default function Logo({
                 duration: 8,
                 delay: i * 0.5,
                 repeat: Number.POSITIVE_INFINITY,
-                ease: "linear",
+                ease: 'linear',
               }}
             />
           ))}
         </svg>
       )}
-
-      {/* Circle for the "S" symbol */}
-      <motion.circle
-        cx={center}
-        cy={center}
-        r={radius}
-        fill="none"
-        stroke="#35D07F"
-        strokeWidth="2"
-        initial={animated ? { pathLength: 0 } : false}
-        animate={animated ? { pathLength: 1 } : false}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      />
-
-      {/* "S" text */}
-      <motion.text
-        x="50%"
-        y="50%"
-        textAnchor="middle"
-        dominantBaseline="middle"
-        fill="#35D07F"
-        fontSize={size * 0.4}
-        fontWeight="bold"
-        initial={animated ? { opacity: 0, y: 10 } : false}
-        animate={animated ? { opacity: 1, y: 0 } : false}
-        transition={{ duration: 0.3, delay: 0.4 }}
-      >
-        S
-      </motion.text>
     </motion.div>
-  )
+  );
 }
-
