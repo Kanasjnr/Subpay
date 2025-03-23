@@ -754,46 +754,46 @@ export function useSubPay(): SubPayHook {
         const seenTxHashes = new Set<string>()
 
         // Process PaymentProcessed events first (these have the correct token address)
-        processedEvents
-          .filter((event) => {
-            const args = event.args as any
-            return args.subscriber && args.subscriber.toLowerCase() === user.toLowerCase()
-          })
-          .forEach((event) => {
-            const args = event.args as any
-            const txHash = event.transactionHash || "Unknown"
-            if (!seenTxHashes.has(txHash)) {
-              seenTxHashes.add(txHash)
-              paymentRecords.push({
-                timestamp: BigInt(event.blockNumber || 0),
-                success: true,
-                amount: args.amount || BigInt(0),
-                token: CUSD_ADDRESS as `0x${string}`,
-                metadata: txHash,
-              })
-            }
-          })
+        for (const event of processedEvents.filter((event) => {
+          const args = event.args as any
+          return args.subscriber && args.subscriber.toLowerCase() === user.toLowerCase()
+        })) {
+          const args = event.args as any
+          const txHash = event.transactionHash || "Unknown"
+          if (!seenTxHashes.has(txHash)) {
+            seenTxHashes.add(txHash)
+            const block = await publicClient.getBlock({ blockNumber: event.blockNumber })
+            console.log(`Block ${event.blockNumber} timestamp:`, block.timestamp)
+            paymentRecords.push({
+              timestamp: block.timestamp,
+              success: true,
+              amount: args.amount || BigInt(0),
+              token: CUSD_ADDRESS as `0x${string}`,
+              metadata: txHash,
+            })
+          }
+        }
 
         // Process PaymentRecorded events (only if we haven't seen the transaction)
-        recordedEvents
-          .filter((event) => {
-            const args = event.args as any
-            return args.user && args.user.toLowerCase() === user.toLowerCase()
-          })
-          .forEach((event) => {
-            const args = event.args as any
-            const txHash = event.transactionHash || "Unknown"
-            if (!seenTxHashes.has(txHash)) {
-              seenTxHashes.add(txHash)
-              paymentRecords.push({
-                timestamp: BigInt(event.blockNumber || 0),
-                success: args.success || false,
-                amount: args.amount || BigInt(0),
-                token: args.token || CUSD_ADDRESS as `0x${string}`,
-                metadata: txHash,
-              })
-            }
-          })
+        for (const event of recordedEvents.filter((event) => {
+          const args = event.args as any
+          return args.user && args.user.toLowerCase() === user.toLowerCase()
+        })) {
+          const args = event.args as any
+          const txHash = event.transactionHash || "Unknown"
+          if (!seenTxHashes.has(txHash)) {
+            seenTxHashes.add(txHash)
+            const block = await publicClient.getBlock({ blockNumber: event.blockNumber })
+            console.log(`Block ${event.blockNumber} timestamp:`, block.timestamp)
+            paymentRecords.push({
+              timestamp: block.timestamp,
+              success: args.success || false,
+              amount: args.amount || BigInt(0),
+              token: args.token || CUSD_ADDRESS as `0x${string}`,
+              metadata: txHash,
+            })
+          }
+        }
 
         // If we found events, sort and return them
         if (paymentRecords.length > 0) {
