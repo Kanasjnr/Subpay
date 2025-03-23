@@ -312,7 +312,7 @@ export function useSubPay(): SubPayHook {
     frequency: number,
     trialPeriod: number,
     metadata: string,
-  ) => {
+  ): Promise<`0x${string}` | undefined> => {
     if (!address || !publicClient) {
       toast({
         title: "Error",
@@ -323,22 +323,36 @@ export function useSubPay(): SubPayHook {
     }
 
     try {
+      console.log("Creating plan with params:", {
+        paymentToken,
+        amount,
+        frequency,
+        trialPeriod,
+        metadata,
+      })
+
       const { request } = await publicClient.simulateContract({
-        abi: SUBPAY_ABI,
         address: SUBPAY_ADDRESS as `0x${string}`,
+        abi: SUBPAY_ABI,
         functionName: "createPlan",
-        args: [paymentToken, parseEther(amount), BigInt(frequency), BigInt(trialPeriod), metadata],
+        args: [
+          paymentToken,
+          parseEther(amount),
+          BigInt(frequency),
+          BigInt(trialPeriod),
+          metadata,
+        ],
         account: address,
       })
 
-      await createPlanWrite(request)
+      const hash = await createPlanWrite(request)
       await refetchMerchantPlans()
-      return SUBPAY_ADDRESS
+      return hash
     } catch (error) {
       console.error("Error creating plan:", error)
       toast({
         title: "Error",
-        description: "Failed to create plan",
+        description: error instanceof Error ? error.message : "Failed to create plan",
         variant: "destructive",
       })
     }
