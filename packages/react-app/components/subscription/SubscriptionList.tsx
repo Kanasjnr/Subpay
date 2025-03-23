@@ -27,6 +27,13 @@ export function SubscriptionList({ type = "subscriber", onOpenDispute }: Subscri
   const [mounted, setMounted] = useState(false)
   const [hasInitialized, setHasInitialized] = useState(false)
 
+  // Add subscription stats
+  const subscriptionStats = {
+    active: subscriptions.filter(sub => sub?.status === 0).length,
+    canceled: subscriptions.filter(sub => sub?.status === 1).length,
+    total: subscriptions.length
+  }
+
   // Helper function to safely format ether values
   const safeFormatEther = (value: bigint | undefined) => {
     if (value === undefined) {
@@ -100,7 +107,8 @@ export function SubscriptionList({ type = "subscriber", onOpenDispute }: Subscri
                 lastPaymentTime: subscription.lastPaymentTime,
                 nextPaymentTime: subscription.nextPaymentTime,
                 amount: plan.amount,
-                status: subscription.active ? 0 : 1, // 0 = Active, 1 = Cancelled
+                status: !subscription.active ? 1 : 0, // Fix status logic: 0 = Active, 1 = Cancelled
+                planName: plan.metadata || `Plan #${subscription.planId.toString()}`,
               }
             } catch (err) {
               console.error(`Error fetching subscription ${id.toString()}:`, err)
@@ -210,13 +218,25 @@ export function SubscriptionList({ type = "subscriber", onOpenDispute }: Subscri
             className="pl-9"
           />
         </div>
+        {type === "subscriber" && (
+          <div className="flex gap-4">
+            <div className="text-sm">
+              <span className="text-muted-foreground">Active: </span>
+              <span className="font-medium text-green-500">{subscriptionStats.active}</span>
+            </div>
+            <div className="text-sm">
+              <span className="text-muted-foreground">Canceled: </span>
+              <span className="font-medium text-red-500">{subscriptionStats.canceled}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {filteredSubscriptions.map((subscription) => (
           <Card key={subscription.id ? subscription.id.toString() : "unknown"}>
             <CardHeader>
-              <CardTitle>Subscription #{subscription.id ? subscription.id.toString() : "Unknown"}</CardTitle>
+              <CardTitle>{subscription.planName}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">

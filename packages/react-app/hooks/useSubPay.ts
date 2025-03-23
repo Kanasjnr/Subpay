@@ -1,6 +1,8 @@
 "use client"
 
-import { useContractWrite, useContractRead, useAccount, useBalance, usePublicClient, useConfig } from "wagmi"
+import { useWriteContract, useContractRead, useAccount, useBalance, usePublicClient, useConfig } from "wagmi"
+import { type UseWriteContractParameters, type UseReadContractParameters } from "wagmi"
+import { type UseWriteContractReturnType, type UseReadContractReturnType } from "wagmi"
 import { parseEther } from "viem"
 import { SUBPAY_ABI } from "@/constants/abi"
 import { SUBPAY_ADDRESS } from "@/constants/addresses"
@@ -114,6 +116,7 @@ interface SubPayHook {
   submitEvidence: (disputeId: bigint, evidence: string) => Promise<`0x${string}` | undefined>
   cancelDispute: (disputeId: bigint) => Promise<`0x${string}` | undefined>
   getDispute: (disputeId: bigint) => Promise<Dispute | undefined>
+  resolveSubscriptionDispute: (disputeId: bigint, resolution: number, refundAmount: string, notes: string) => Promise<`0x${string}` | undefined>
 
   // Read data
   merchantPlans: readonly bigint[] | undefined
@@ -137,6 +140,24 @@ interface SubPayHook {
   isSubmittingEvidence: boolean
   isCancellingDispute: boolean
   isApproving: boolean
+  isResolvingDispute: boolean
+  isArbitrator: boolean
+  dispute: [
+    bigint,                // id
+    string,                // subscriber
+    string,                // merchant
+    string,                // arbitrator
+    bigint,                // subscriptionId
+    bigint,                // refundAmount
+    bigint,                // createdAt
+    bigint,                // resolvedAt
+    number,                // resolutionType
+    string,                // resolutionNotes
+    string,                // reason
+    string,                // evidence
+    number,                // status
+    number                 // resolution
+  ] | null
 }
 
 export function useSubPay(): SubPayHook {
@@ -161,127 +182,122 @@ export function useSubPay(): SubPayHook {
     writeContract: createPlanWrite,
     isPending: isCreatingPlan,
     data: createPlanData,
-  } = useContractWrite({
-    abi: SUBPAY_ABI,
-    address: SUBPAY_ADDRESS as `0x${string}`,
-    functionName: "createPlan",
-  })
+  } = useWriteContract()
 
   const {
     writeContract: updatePlanWrite,
     isPending: isUpdatingPlan,
     data: updatePlanData,
-  } = useContractWrite({
-    abi: SUBPAY_ABI,
-    address: SUBPAY_ADDRESS as `0x${string}`,
-    functionName: "updatePlan",
-  })
+  } = useWriteContract()
 
   const {
     writeContract: subscribeWrite,
     isPending: isSubscribing,
     data: subscribeData,
-  } = useContractWrite({
-    abi: SUBPAY_ABI,
-    address: SUBPAY_ADDRESS as `0x${string}`,
-    functionName: "subscribe",
-  })
+  } = useWriteContract()
 
   // Create a separate useContractWrite hook for token approval
   const {
     writeContract: approveTokenWrite,
     isPending: isApproving,
     data: approveData,
-  } = useContractWrite({
-    // We'll set these dynamically when calling the function
-    abi: [
-      {
-        name: "approve",
-        type: "function",
-        stateMutability: "nonpayable",
-        inputs: [
-          { name: "spender", type: "address" },
-          { name: "amount", type: "uint256" },
-        ],
-        outputs: [{ name: "", type: "bool" }],
-      },
-    ],
-    functionName: "approve",
-  })
+  } = useWriteContract()
 
   const {
     writeContract: cancelSubscriptionWrite,
     isPending: isCancelling,
     data: cancelData,
-  } = useContractWrite({
-    abi: SUBPAY_ABI,
-    address: SUBPAY_ADDRESS as `0x${string}`,
-    functionName: "cancelSubscription",
-  })
+  } = useWriteContract()
 
   const {
     writeContract: processDuePaymentsWrite,
     isPending: isProcessingPayments,
     data: processDuePaymentsData,
-  } = useContractWrite({
-    abi: SUBPAY_ABI,
-    address: SUBPAY_ADDRESS as `0x${string}`,
-    functionName: "processDuePayments",
-  })
+  } = useWriteContract()
 
   const {
     writeContract: openDisputeWrite,
     isPending: isOpeningDispute,
     data: openDisputeData,
-  } = useContractWrite({
-    abi: SUBPAY_ABI,
-    address: SUBPAY_ADDRESS as `0x${string}`,
-    functionName: "openDispute",
-  })
+  } = useWriteContract()
 
   const {
     writeContract: submitEvidenceWrite,
     isPending: isSubmittingEvidence,
     data: submitEvidenceData,
-  } = useContractWrite({
-    abi: SUBPAY_ABI,
-    address: SUBPAY_ADDRESS as `0x${string}`,
-    functionName: "submitEvidence",
-  })
+  } = useWriteContract()
 
   const {
     writeContract: cancelDisputeWrite,
     isPending: isCancellingDispute,
     data: cancelDisputeData,
-  } = useContractWrite({
-    abi: SUBPAY_ABI,
-    address: SUBPAY_ADDRESS as `0x${string}`,
-    functionName: "cancelDispute",
+  } = useWriteContract()
+
+  const {
+    writeContract: resolveDisputeWrite,
+    isPending: isResolvingDispute,
+    data: resolveDisputeData,
+  } = useWriteContract({
+    mutation: {
+      onSuccess: () => {
+        toast({
+          title: "Success",
+          description: "Dispute resolved successfully",
+        })
+      },
+      onError: (error) => {
+        console.error("Error resolving dispute:", error)
+        toast({
+          title: "Error",
+          description: "Failed to resolve dispute",
+          variant: "destructive",
+        })
+      },
+    },
   })
 
   // Get merchant plans
-  const { data: merchantPlans, refetch: refetchMerchantPlans } = useContractRead({
+  const merchantPlansRead = useContractRead({
     abi: SUBPAY_ABI,
-    address: SUBPAY_ADDRESS as `0x${string}`,
-    functionName: "getMerchantPlans",
+    address: SUBPAY_ADDRESS,
+    functionName: 'getMerchantPlans',
     args: address ? [address] : undefined,
-    query: {
-      enabled: !!address,
-      select: (data: any) => data as readonly bigint[],
-    },
+    account: address,
   })
 
   // Get subscriber subscriptions
-  const { data: subscriberSubscriptions, refetch: refetchSubscriptions } = useContractRead({
+  const subscriberSubscriptionsRead = useContractRead({
     abi: SUBPAY_ABI,
-    address: SUBPAY_ADDRESS as `0x${string}`,
-    functionName: "getSubscriberSubscriptions",
+    address: SUBPAY_ADDRESS,
+    functionName: 'getSubscriberSubscriptions',
     args: address ? [address] : undefined,
-    query: {
-      enabled: !!address,
-      select: (data: any) => data as readonly bigint[],
-    },
+    account: address,
   })
+
+  // Get isArbitrator
+  const isArbitratorRead = useContractRead({
+    abi: SUBPAY_ABI,
+    address: SUBPAY_ADDRESS,
+    functionName: 'arbitrators',
+    args: address ? [address] : undefined,
+    account: address,
+  })
+
+  // Get current dispute
+  const currentDisputeRead = useContractRead({
+    abi: SUBPAY_ABI,
+    address: SUBPAY_ADDRESS,
+    functionName: 'disputes',
+    args: address ? [0n] : undefined,
+    account: address,
+  })
+
+  const merchantPlans = merchantPlansRead.data
+  const subscriberSubscriptions = subscriberSubscriptionsRead.data
+  const isArbitrator = isArbitratorRead.data
+  const currentDispute = currentDisputeRead.data
+  const refetchMerchantPlans = merchantPlansRead.refetch
+  const refetchSubscriptions = subscriberSubscriptionsRead.refetch
 
   // Create plan wrapper function
   const createPlan = async (
@@ -309,20 +325,9 @@ export function useSubPay(): SubPayHook {
         account: address,
       })
 
-      const result = await createPlanWrite(request)
-
-      if (result) {
-        const hash = result
-        await publicClient.waitForTransactionReceipt({ hash })
-        await refetchMerchantPlans()
-
-        toast({
-          title: "Success",
-          description: "Plan created successfully",
-        })
-
-        return hash
-      }
+      await createPlanWrite(request)
+      await refetchMerchantPlans()
+      return SUBPAY_ADDRESS
     } catch (error) {
       console.error("Error creating plan:", error)
       toast({
@@ -353,20 +358,9 @@ export function useSubPay(): SubPayHook {
         account: address,
       })
 
-      const result = await updatePlanWrite(request)
-
-      if (result) {
-        const hash = result
-        await publicClient.waitForTransactionReceipt({ hash })
-        await refetchMerchantPlans()
-
-        toast({
-          title: "Success",
-          description: "Plan updated successfully",
-        })
-
-        return hash
-      }
+      await updatePlanWrite(request)
+      await refetchMerchantPlans()
+      return SUBPAY_ADDRESS
     } catch (error) {
       console.error("Error updating plan:", error)
       toast({
@@ -377,7 +371,7 @@ export function useSubPay(): SubPayHook {
     }
   }
 
-  // Updated subscribe function with fixes for token approval and CUSD deduction
+  // Subscribe wrapper function
   const subscribe = async (planId: bigint) => {
     if (!address || !publicClient) {
       toast({
@@ -389,140 +383,6 @@ export function useSubPay(): SubPayHook {
     }
 
     try {
-      // First, get the plan details to know how much to approve
-      const plan = await getPlanDetails(planId)
-      if (!plan) {
-        toast({
-          title: "Error",
-          description: "Plan not found",
-          variant: "destructive",
-        })
-        return
-      }
-
-      console.log("Plan details:", plan)
-      console.log("Plan amount:", plan.amount.toString())
-      console.log("Payment token:", plan.paymentToken)
-
-      // Verify we're using the correct token (CUSD)
-      if (plan.paymentToken.toLowerCase() !== CUSD_ADDRESS.toLowerCase()) {
-        console.warn("Warning: Plan is not using CUSD token. Token address:", plan.paymentToken)
-      }
-
-      // Check current allowance
-      const allowance = (await publicClient.readContract({
-        address: plan.paymentToken,
-        abi: [
-          {
-            name: "allowance",
-            type: "function",
-            stateMutability: "view",
-            inputs: [
-              { name: "owner", type: "address" },
-              { name: "spender", type: "address" },
-            ],
-            outputs: [{ name: "", type: "uint256" }],
-          },
-        ],
-        functionName: "allowance",
-        args: [address, SUBPAY_ADDRESS],
-      })) as bigint
-
-      console.log("Current allowance:", allowance.toString())
-      console.log("Required amount:", plan.amount.toString())
-
-      // If allowance is less than the plan amount, request approval
-      if (allowance < plan.amount) {
-        toast({
-          title: "Approval Required",
-          description: `Please approve ${plan.paymentToken === CUSD_ADDRESS ? "CUSD" : "token"} spending before subscribing`,
-        })
-
-        // Request approval for the exact amount needed plus some buffer (2x)
-        // This ensures we approve enough but not excessively
-        const approvalAmount = plan.amount * BigInt(2)
-
-        console.log("Approving amount:", approvalAmount.toString())
-        console.log("Token address:", plan.paymentToken)
-        console.log("SUBPAY_ADDRESS:", SUBPAY_ADDRESS)
-
-        // Request approval
-        const { request: approveRequest } = await publicClient.simulateContract({
-          address: plan.paymentToken,
-          abi: [
-            {
-              name: "approve",
-              type: "function",
-              stateMutability: "nonpayable",
-              inputs: [
-                { name: "spender", type: "address" },
-                { name: "amount", type: "uint256" },
-              ],
-              outputs: [{ name: "", type: "bool" }],
-            },
-          ],
-          functionName: "approve",
-          args: [SUBPAY_ADDRESS, approvalAmount],
-          account: address,
-        })
-
-        // Use the approveTokenWrite hook with the token address
-        const approveHash = await approveTokenWrite({
-          ...approveRequest,
-          address: plan.paymentToken,
-        })
-
-        if (!approveHash) {
-          toast({
-            title: "Error",
-            description: "Failed to approve token spending",
-            variant: "destructive",
-          })
-          return
-        }
-
-        const approveReceipt = await publicClient.waitForTransactionReceipt({ hash: approveHash })
-        console.log("Approval transaction receipt:", approveReceipt)
-
-        // Verify the new allowance after approval
-        const newAllowance = (await publicClient.readContract({
-          address: plan.paymentToken,
-          abi: [
-            {
-              name: "allowance",
-              type: "function",
-              stateMutability: "view",
-              inputs: [
-                { name: "owner", type: "address" },
-                { name: "spender", type: "address" },
-              ],
-              outputs: [{ name: "", type: "uint256" }],
-            },
-          ],
-          functionName: "allowance",
-          args: [address, SUBPAY_ADDRESS],
-        })) as bigint
-
-        console.log("New allowance after approval:", newAllowance.toString())
-
-        if (newAllowance < plan.amount) {
-          toast({
-            title: "Error",
-            description: "Approval was not successful. Please try again.",
-            variant: "destructive",
-          })
-          return
-        }
-
-        toast({
-          title: "Success",
-          description: "Token spending approved",
-        })
-      }
-
-      // Now proceed with the subscription
-      console.log("Proceeding with subscription to plan ID:", planId.toString())
-
       const { request } = await publicClient.simulateContract({
         abi: SUBPAY_ABI,
         address: SUBPAY_ADDRESS as `0x${string}`,
@@ -531,30 +391,14 @@ export function useSubPay(): SubPayHook {
         account: address,
       })
 
-      const result = await subscribeWrite(request)
-
-      if (result) {
-        const hash = result
-        const receipt = await publicClient.waitForTransactionReceipt({ hash })
-        console.log("Subscription transaction receipt:", receipt)
-
-        await refetchSubscriptions()
-
-        // Also refetch merchant plans to update the business side
-        await refetchMerchantPlans()
-
-        toast({
-          title: "Success",
-          description: "Subscribed successfully",
-        })
-
-        return hash
-      }
+      await subscribeWrite(request)
+      await refetchSubscriptions()
+      return SUBPAY_ADDRESS
     } catch (error) {
       console.error("Error subscribing:", error)
       toast({
         title: "Error",
-        description: "Failed to subscribe: " + (error instanceof Error ? error.message : String(error)),
+        description: "Failed to subscribe",
         variant: "destructive",
       })
     }
@@ -580,22 +424,9 @@ export function useSubPay(): SubPayHook {
         account: address,
       })
 
-      const result = await cancelSubscriptionWrite(request)
-
-      if (result) {
-        const hash = result
-        await publicClient.waitForTransactionReceipt({ hash })
-        await refetchSubscriptions()
-        // Also refetch merchant plans to update the business side
-        await refetchMerchantPlans()
-
-        toast({
-          title: "Success",
-          description: "Subscription cancelled successfully",
-        })
-
-        return hash
-      }
+      await cancelSubscriptionWrite(request)
+      await refetchSubscriptions()
+      return SUBPAY_ADDRESS
     } catch (error) {
       console.error("Error cancelling subscription:", error)
       toast({
@@ -626,29 +457,13 @@ export function useSubPay(): SubPayHook {
         account: address,
       })
 
-      const result = await processDuePaymentsWrite(request)
-
-      if (result) {
-        const hash = result
-        const receipt = await publicClient.waitForTransactionReceipt({ hash })
-        console.log("Process payments transaction receipt:", receipt)
-
-        // Refetch data to update UI
-        await refetchSubscriptions()
-        await refetchMerchantPlans()
-
-        toast({
-          title: "Success",
-          description: "Payments processed successfully",
-        })
-
-        return hash
-      }
+      await processDuePaymentsWrite(request)
+      return SUBPAY_ADDRESS
     } catch (error) {
       console.error("Error processing payments:", error)
       toast({
         title: "Error",
-        description: "Failed to process payments: " + (error instanceof Error ? error.message : String(error)),
+        description: "Failed to process payments",
         variant: "destructive",
       })
     }
@@ -674,19 +489,8 @@ export function useSubPay(): SubPayHook {
         account: address,
       })
 
-      const result = await openDisputeWrite(request)
-
-      if (result) {
-        const hash = result
-        await publicClient.waitForTransactionReceipt({ hash })
-
-        toast({
-          title: "Success",
-          description: "Dispute opened successfully",
-        })
-
-        return hash
-      }
+      await openDisputeWrite(request)
+      return SUBPAY_ADDRESS
     } catch (error) {
       console.error("Error opening dispute:", error)
       toast({
@@ -717,19 +521,8 @@ export function useSubPay(): SubPayHook {
         account: address,
       })
 
-      const result = await submitEvidenceWrite(request)
-
-      if (result) {
-        const hash = result
-        await publicClient.waitForTransactionReceipt({ hash })
-
-        toast({
-          title: "Success",
-          description: "Evidence submitted successfully",
-        })
-
-        return hash
-      }
+      await submitEvidenceWrite(request)
+      return SUBPAY_ADDRESS
     } catch (error) {
       console.error("Error submitting evidence:", error)
       toast({
@@ -760,19 +553,8 @@ export function useSubPay(): SubPayHook {
         account: address,
       })
 
-      const result = await cancelDisputeWrite(request)
-
-      if (result) {
-        const hash = result
-        await publicClient.waitForTransactionReceipt({ hash })
-
-        toast({
-          title: "Success",
-          description: "Dispute cancelled successfully",
-        })
-
-        return hash
-      }
+      await cancelDisputeWrite(request)
+      return SUBPAY_ADDRESS
     } catch (error) {
       console.error("Error cancelling dispute:", error)
       toast({
@@ -1099,6 +881,49 @@ export function useSubPay(): SubPayHook {
     }
   }
 
+  // Resolve dispute function
+  const resolveSubscriptionDispute = async (
+    disputeId: bigint,
+    resolution: number,
+    refundAmount: string,
+    notes: string
+  ): Promise<`0x${string}` | undefined> => {
+    if (!address || !publicClient) {
+      toast({
+        title: "Error",
+        description: "Please connect your wallet first",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      const { request } = await publicClient.simulateContract({
+        abi: SUBPAY_ABI,
+        address: SUBPAY_ADDRESS as `0x${string}`,
+        functionName: "resolveDispute",
+        args: [disputeId, resolution, parseEther(refundAmount), notes],
+        account: address,
+      })
+
+      await resolveDisputeWrite(request)
+
+      toast({
+        title: "Success",
+        description: "Dispute resolved successfully",
+      })
+
+      return SUBPAY_ADDRESS
+    } catch (error) {
+      console.error("Error resolving dispute:", error)
+      toast({
+        title: "Error",
+        description: "Failed to resolve dispute",
+        variant: "destructive",
+      })
+    }
+  }
+
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -1133,6 +958,7 @@ export function useSubPay(): SubPayHook {
     submitEvidence,
     cancelDispute,
     getDispute,
+    resolveSubscriptionDispute,
 
     // Read data
     merchantPlans,
@@ -1156,6 +982,26 @@ export function useSubPay(): SubPayHook {
     isSubmittingEvidence,
     isCancellingDispute,
     isApproving,
+    isResolvingDispute,
+    isArbitrator: isArbitrator || false,
+    dispute: currentDispute ? 
+      [
+        currentDispute[0],                // id
+        currentDispute[1] as string,      // subscriber
+        currentDispute[2] as string,      // merchant
+        currentDispute[3] as string,      // arbitrator
+        currentDispute[4],                // subscriptionId
+        currentDispute[5],                // refundAmount
+        currentDispute[6],                // createdAt
+        BigInt(currentDispute[7]),        // resolvedAt
+        Number(currentDispute[8]),        // resolutionType
+        currentDispute[9] as string,      // resolutionNotes
+        currentDispute[10] as string,     // reason
+        currentDispute[11] as string,     // evidence
+        Number(currentDispute[12]),       // status
+        Number(currentDispute[13]),       // resolution
+      ] as [bigint, string, string, string, bigint, bigint, bigint, bigint, number, string, string, string, number, number]
+      : null,
   }
 }
 
