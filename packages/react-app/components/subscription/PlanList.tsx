@@ -59,15 +59,23 @@ export function PlanList({ type }: PlanListProps) {
         let planIds: bigint[] = []
 
         if (type === "business") {
-          planIds = Array.from(merchantPlans || [])
+          if (!merchantPlans) {
+            setPlans([])
+            setLoading(false)
+            return
+          }
+          planIds = Array.from(merchantPlans)
         } else {
           // For subscribers, get all available plans
           console.log("Fetching all available plans for subscribers")
           const allPlans = await getAllPlans(20) // Limit to 20 plans for performance
-          planIds = Array.from(allPlans || [])
+          if (!allPlans) {
+            setPlans([])
+            setLoading(false)
+            return
+          }
+          planIds = Array.from(allPlans)
         }
-
-        console.log("Plan IDs:", planIds)
 
         // Only proceed if we have valid plan IDs
         if (!isBigIntArray(planIds) || planIds.length === 0) {
@@ -81,14 +89,8 @@ export function PlanList({ type }: PlanListProps) {
         const details = await Promise.all(
           planIds.map(async (id) => {
             try {
-              console.log("Fetching details for plan ID:", id.toString())
               const plan = await getPlanDetails(id)
-              console.log("Plan details for ID", id.toString(), ":", plan)
-
-              if (!plan) {
-                console.log("No plan found for ID:", id.toString())
-                return null
-              }
+              if (!plan) return null
 
               return {
                 id,
@@ -108,7 +110,6 @@ export function PlanList({ type }: PlanListProps) {
         )
 
         const validPlans = details.filter((plan): plan is any => plan !== null)
-        console.log("Valid plans:", validPlans)
         setPlans(validPlans)
         hasInitialized.current = true
       } catch (error) {
@@ -124,15 +125,17 @@ export function PlanList({ type }: PlanListProps) {
       }
     }
 
-    // Add a small delay to prevent immediate execution
-    const timeoutId = setTimeout(fetchPlans, 0)
-    return () => clearTimeout(timeoutId)
+    fetchPlans()
   }, [address, type, merchantPlans, getPlanDetails, getAllPlans, toast])
 
   // Reset initialization when dependencies change
   useEffect(() => {
-    hasInitialized.current = false
-  }, [type, address])
+    if (type === "business" && merchantPlans) {
+      hasInitialized.current = false
+    } else if (type === "subscriber") {
+      hasInitialized.current = false
+    }
+  }, [type, merchantPlans])
 
   if (!address) {
     return <Empty title="Connect Wallet" message="Please connect your wallet to view plans" />
