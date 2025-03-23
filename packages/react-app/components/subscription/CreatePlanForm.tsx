@@ -4,14 +4,25 @@ import type React from "react"
 
 import { useState } from "react"
 import { useSubPay } from "@/hooks/useSubPay"
+import { useAccount } from "wagmi"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
+import { Loader2 } from "lucide-react"
 
 interface CreatePlanFormProps {
   onSuccess?: () => void
+}
+
+// Use the CUSD_ADDRESS from environment variables
+const CUSD_ADDRESS = process.env.NEXT_PUBLIC_CUSD_ADDRESS as `0x${string}`
+
+if (!CUSD_ADDRESS) {
+  throw new Error('CUSD_ADDRESS not found in environment variables')
 }
 
 export function CreatePlanForm({ onSuccess }: CreatePlanFormProps) {
@@ -28,9 +39,6 @@ export function CreatePlanForm({ onSuccess }: CreatePlanFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      // Use the CUSD token address as default payment token
-      const CUSD_ADDRESS = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1" as `0x${string}`
-
       await createPlan(
         CUSD_ADDRESS,
         formData.amount,

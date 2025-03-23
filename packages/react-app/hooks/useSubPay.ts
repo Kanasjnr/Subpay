@@ -10,8 +10,12 @@ import { useToast } from "@/hooks/use-toast"
 import { useState, useEffect } from "react"
 
 // Token addresses on Celo
-const CUSD_ADDRESS = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1"
-const CEUR_ADDRESS = "0x10c892A6EC43a53E45D0B916B4b7D383B1b78C0F"
+const CUSD_ADDRESS = process.env.NEXT_PUBLIC_CUSD_ADDRESS as `0x${string}`
+const CEUR_ADDRESS = process.env.NEXT_PUBLIC_CEUR_ADDRESS as `0x${string}`
+
+if (!CUSD_ADDRESS || !CEUR_ADDRESS) {
+  throw new Error('Token addresses not found in environment variables')
+}
 
 // Define types for contract structures
 interface SubscriptionPlan {
@@ -568,11 +572,14 @@ export function useSubPay(): SubPayHook {
   }
 
   // Get plan details by ID
-  const getPlanDetails = async (planId: bigint): Promise<SubscriptionPlan | undefined> => {
+  const getPlanDetails = async (planId: bigint, skipLogging = false): Promise<SubscriptionPlan | undefined> => {
     if (!publicClient) return undefined
 
     try {
-      console.log("Fetching plan details for ID:", planId.toString())
+      if (!skipLogging) {
+        console.log("Fetching plan details for ID:", planId.toString())
+      }
+
       const result = await publicClient.readContract({
         address: SUBPAY_ADDRESS as `0x${string}`,
         abi: SUBPAY_ABI,
@@ -580,11 +587,13 @@ export function useSubPay(): SubPayHook {
         args: [planId],
       })
 
-      console.log("Plan details for ID", planId.toString(), ":", result)
+      if (!skipLogging) {
+        console.log("Plan details for ID", planId.toString(), ":", result)
+      }
 
       // Map the array response to an object
       if (Array.isArray(result) && result.length >= 7) {
-        return {
+        const plan = {
           merchant: result[0] as `0x${string}`,
           paymentToken: result[1] as `0x${string}`,
           amount: result[2] as bigint,
@@ -593,6 +602,13 @@ export function useSubPay(): SubPayHook {
           active: result[5] as boolean,
           metadata: result[6] as string,
         }
+
+        // Return undefined for invalid plans
+        if (plan.merchant === "0x0000000000000000000000000000000000000000") {
+          return undefined
+        }
+
+        return plan
       }
 
       return undefined
@@ -602,36 +618,35 @@ export function useSubPay(): SubPayHook {
     }
   }
 
-  // Add a function to get all available plans for subscribers by checking plan IDs sequentially
-  const getAllPlans = async (limit = 100): Promise<bigint[] | undefined> => {
+  // Get all available plans
+  const getAllPlans = async (limit: number): Promise<bigint[] | undefined> => {
     if (!publicClient) return undefined
 
     try {
       console.log("Getting all available plans with limit:", limit)
-
-      // We'll try to find plans by checking IDs sequentially
       const plans: bigint[] = []
 
-      // Start from ID 1 and check each plan
+      // Start from ID 1 and check each plan sequentially
       for (let i = 1; i <= limit; i++) {
         try {
           const planId = BigInt(i)
-          const plan = await getPlanDetails(planId)
+          const plan = await getPlanDetails(planId, true) // Pass true to skip logging
 
-          // If plan exists and is active, add it to the list
-          if (plan && plan.active) {
+          // If plan exists, is active, and has a valid merchant, add it to the list
+          if (plan && 
+              plan.active && 
+              plan.merchant !== "0x0000000000000000000000000000000000000000") {
             plans.push(planId)
           }
         } catch (error) {
           // If we get an error for this ID, just continue to the next one
-          console.log(`No plan found for ID ${i}, continuing...`)
+          continue
         }
       }
 
-      console.log("Found plans:", plans)
       return plans
     } catch (error) {
-      console.error("Error getting all plans:", error)
+      console.error("Error fetching all plans:", error)
       return undefined
     }
   }

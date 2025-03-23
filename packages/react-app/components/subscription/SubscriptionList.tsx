@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useSubPay } from "@/hooks/useSubPay"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -25,7 +25,7 @@ export function SubscriptionList({ type = "subscriber", onOpenDispute }: Subscri
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState("")
   const [mounted, setMounted] = useState(false)
-  const [hasInitialized, setHasInitialized] = useState(false)
+  const hasInitializedRef = useRef(false)
 
   // Add subscription stats
   const subscriptionStats = {
@@ -56,47 +56,28 @@ export function SubscriptionList({ type = "subscriber", onOpenDispute }: Subscri
 
   // Update the getSubscriptionDetails function to properly map the array response to an object
   useEffect(() => {
-    if (!mounted) return
+    if (!mounted || !address || !subscriberSubscriptions || hasInitializedRef.current) {
+      return
+    }
 
     const fetchData = async () => {
-      if (!address || !subscriberSubscriptions || hasInitialized) {
-        return
-      }
-
-      console.log("Fetching subscriptions for address:", address)
-      console.log("Subscriber subscriptions:", subscriberSubscriptions)
-
       try {
         setLoading(true)
 
         if (!Array.isArray(subscriberSubscriptions) || subscriberSubscriptions.length === 0) {
-          console.log("No subscriptions found, setting empty array")
           setSubscriptions([])
-          setLoading(false)
           return
         }
 
         const subscriptionDetails = await Promise.all(
           subscriberSubscriptions.map(async (id: bigint) => {
             try {
-              console.log("Fetching details for subscription ID:", id.toString())
               const subscription = await getSubscriptionDetails(id)
-              console.log("Subscription details for ID", id.toString(), ":", subscription)
-
-              if (!subscription) {
-                console.log("No subscription found for ID:", id.toString())
-                return null
-              }
+              if (!subscription) return null
 
               // Get plan details to get the amount
-              console.log("Fetching plan details for plan ID:", subscription.planId.toString())
               const plan = await getPlanDetails(subscription.planId)
-              console.log("Plan details for subscription", id.toString(), ":", plan)
-
-              if (!plan) {
-                console.log("No plan found for subscription ID:", id.toString())
-                return null
-              }
+              if (!plan) return null
 
               return {
                 id,
@@ -118,9 +99,8 @@ export function SubscriptionList({ type = "subscriber", onOpenDispute }: Subscri
         )
 
         const validSubscriptions = subscriptionDetails.filter((sub): sub is any => sub !== null)
-        console.log("Valid subscriptions:", validSubscriptions)
         setSubscriptions(validSubscriptions)
-        setHasInitialized(true)
+        hasInitializedRef.current = true
       } catch (err) {
         console.error("Error fetching subscriptions:", err)
         toast({
@@ -133,9 +113,15 @@ export function SubscriptionList({ type = "subscriber", onOpenDispute }: Subscri
       }
     }
 
-    const timeoutId = setTimeout(fetchData, 0)
-    return () => clearTimeout(timeoutId)
-  }, [mounted, address, subscriberSubscriptions, getSubscriptionDetails, getPlanDetails, toast, hasInitialized])
+    fetchData()
+  }, [mounted, address, subscriberSubscriptions])
+
+  // Reset initialization when subscriptions change
+  useEffect(() => {
+    if (subscriberSubscriptions && subscriberSubscriptions.length === 0) {
+      hasInitializedRef.current = false
+    }
+  }, [subscriberSubscriptions])
 
   const getStatusText = (status: number) => {
     switch (status) {
