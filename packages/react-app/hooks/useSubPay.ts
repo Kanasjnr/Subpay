@@ -128,7 +128,7 @@ interface SubPayHook {
   merchantPlans: readonly bigint[] | undefined
   subscriberSubscriptions: readonly bigint[] | undefined
   getDueSubscriptions: (limit: number) => Promise<bigint[] | undefined>
-  getPlanDetails: (planId: bigint) => Promise<SubscriptionPlan | undefined>
+  getPlanDetails: (planId: bigint, skipLogging?: boolean) => Promise<SubscriptionPlan | undefined>
   getSubscriptionDetails: (subscriptionId: bigint) => Promise<Subscription | undefined>
   getAllPlans: (limit?: number) => Promise<bigint[] | undefined>
 
@@ -619,7 +619,7 @@ export function useSubPay(): SubPayHook {
   }
 
   // Get all available plans
-  const getAllPlans = async (limit: number): Promise<bigint[] | undefined> => {
+  const getAllPlans = async (limit = 20): Promise<bigint[] | undefined> => {
     if (!publicClient) return undefined
 
     try {
