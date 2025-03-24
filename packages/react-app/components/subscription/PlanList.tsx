@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -13,6 +13,17 @@ import { Loading } from "@/components/ui/loading"
 import { Empty } from "@/components/ui/empty"
 import { useToast } from "@/hooks/use-toast"
 
+interface Plan {
+  id: bigint
+  merchant: `0x${string}`
+  paymentToken: `0x${string}`
+  amount: bigint
+  frequency: bigint
+  trialPeriod: bigint
+  active: boolean
+  metadata: string
+}
+
 interface PlanListProps {
   type: "business" | "subscriber"
 }
@@ -20,11 +31,19 @@ interface PlanListProps {
 export function PlanList({ type }: PlanListProps) {
   const [search, setSearch] = useState("")
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [plans, setPlans] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [plans, setPlans] = useState<Plan[]>([])
+  const [loading, setLoading] = useState(false)
   const { address } = useAccount()
   const { toast } = useToast()
   const { merchantPlans, getPlanDetails, subscribe, isSubscribing, refetchMerchantPlans, getAllPlans } = useSubPay()
+
+  // Store the type in a ref to avoid dependency changes
+  const typeRef = useRef(type)
+  typeRef.current = type
+
+  // Store the functions in refs to maintain stable references
+  const functionsRef = useRef({ getAllPlans, getPlanDetails, merchantPlans })
+  functionsRef.current = { getAllPlans, getPlanDetails, merchantPlans }
 
   // Helper function to check if value is a bigint array
   const isBigIntArray = (value: unknown): value is bigint[] => {
@@ -45,88 +64,57 @@ export function PlanList({ type }: PlanListProps) {
     }
   }
 
-  // Effect for fetching plan details
+  // Effect for fetching plans
   useEffect(() => {
-    let mounted = true
+    let isMounted = true
 
     const fetchPlans = async () => {
-      if (!address) {
-        setLoading(false)
-        return
-      }
-
+      if (!address) return
+      
       try {
         setLoading(true)
-        let planIds: bigint[] = []
-
-        if (type === "business") {
-          if (!merchantPlans) {
-            if (mounted) {
-              setPlans([])
-              setLoading(false)
-            }
-            return
-          }
-          planIds = Array.from(merchantPlans)
-        } else {
-          const allPlans = await getAllPlans(20)
-          if (!allPlans || !mounted) {
-            if (mounted) {
-              setPlans([])
-              setLoading(false)
-            }
-            return
-          }
-          planIds = allPlans // Already filtered for valid plans
-        }
-
-        if (!isBigIntArray(planIds) || planIds.length === 0) {
-          if (mounted) {
+        const { getAllPlans, getPlanDetails, merchantPlans } = functionsRef.current
+        const planIds = typeRef.current === "business" ? merchantPlans : await getAllPlans()
+        
+        if (!planIds || planIds.length === 0) {
+          if (isMounted) {
             setPlans([])
             setLoading(false)
           }
           return
         }
 
-        const details = await Promise.all(
-          planIds.map(async (id) => {
-            try {
-              const plan = await getPlanDetails(id)
-              if (!plan) return null
+        const planDetailsPromises = planIds.map(async (planId) => {
+          try {
+            const plan = await getPlanDetails(planId)
+            if (!plan) return null
+            return {
+              ...plan,
+              id: planId
+            } as Plan
+          } catch (error) {
+            console.error(`Error fetching details for plan ${planId}:`, error)
+            return null
+          }
+        })
 
-              return {
-                id,
-                merchant: plan.merchant,
-                paymentToken: plan.paymentToken,
-                amount: plan.amount,
-                frequency: plan.frequency,
-                trialPeriod: plan.trialPeriod,
-                active: plan.active,
-                metadata: plan.metadata || `Plan #${id.toString()}`,
-              }
-            } catch (err) {
-              console.error(`Error fetching plan ${id.toString()}:`, err)
-              return null
-            }
-          }),
-        )
+        const planDetails = await Promise.all(planDetailsPromises)
+        if (!isMounted) return
 
-        if (mounted) {
-          const validPlans = details.filter((plan): plan is any => plan !== null)
-          setPlans(validPlans)
-        }
+        const validPlans = planDetails.filter((plan): plan is Plan => plan !== null)
+        setPlans(validPlans)
       } catch (error) {
-        console.error("Error fetching plans:", error)
-        if (mounted) {
+        console.error('Error fetching plans:', error)
+        if (isMounted) {
           toast({
             title: "Error",
-            description: "Failed to fetch plans. Please try again later.",
+            description: "Failed to fetch plans",
             variant: "destructive",
           })
           setPlans([])
         }
       } finally {
-        if (mounted) {
+        if (isMounted) {
           setLoading(false)
         }
       }
@@ -135,9 +123,9 @@ export function PlanList({ type }: PlanListProps) {
     fetchPlans()
 
     return () => {
-      mounted = false
+      isMounted = false
     }
-  }, [address, type, merchantPlans])
+  }, [address, toast]) // Minimal dependencies
 
   if (!address) {
     return <Empty title="Connect Wallet" message="Please connect your wallet to view plans" />
@@ -205,7 +193,7 @@ export function PlanList({ type }: PlanListProps) {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filteredPlans.map((plan) => (
-          <Card key={plan.id ? plan.id.toString() : "unknown"} className="hover:border-primary transition-colors">
+          <Card key={plan.id.toString()} className="hover:border-primary transition-colors">
             <CardHeader>
               <CardTitle>{plan.metadata || (plan.id ? `Plan #${plan.id.toString()}` : "Unknown Plan")}</CardTitle>
             </CardHeader>

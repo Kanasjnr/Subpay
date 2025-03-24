@@ -188,7 +188,17 @@ export function useSubPay(): SubPayHook {
     writeContract: createPlanWrite,
     isPending: isCreatingPlan,
     data: createPlanData,
-  } = useWriteContract()
+  } = useWriteContract({
+    mutation: {
+      onSuccess: (hash) => {
+        console.log('Transaction hash:', hash)
+        toast({
+          title: "Success",
+          description: "Plan created successfully",
+        })
+      },
+    },
+  })
 
   const {
     writeContract: updatePlanWrite,
@@ -345,9 +355,11 @@ export function useSubPay(): SubPayHook {
         account: address,
       })
 
-      const hash = await createPlanWrite(request)
+      await createPlanWrite(request)
       await refetchMerchantPlans()
-      return hash
+      
+      // Return the SUBPAY_ADDRESS as a fallback since we can't get the hash synchronously
+      return SUBPAY_ADDRESS
     } catch (error) {
       console.error("Error creating plan:", error)
       toast({
@@ -403,6 +415,62 @@ export function useSubPay(): SubPayHook {
     }
 
     try {
+      // First get the plan details to know how many tokens to approve
+      const plan = await getPlanDetails(planId)
+      if (!plan) {
+        throw new Error('Plan not found')
+      }
+
+      // Check current allowance
+      const tokenContract = {
+        address: plan.paymentToken,
+        abi: [{
+          name: 'allowance',
+          type: 'function',
+          stateMutability: 'view',
+          inputs: [
+            { name: 'owner', type: 'address' },
+            { name: 'spender', type: 'address' }
+          ],
+          outputs: [{ type: 'uint256' }]
+        }]
+      } as const
+
+      const currentAllowance = await publicClient.readContract({
+        ...tokenContract,
+        functionName: 'allowance',
+        args: [address, SUBPAY_ADDRESS]
+      })
+
+      // If allowance is insufficient, request approval
+      if (currentAllowance < plan.amount) {
+        const { request: approveRequest } = await publicClient.simulateContract({
+          address: plan.paymentToken,
+          abi: [{
+            name: 'approve',
+            type: 'function',
+            stateMutability: 'nonpayable',
+            inputs: [
+              { name: 'spender', type: 'address' },
+              { name: 'amount', type: 'uint256' }
+            ],
+            outputs: [{ type: 'bool' }]
+          }],
+          functionName: 'approve',
+          args: [SUBPAY_ADDRESS, plan.amount],
+          account: address,
+        })
+
+        await approveTokenWrite(approveRequest)
+        
+        // Wait for approval to be confirmed
+        toast({
+          title: "Approval Pending",
+          description: "Please approve token spending in your wallet",
+        })
+      }
+
+      // Now proceed with subscription
       const { request } = await publicClient.simulateContract({
         abi: SUBPAY_ABI,
         address: SUBPAY_ADDRESS as `0x${string}`,
@@ -418,7 +486,7 @@ export function useSubPay(): SubPayHook {
       console.error("Error subscribing:", error)
       toast({
         title: "Error",
-        description: "Failed to subscribe",
+        description: error instanceof Error ? error.message : "Failed to subscribe",
         variant: "destructive",
       })
     }
@@ -639,6 +707,7 @@ export function useSubPay(): SubPayHook {
     try {
       console.log("Getting all available plans with limit:", limit)
       const plans: bigint[] = []
+      let foundAny = false
 
       // Start from ID 1 and check each plan sequentially
       for (let i = 1; i <= limit; i++) {
@@ -646,16 +715,34 @@ export function useSubPay(): SubPayHook {
           const planId = BigInt(i)
           const plan = await getPlanDetails(planId, true) // Pass true to skip logging
 
-          // If plan exists, is active, and has a valid merchant, add it to the list
-          if (plan && 
-              plan.active && 
-              plan.merchant !== "0x0000000000000000000000000000000000000000") {
-            plans.push(planId)
+          if (plan) {
+            foundAny = true
+            // If plan exists, is active, and has a valid merchant, add it to the list
+            if (plan.active && 
+                plan.merchant !== "0x0000000000000000000000000000000000000000") {
+              console.log(`Found valid plan ${i}:`, {
+                merchant: plan.merchant,
+                amount: plan.amount.toString(),
+                active: plan.active
+              })
+              plans.push(planId)
+            } else {
+              console.log(`Found inactive/invalid plan ${i}:`, {
+                merchant: plan.merchant,
+                active: plan.active
+              })
+            }
           }
         } catch (error) {
-          // If we get an error for this ID, just continue to the next one
+          console.log(`No plan found at ID ${i}`)
           continue
         }
+      }
+
+      if (!foundAny) {
+        console.log("No plans found in the first", limit, "IDs")
+      } else {
+        console.log(`Found ${plans.length} valid plans out of ${limit} checked`)
       }
 
       return plans
