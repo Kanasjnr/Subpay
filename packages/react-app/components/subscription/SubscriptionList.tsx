@@ -270,4 +270,3 @@ export function SubscriptionList({ type = "subscriber", onOpenDispute }: Subscri
     </div>
   )
 }
-
