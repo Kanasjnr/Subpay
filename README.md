@@ -1,4 +1,4 @@
-Thought for 3 seconds### SubPay: A DeFi-Based Subscription Payment Protocol
+### SubPay: A DeFi-Based Subscription Payment Protocol
 
 ## 📑 Project Description
 
