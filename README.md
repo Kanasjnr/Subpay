@@ -87,6 +87,16 @@ The current Web3 ecosystem lacks efficient subscription payment solutions due to
 ### **1️⃣ Core Protocol Layer**
 
 - **Subpay Contract** – Performs all core functions.
+  
+- **Subpay Contract Addresses :** 0x1D0CB90Feb6eb94AeCC3aCBF9C958D3409916831
+- **Subpay Contract Addresses :** 0x089D37C1Ca872221E37487c1F2D006907561B1fd
+
+ - **View on alfajores scan:** (https://celo-alfajores.blockscout.com/address/0x1D0CB90Feb6eb94AeCC3aCBF9C958D3409916831)
+ - **View on alfajores scan:** (https://celo-alfajores.blockscout.com/address/0x089D37C1Ca872221E37487c1F2D006907561B1fd)
+
+
+ 
+
 
 
 ### **2️⃣ AI Analytics Layer**
