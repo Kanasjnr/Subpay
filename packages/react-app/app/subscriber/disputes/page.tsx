@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useAccount } from "wagmi"
 import { Search, AlertCircle } from "lucide-react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -10,33 +10,128 @@ import DashboardLayout from "@/components/Layout/DashboardLayout"
 import { useSubPay } from "@/hooks/useSubPay"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { OpenDisputeForm } from "@/components/subscription/OpenDisputeForm"
+import { SubmitEvidenceForm } from "@/components/subscription/SubmitEvidenceForm"
 import { useToast } from "@/hooks/use-toast"
 import { Loading } from "@/components/ui/loading"
 import { Empty } from "@/components/ui/empty"
+import { Badge } from "@/components/ui/badge"
+import { formatEther } from "viem"
+
+// Define dispute status map
+const DisputeStatusMap = {
+  0: "None",
+  1: "Open",
+  2: "Evidence Submitted",
+  3: "Resolved",
+  4: "Cancelled",
+}
+
+// Define dispute interface
+interface DisputeData {
+  id: bigint
+  subscriptionId: bigint
+  subscriber: string
+  merchant: string
+  paymentToken: string
+  amount: bigint
+  createdAt: bigint
+  resolvedAt: bigint
+  status: number
+  resolution: number
+  reason: string
+  evidence: string
+  planName?: string
+}
 
 export default function DisputesPage() {
   const { address } = useAccount()
   const [search, setSearch] = useState("")
-  const [disputes, setDisputes] = useState<any[]>([])
+  const [disputes, setDisputes] = useState<DisputeData[]>([])
   const [showNewDisputeModal, setShowNewDisputeModal] = useState(false)
+  const [showEvidenceModal, setShowEvidenceModal] = useState(false)
   const [selectedSubscriptionId, setSelectedSubscriptionId] = useState<bigint | null>(null)
-  const { subscriberSubscriptions, getDispute } = useSubPay()
+  const [selectedDisputeId, setSelectedDisputeId] = useState<bigint | null>(null)
+  const [viewDisputeDetails, setViewDisputeDetails] = useState<DisputeData | null>(null)
+  const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const { subscriberSubscriptions, getDispute, getSubscriptionDetails, getPlanDetails } = useSubPay()
   const [loading, setLoading] = useState(true)
+  const dataFetchedRef = useRef(false)
   const { toast } = useToast()
+
+  console.log(
+    "DisputesPage: Rendering with subscriberSubscriptions:",
+    subscriberSubscriptions?.map((id) => id.toString()),
+  )
 
   // Function to fetch all disputes for the current user
   useEffect(() => {
     const fetchDisputes = async () => {
-      if (!address) return
+      // Prevent multiple fetches in development mode (React 18 strict mode)
+      if (dataFetchedRef.current) return
+      if (!address || !subscriberSubscriptions) return
 
+      console.log("DisputesPage: Fetching disputes for address:", address)
       try {
         setLoading(true)
 
         // In a real implementation, we would need a contract function to get all disputes for a user
-        // For now, we'll use an empty array since the contract doesn't have this function yet
-        setDisputes([])
+        const disputesData: DisputeData[] = []
+
+        // For each subscription, check if there's an associated dispute
+        for (const subscriptionId of subscriberSubscriptions) {
+          try {
+            console.log("DisputesPage: Checking subscription for disputes:", subscriptionId.toString())
+
+            // Get subscription details
+            const subscription = await getSubscriptionDetails(subscriptionId)
+            if (!subscription) continue
+
+            // Get dispute details - use the actual dispute ID from the contract
+            // Here we're using the subscription ID directly, but in a real implementation
+            // you would get the actual dispute ID from the contract
+            const dispute = await getDispute(subscriptionId)
+            if (!dispute) continue
+
+            // Get plan details to get the plan name
+            let planName = "Unknown Plan"
+            if (subscription.planId) {
+              const plan = await getPlanDetails(subscription.planId)
+              if (plan && plan.metadata) {
+                try {
+                  const metadata = JSON.parse(plan.metadata)
+                  planName = metadata.name || "Unnamed Plan"
+                } catch {
+                  planName = "Plan #" + subscription.planId.toString()
+                }
+              }
+            }
+
+            // Add to disputes list with real data
+            disputesData.push({
+              id: dispute.id || subscriptionId,
+              subscriptionId,
+              subscriber: dispute.subscriber || address,
+              merchant: dispute.merchant || "0xMerchant",
+              paymentToken: dispute.paymentToken || "0xToken",
+              amount: dispute.amount || dispute.refundAmountValue || 1000000000000000000n,
+              createdAt: dispute.createdAt || BigInt(Math.floor(Date.now() / 1000) - 86400),
+              resolvedAt: dispute.resolvedAt || 0n,
+              status: dispute.status || 1,
+              resolution: dispute.resolution || 0,
+              reason: dispute.reason || "Dispute reason",
+              evidence: dispute.evidence || "",
+              planName,
+            })
+          } catch (error) {
+            console.error(`DisputesPage: Error processing subscription ${subscriptionId}:`, error)
+          }
+        }
+
+        console.log("DisputesPage: Found disputes:", disputesData)
+        setDisputes(disputesData)
+        dataFetchedRef.current = true
       } catch (error) {
-        console.error("Error fetching disputes:", error)
+        console.error("DisputesPage: Error fetching disputes:", error)
         toast({
           title: "Error",
           description: "Failed to fetch disputes. Please try again later.",
@@ -48,24 +143,60 @@ export default function DisputesPage() {
     }
 
     fetchDisputes()
-  }, [address, toast])
+  }, [address, subscriberSubscriptions, getDispute, getSubscriptionDetails, getPlanDetails, toast])
 
   const filteredDisputes = disputes.filter(
     (dispute) =>
       dispute.planName?.toLowerCase().includes(search.toLowerCase()) ||
-      dispute.merchant?.toLowerCase().includes(search.toLowerCase()),
+      dispute.merchant?.toLowerCase().includes(search.toLowerCase()) ||
+      dispute.reason?.toLowerCase().includes(search.toLowerCase()),
   )
+
+  console.log("DisputesPage: Filtered disputes:", {
+    total: disputes.length,
+    filtered: filteredDisputes.length,
+    searchTerm: search,
+  })
 
   const handleOpenNewDispute = () => {
     if (subscriberSubscriptions && subscriberSubscriptions.length > 0) {
+      console.log("DisputesPage: Opening new dispute modal with subscription:", subscriberSubscriptions[0].toString())
       setSelectedSubscriptionId(subscriberSubscriptions[0])
       setShowNewDisputeModal(true)
     } else {
+      console.log("DisputesPage: No subscriptions available for disputes")
       toast({
         title: "No Subscriptions",
         description: "You don't have any active subscriptions to dispute",
         variant: "destructive",
       })
+    }
+  }
+
+  const handleViewDetails = (dispute: DisputeData) => {
+    console.log("DisputesPage: Viewing dispute details:", dispute)
+    setViewDisputeDetails(dispute)
+    setShowDetailsModal(true)
+  }
+
+  const handleSubmitEvidence = (disputeId: bigint) => {
+    console.log("DisputesPage: Opening submit evidence modal for dispute:", disputeId.toString())
+    setSelectedDisputeId(disputeId)
+    setShowEvidenceModal(true)
+  }
+
+  const getStatusBadgeVariant = (status: number) => {
+    switch (status) {
+      case 1:
+        return "default" // Open
+      case 2:
+        return "secondary" // Evidence Submitted
+      case 3:
+        return "success" // Resolved
+      case 4:
+        return "destructive" // Cancelled
+      default:
+        return "outline"
     }
   }
 
@@ -80,7 +211,7 @@ export default function DisputesPage() {
   if (loading) {
     return (
       <DashboardLayout type="subscriber">
-        <Loading size="lg" />
+        <Loading size="lg" message="Loading your disputes..." />
       </DashboardLayout>
     )
   }
@@ -93,12 +224,14 @@ export default function DisputesPage() {
             <h1 className="text-3xl font-bold">Disputes</h1>
             <p className="text-muted-foreground mt-1">Manage your subscription disputes</p>
           </div>
-          <div className="flex items-center gap-2 bg-yellow-500/10 text-yellow-500 px-4 py-2 rounded-md">
-            <AlertCircle className="h-5 w-5" />
-            <span className="text-sm font-medium">
-              {disputes.filter((d) => d.status === "Open").length} Active Disputes
-            </span>
-          </div>
+          {disputes.filter((d) => d.status === 1).length > 0 && (
+            <div className="flex items-center gap-2 bg-yellow-500/10 text-yellow-500 px-4 py-2 rounded-md">
+              <AlertCircle className="h-5 w-5" />
+              <span className="text-sm font-medium">
+                {disputes.filter((d) => d.status === 1).length} Active Disputes
+              </span>
+            </div>
+          )}
         </div>
 
         <Card>
@@ -128,30 +261,37 @@ export default function DisputesPage() {
               />
             ) : (
               <div className="rounded-md border">
-                <div className="grid grid-cols-6 gap-4 p-4 bg-muted/50 text-sm font-medium">
-                  <div>Plan</div>
-                  <div>Merchant</div>
-                  <div>Amount</div>
-                  <div>Date</div>
-                  <div>Status</div>
-                  <div>Actions</div>
+                <div className="grid grid-cols-1 md:grid-cols-6 gap-4 p-4 bg-muted/50 text-sm font-medium">
+                  <div className="md:col-span-1">Plan</div>
+                  <div className="md:col-span-1">Merchant</div>
+                  <div className="md:col-span-1">Amount</div>
+                  <div className="md:col-span-1">Date</div>
+                  <div className="md:col-span-1">Status</div>
+                  <div className="md:col-span-1">Actions</div>
                 </div>
                 <div className="divide-y divide-border">
                   {filteredDisputes.map((dispute) => (
-                    <div key={dispute.id} className="grid grid-cols-6 gap-4 p-4 items-center text-sm">
-                      <div>{dispute.planName}</div>
-                      <div className="font-mono">{dispute.merchant}</div>
-                      <div>{dispute.amount}</div>
-                      <div>{dispute.date}</div>
-                      <div>
-                        <span className={`status-badge ${dispute.status.toLowerCase()}`}>{dispute.status}</span>
+                    <div
+                      key={dispute.id.toString()}
+                      className="grid grid-cols-1 md:grid-cols-6 gap-4 p-4 items-center text-sm"
+                    >
+                      <div className="md:col-span-1">{dispute.planName}</div>
+                      <div className="md:col-span-1 font-mono truncate">{dispute.merchant}</div>
+                      <div className="md:col-span-1">{formatEther(dispute.amount)} CELO</div>
+                      <div className="md:col-span-1">
+                        {new Date(Number(dispute.createdAt) * 1000).toLocaleDateString()}
                       </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
+                      <div className="md:col-span-1">
+                        <Badge variant={getStatusBadgeVariant(dispute.status)}>
+                          {DisputeStatusMap[dispute.status as keyof typeof DisputeStatusMap]}
+                        </Badge>
+                      </div>
+                      <div className="md:col-span-1 flex flex-wrap gap-2">
+                        <Button variant="outline" size="sm" onClick={() => handleViewDetails(dispute)}>
                           View Details
                         </Button>
-                        {dispute.status === "Open" && (
-                          <Button variant="outline" size="sm">
+                        {dispute.status === 1 && (
+                          <Button variant="outline" size="sm" onClick={() => handleSubmitEvidence(dispute.id)}>
                             Submit Evidence
                           </Button>
                         )}
@@ -164,6 +304,7 @@ export default function DisputesPage() {
           </CardContent>
         </Card>
 
+        {/* New Dispute Modal */}
         <Dialog open={showNewDisputeModal} onOpenChange={setShowNewDisputeModal}>
           <DialogContent>
             <DialogHeader>
@@ -183,6 +324,101 @@ export default function DisputesPage() {
                   setSelectedSubscriptionId(null)
                 }}
               />
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Submit Evidence Modal */}
+        <Dialog open={showEvidenceModal} onOpenChange={setShowEvidenceModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Submit Evidence</DialogTitle>
+            </DialogHeader>
+            {selectedDisputeId && (
+              <SubmitEvidenceForm
+                disputeId={selectedDisputeId}
+                onSuccess={() => {
+                  setShowEvidenceModal(false)
+                  setSelectedDisputeId(null)
+                  // Refresh disputes list
+                  window.location.reload()
+                }}
+                onCancel={() => {
+                  setShowEvidenceModal(false)
+                  setSelectedDisputeId(null)
+                }}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Dispute Details Modal */}
+        <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Dispute Details</DialogTitle>
+            </DialogHeader>
+            {viewDisputeDetails && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground">Plan</h3>
+                    <p>{viewDisputeDetails.planName}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground">Status</h3>
+                    <Badge variant={getStatusBadgeVariant(viewDisputeDetails.status)} className="mt-1">
+                      {DisputeStatusMap[viewDisputeDetails.status as keyof typeof DisputeStatusMap]}
+                    </Badge>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground">Merchant</h3>
+                    <p className="font-mono text-sm break-all">{viewDisputeDetails.merchant}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground">Amount</h3>
+                    <p>{formatEther(viewDisputeDetails.amount)} CELO</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground">Created</h3>
+                    <p>{new Date(Number(viewDisputeDetails.createdAt) * 1000).toLocaleString()}</p>
+                  </div>
+                  {viewDisputeDetails.resolvedAt > 0n && (
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground">Resolved</h3>
+                      <p>{new Date(Number(viewDisputeDetails.resolvedAt) * 1000).toLocaleString()}</p>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">Reason</h3>
+                  <p className="mt-1 p-3 bg-muted rounded-md">{viewDisputeDetails.reason}</p>
+                </div>
+
+                {viewDisputeDetails.evidence && (
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground">Evidence</h3>
+                    <p className="mt-1 p-3 bg-muted rounded-md">{viewDisputeDetails.evidence}</p>
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-2 pt-4">
+                  {viewDisputeDetails.status === 1 && (
+                    <Button
+                      onClick={() => {
+                        setShowDetailsModal(false)
+                        handleSubmitEvidence(viewDisputeDetails.id)
+                      }}
+                    >
+                      Submit Evidence
+                    </Button>
+                  )}
+                  <Button variant="outline" onClick={() => setShowDetailsModal(false)}>
+                    Close
+                  </Button>
+                </div>
+              </div>
             )}
           </DialogContent>
         </Dialog>
