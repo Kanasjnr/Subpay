@@ -1,14 +1,14 @@
 "use client"
 
 import type React from "react"
-
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useSubPay } from "@/hooks/useSubPay"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
+import { Loader2 } from "lucide-react"
 
 interface SubmitEvidenceFormProps {
   disputeId: bigint
@@ -22,18 +22,23 @@ export function SubmitEvidenceForm({ disputeId, onSuccess, onCancel }: SubmitEvi
   const [evidence, setEvidence] = useState("")
   const [loading, setLoading] = useState(false)
   const [dispute, setDispute] = useState<any>(null)
+  const dataFetchedRef = useRef(false)
 
   // Fetch dispute details when the component mounts
   useEffect(() => {
     const fetchDispute = async () => {
-      console.log("Fetching dispute details for ID:", disputeId.toString())
+      // Prevent multiple fetches
+      if (dataFetchedRef.current) return
+
+      console.log("SubmitEvidenceForm: Fetching dispute details for ID:", disputeId.toString())
       try {
         setLoading(true)
         const disputeData = await getDispute(disputeId)
-        console.log("Dispute data:", disputeData)
+        console.log("SubmitEvidenceForm: Dispute data received:", disputeData)
         setDispute(disputeData)
+        dataFetchedRef.current = true
       } catch (error) {
-        console.error("Error fetching dispute:", error)
+        console.error("SubmitEvidenceForm: Error fetching dispute:", error)
         toast({
           title: "Error",
           description: "Failed to fetch dispute details",
@@ -47,10 +52,13 @@ export function SubmitEvidenceForm({ disputeId, onSuccess, onCancel }: SubmitEvi
     fetchDispute()
   }, [disputeId, getDispute, toast])
 
+  // Add console log to handleSubmit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log("SubmitEvidenceForm: Form submitted with evidence:", evidence)
 
     if (!evidence) {
+      console.log("SubmitEvidenceForm: Missing evidence")
       toast({
         title: "Error",
         description: "Please provide evidence for your dispute",
@@ -60,18 +68,20 @@ export function SubmitEvidenceForm({ disputeId, onSuccess, onCancel }: SubmitEvi
     }
 
     try {
-      console.log("Submitting evidence for dispute ID:", disputeId.toString())
-      console.log("Evidence:", evidence)
-      await submitEvidence(disputeId, evidence)
+      console.log("SubmitEvidenceForm: Submitting evidence for dispute ID:", disputeId.toString())
+      const result = await submitEvidence(disputeId, evidence)
+      console.log("SubmitEvidenceForm: Evidence submission result:", result)
 
-      toast({
-        title: "Success",
-        description: "Evidence submitted successfully",
-      })
+      if (result) {
+        toast({
+          title: "Success",
+          description: "Evidence submitted successfully",
+        })
 
-      onSuccess?.()
+        onSuccess?.()
+      }
     } catch (error) {
-      console.error("Error submitting evidence:", error)
+      console.error("SubmitEvidenceForm: Error submitting evidence:", error)
       toast({
         title: "Error",
         description: "Failed to submit evidence",
@@ -82,17 +92,25 @@ export function SubmitEvidenceForm({ disputeId, onSuccess, onCancel }: SubmitEvi
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading dispute details...</p>
-        </div>
-      </div>
+      <Card>
+        <CardContent className="flex items-center justify-center py-8">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+            <p className="mt-4 text-muted-foreground">Loading dispute details...</p>
+          </div>
+        </CardContent>
+      </Card>
     )
   }
 
   if (!dispute) {
-    return <div className="text-center py-8">Dispute not found or could not be loaded.</div>
+    return (
+      <Card>
+        <CardContent className="py-8">
+          <div className="text-center text-muted-foreground">Dispute not found or could not be loaded.</div>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (

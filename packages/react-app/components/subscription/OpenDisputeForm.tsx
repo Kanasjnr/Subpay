@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useSubPay } from "@/hooks/useSubPay"
 import { Button } from "@/components/ui/button"
@@ -35,8 +34,10 @@ export function OpenDisputeForm({ subscriptionId, onSuccess, onCancel }: OpenDis
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log("OpenDisputeForm: Form submitted", { subscriptionId: subscriptionId.toString(), formData })
 
     if (!formData.reason) {
+      console.log("OpenDisputeForm: Missing reason")
       toast({
         title: "Error",
         description: "Please select a reason for the dispute",
@@ -45,20 +46,34 @@ export function OpenDisputeForm({ subscriptionId, onSuccess, onCancel }: OpenDis
       return
     }
 
+    if (!formData.description) {
+      console.log("OpenDisputeForm: Missing description")
+      toast({
+        title: "Error",
+        description: "Please provide details about your dispute",
+        variant: "destructive",
+      })
+      return
+    }
+
     try {
       // Combine reason and description for the dispute reason
-      const fullReason = formData.description ? `${formData.reason}: ${formData.description}` : formData.reason
+      const fullReason = `${formData.reason}: ${formData.description}`
+      console.log("OpenDisputeForm: Opening dispute with reason:", fullReason)
 
-      await openDispute(subscriptionId, fullReason)
+      const result = await openDispute(subscriptionId, fullReason)
+      console.log("OpenDisputeForm: Dispute opened result:", result)
 
-      toast({
-        title: "Success",
-        description: "Dispute opened successfully",
-      })
+      if (result) {
+        toast({
+          title: "Success",
+          description: "Dispute opened successfully",
+        })
 
-      onSuccess?.()
+        onSuccess?.()
+      }
     } catch (error) {
-      console.error("Error opening dispute:", error)
+      console.error("OpenDisputeForm: Error opening dispute:", error)
       toast({
         title: "Error",
         description: "Failed to open dispute",
@@ -80,7 +95,7 @@ export function OpenDisputeForm({ subscriptionId, onSuccess, onCancel }: OpenDis
               value={formData.reason}
               onValueChange={(value) => setFormData((prev) => ({ ...prev, reason: value }))}
             >
-              <SelectTrigger>
+              <SelectTrigger id="reason">
                 <SelectValue placeholder="Select a reason" />
               </SelectTrigger>
               <SelectContent>
