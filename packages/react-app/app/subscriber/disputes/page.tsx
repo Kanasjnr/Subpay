@@ -16,6 +16,7 @@ import { Loading } from "@/components/ui/loading"
 import { Empty } from "@/components/ui/empty"
 import { Badge } from "@/components/ui/badge"
 import { formatEther } from "viem"
+import Image from "next/image"
 
 // Define dispute status map
 const DisputeStatusMap = {
@@ -41,6 +42,10 @@ interface DisputeData {
   reason: string
   evidence: string
   planName?: string
+  evidenceData?: {
+    text: string
+    images: string[]
+  }
 }
 
 export default function DisputesPage() {
@@ -53,6 +58,8 @@ export default function DisputesPage() {
   const [selectedDisputeId, setSelectedDisputeId] = useState<bigint | null>(null)
   const [viewDisputeDetails, setViewDisputeDetails] = useState<DisputeData | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [showImageModal, setShowImageModal] = useState(false)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const { subscriberSubscriptions, getDispute, getSubscriptionDetails, getPlanDetails } = useSubPay()
   const [loading, setLoading] = useState(true)
   const dataFetchedRef = useRef(false)
@@ -119,6 +126,19 @@ export default function DisputesPage() {
               }
             }
 
+            // Parse evidence data if it exists and is in JSON format
+            let evidenceData
+            if (dispute.evidence) {
+              try {
+                evidenceData = JSON.parse(dispute.evidence)
+                console.log("DisputesPage: Parsed evidence data:", evidenceData)
+              } catch (e) {
+                // If not valid JSON, treat as plain text
+                console.log("DisputesPage: Evidence is not JSON format, treating as plain text")
+                evidenceData = { text: dispute.evidence, images: [] }
+              }
+            }
+
             // Add to disputes list with real data
             disputesData.push({
               id: dispute.id || subscriptionId,
@@ -134,6 +154,7 @@ export default function DisputesPage() {
               reason: dispute.reason || "Dispute reason",
               evidence: dispute.evidence || "",
               planName,
+              evidenceData,
             })
           } catch (error) {
             console.error(`DisputesPage: Error processing subscription ${subscriptionId}:`, error)
@@ -198,6 +219,11 @@ export default function DisputesPage() {
     setShowEvidenceModal(true)
   }
 
+  const handleViewImage = (imageUrl: string) => {
+    setSelectedImage(imageUrl)
+    setShowImageModal(true)
+  }
+
   const getStatusBadgeVariant = (status: number) => {
     switch (status) {
       case 1:
@@ -211,6 +237,10 @@ export default function DisputesPage() {
       default:
         return "outline"
     }
+  }
+
+  const hasEvidenceImages = (dispute: DisputeData) => {
+    return dispute.evidenceData?.images && dispute.evidenceData.images.length > 0
   }
 
   if (!address) {
@@ -409,12 +439,49 @@ export default function DisputesPage() {
                   <p className="mt-1 p-3 bg-muted rounded-md">{viewDisputeDetails.reason}</p>
                 </div>
 
-                {viewDisputeDetails.evidence && (
+                {/* Display evidence text and images if available */}
+                {viewDisputeDetails.evidenceData ? (
+                  <>
+                    {viewDisputeDetails.evidenceData.text && (
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground">Evidence Text</h3>
+                        <p className="mt-1 p-3 bg-muted rounded-md whitespace-pre-wrap">
+                          {viewDisputeDetails.evidenceData.text}
+                        </p>
+                      </div>
+                    )}
+
+                    {viewDisputeDetails.evidenceData.images && viewDisputeDetails.evidenceData.images.length > 0 && (
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground">
+                          Evidence Images ({viewDisputeDetails.evidenceData.images.length})
+                        </h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+                          {viewDisputeDetails.evidenceData.images.map((imageUrl, index) => (
+                            <div
+                              key={index}
+                              className="aspect-square rounded-md overflow-hidden border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
+                              onClick={() => handleViewImage(imageUrl)}
+                            >
+                              <Image
+                                src={imageUrl || "/placeholder.svg"}
+                                alt={`Evidence ${index + 1}`}
+                                width={200}
+                                height={200}
+                                className="object-cover w-full h-full"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : viewDisputeDetails.evidence ? (
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">Evidence</h3>
-                    <p className="mt-1 p-3 bg-muted rounded-md">{viewDisputeDetails.evidence}</p>
+                    <p className="mt-1 p-3 bg-muted rounded-md whitespace-pre-wrap">{viewDisputeDetails.evidence}</p>
                   </div>
-                )}
+                ) : null}
 
                 <div className="flex justify-end gap-2 pt-4">
                   {viewDisputeDetails.status === 1 && (
@@ -433,6 +500,33 @@ export default function DisputesPage() {
                 </div>
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Image Viewer Modal */}
+        <Dialog open={showImageModal} onOpenChange={setShowImageModal}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>Evidence Image</DialogTitle>
+            </DialogHeader>
+            {selectedImage && (
+              <div className="flex justify-center">
+                <div className="relative max-h-[70vh] max-w-full">
+                  <Image
+                    src={selectedImage || "/placeholder.svg"}
+                    alt="Evidence"
+                    width={800}
+                    height={600}
+                    className="object-contain"
+                  />
+                </div>
+              </div>
+            )}
+            <div className="flex justify-end">
+              <Button variant="outline" onClick={() => setShowImageModal(false)}>
+                Close
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
