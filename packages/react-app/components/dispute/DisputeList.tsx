@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Search, AlertCircle, Loader2 } from "lucide-react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -50,91 +50,167 @@ export function DisputeList({ type, onViewDispute }: DisputeListProps) {
   const [statusFilter, setStatusFilter] = useState("all")
   const [disputes, setDisputes] = useState<DisputeData[]>([])
   const [loading, setLoading] = useState(true)
-  const { getDispute, getPlanDetails, getSubscriptionDetails } = useSubPay()
+  const { getDispute, getPlanDetails, getSubscriptionDetails, getDisputeCount, getDisputeIdAtIndex } = useSubPay()
   const { toast } = useToast()
 
-  useEffect(() => {
-    const fetchDisputes = async () => {
-      console.log("DisputeList: Fetching disputes for type:", type)
+  // Use a ref to track if the data has been fetched to prevent multiple fetches
+  const dataFetchedRef = useRef(false)
+
+  // Memoize the fetchDisputes function to prevent it from changing on every render
+  const fetchDisputes = useCallback(async () => {
+    // If data has already been fetched, don't fetch again
+    if (dataFetchedRef.current) return
+
+    console.log("DisputeList: Fetching disputes for type:", type)
+    try {
+      setLoading(true)
+
+      // Get real dispute IDs from the contract
+      const disputeIds: bigint[] = []
+
       try {
-        setLoading(true)
+        // Get the total number of disputes from the contract
+        const disputeCount = await getDisputeCount()
+        console.log(`DisputeList: Total dispute count: ${disputeCount}`)
 
-        // In a real implementation, we would fetch disputes from the contract
-        // For now, we'll use mock data since the hook doesn't provide a way to get all disputes
-        const mockDisputeIds = [1n, 2n, 3n]
-        console.log(
-          "DisputeList: Mock dispute IDs:",
-          mockDisputeIds.map((id) => id.toString()),
-        )
-
-        const disputesData: DisputeData[] = []
-
-        for (const id of mockDisputeIds) {
-          try {
-            console.log("DisputeList: Fetching dispute details for ID:", id.toString())
-            const dispute = await getDispute(id)
-            console.log("DisputeList: Dispute data received:", dispute)
-
-            if (dispute) {
-              // Get subscription details to get the plan ID
-              console.log("DisputeList: Fetching subscription details for ID:", dispute.subscriptionId.toString())
-              const subscription = await getSubscriptionDetails(dispute.subscriptionId)
-              console.log("DisputeList: Subscription data received:", subscription)
-
-              // Get plan details to get the plan name
-              let planName = "Unknown Plan"
-              if (subscription) {
-                console.log("DisputeList: Fetching plan details for ID:", subscription.planId.toString())
-                const plan = await getPlanDetails(subscription.planId)
-                console.log("DisputeList: Plan data received:", plan)
-
-                if (plan && plan.metadata) {
-                  try {
-                    const metadata = JSON.parse(plan.metadata)
-                    planName = metadata.name || "Unnamed Plan"
-                    console.log("DisputeList: Plan name from metadata:", planName)
-                  } catch (error) {
-                    console.error("DisputeList: Error parsing plan metadata:", error)
-                    planName = "Plan #" + subscription.planId.toString()
-                  }
-                }
-              }
-
-              disputesData.push({
-                id: dispute.subscriptionId,
-                subscriber: dispute.subscriber,
-                merchant: dispute.merchant,
-                paymentToken: dispute.paymentToken,
-                amount: dispute.amount,
-                createdAt: dispute.createdAt,
-                resolvedAt: dispute.resolvedAt,
-                status: dispute.status,
-                resolution: dispute.resolution,
-                reason: dispute.reason,
-                planName,
-              })
+        if (disputeCount > 0) {
+          // Fetch each dispute ID
+          for (let i = 0; i < disputeCount; i++) {
+            const disputeId = await getDisputeIdAtIndex(BigInt(i))
+            if (disputeId) {
+              disputeIds.push(disputeId)
             }
-          } catch (error) {
-            console.error(`DisputeList: Error fetching dispute ${id}:`, error)
           }
         }
 
-        console.log("DisputeList: All disputes data:", disputesData)
-        setDisputes(disputesData)
+        console.log(`DisputeList: Fetched ${disputeIds.length} dispute IDs`)
       } catch (error) {
-        console.error("DisputeList: Error fetching disputes:", error)
-        toast({
-          title: "Error",
-          description: "Failed to fetch disputes",
-          variant: "destructive",
-        })
-      } finally {
-        setLoading(false)
+        console.error("DisputeList: Error fetching dispute IDs:", error)
+        return
       }
-    }
 
+      const disputesData: DisputeData[] = []
+
+      for (const id of disputeIds) {
+        try {
+          console.log("DisputeList: Fetching dispute details for ID:", id.toString())
+          const dispute = await getDispute(id)
+
+          if (!dispute) {
+            console.log(`DisputeList: No dispute found for ID ${id.toString()}`)
+            continue
+          }
+
+          // Filter disputes based on type (business or subscriber)
+          const isRelevantDispute =
+            (type === "business" && dispute.merchant === window.ethereum?.selectedAddress) ||
+            (type === "subscriber" && dispute.subscriber === window.ethereum?.selectedAddress)
+
+          if (!isRelevantDispute) {
+            console.log(`DisputeList: Dispute ${id.toString()} is not relevant for ${type}`)
+            continue
+          }
+
+          console.log("DisputeList: Dispute data received:", dispute)
+
+          // Get subscription details to get the plan ID
+          console.log("DisputeList: Fetching subscription details for ID:", dispute.subscriptionId.toString())
+          const subscription = await getSubscriptionDetails(dispute.subscriptionId)
+
+          if (!subscription) {
+            console.log(`DisputeList: No subscription found for ID ${dispute.subscriptionId.toString()}`)
+            disputesData.push({
+              id: id,
+              subscriber: dispute.subscriber,
+              merchant: dispute.merchant,
+              paymentToken: dispute.paymentToken,
+              amount: dispute.amount,
+              createdAt: dispute.createdAt,
+              resolvedAt: dispute.resolvedAt,
+              status: dispute.status,
+              resolution: dispute.resolution,
+              reason: dispute.reason,
+              planName: "Unknown Plan",
+            })
+            continue
+          }
+
+          console.log("DisputeList: Subscription data received:", subscription)
+
+          // Get plan details to get the plan name
+          let planName = "Unknown Plan"
+          if (subscription && subscription.planId) {
+            console.log("DisputeList: Fetching plan details for ID:", subscription.planId.toString())
+            const plan = await getPlanDetails(subscription.planId)
+
+            if (plan) {
+              console.log("DisputeList: Plan data received:", plan)
+
+              // Handle plan metadata safely
+              if (plan.metadata) {
+                // Check if metadata is a string that looks like JSON
+                if (typeof plan.metadata === "string" && plan.metadata.trim().startsWith("{")) {
+                  try {
+                    const metadata = JSON.parse(plan.metadata)
+                    planName = metadata.name || `Plan #${subscription.planId.toString()}`
+                  } catch (parseError) {
+                    // If JSON parsing fails, use the raw string
+                    planName = plan.metadata
+                  }
+                } else {
+                  // Use metadata directly as it's not JSON
+                  planName = plan.metadata
+                }
+              } else {
+                planName = `Plan #${subscription.planId.toString()}`
+              }
+            }
+          }
+
+          disputesData.push({
+            id: id,
+            subscriber: dispute.subscriber,
+            merchant: dispute.merchant,
+            paymentToken: dispute.paymentToken,
+            amount: dispute.amount,
+            createdAt: dispute.createdAt,
+            resolvedAt: dispute.resolvedAt,
+            status: dispute.status,
+            resolution: dispute.resolution,
+            reason: dispute.reason,
+            planName,
+          })
+        } catch (error) {
+          console.error(`DisputeList: Error fetching dispute ${id}:`, error)
+        }
+      }
+
+      console.log("DisputeList: All disputes data:", disputesData)
+      setDisputes(disputesData)
+      // Mark data as fetched
+      dataFetchedRef.current = true
+    } catch (error) {
+      console.error("DisputeList: Error fetching disputes:", error)
+      toast({
+        title: "Error",
+        description: "Failed to fetch disputes",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }, [getDispute, getPlanDetails, getSubscriptionDetails, getDisputeCount, getDisputeIdAtIndex, toast, type])
+
+  // Use a separate useEffect for the initial data fetch
+  useEffect(() => {
+    // Reset the dataFetchedRef when the type changes
+    dataFetchedRef.current = false
     fetchDisputes()
-  }, [getDispute, getPlanDetails, getSubscriptionDetails, toast, type])
+
+    return () => {
+      // Cleanup function
+    }
+  }, [fetchDisputes, type])
 
   const filteredDisputes = disputes.filter((dispute) => {
     const matchesSearch =
