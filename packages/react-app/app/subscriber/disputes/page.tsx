@@ -96,12 +96,25 @@ export default function DisputesPage() {
             let planName = "Unknown Plan"
             if (subscription.planId) {
               const plan = await getPlanDetails(subscription.planId)
-              if (plan && plan.metadata) {
-                try {
-                  const metadata = JSON.parse(plan.metadata)
-                  planName = metadata.name || "Unnamed Plan"
-                } catch {
-                  planName = "Plan #" + subscription.planId.toString()
+              if (plan) {
+                // Extract the plan name from the metadata
+                if (plan.metadata) {
+                  try {
+                    // Try to parse the metadata as JSON
+                    const metadata = JSON.parse(plan.metadata)
+                    if (metadata && metadata.name) {
+                      planName = metadata.name
+                    } else {
+                      // If no name in metadata, use the raw metadata if it's a string
+                      planName =
+                        typeof plan.metadata === "string" ? plan.metadata : `Plan #${subscription.planId.toString()}`
+                    }
+                  } catch (error) {
+                    // If metadata is not valid JSON, use it directly as the plan name
+                    planName = plan.metadata
+                  }
+                } else {
+                  planName = `Plan #${subscription.planId.toString()}`
                 }
               }
             }
