@@ -158,6 +158,10 @@ The current Web3 ecosystem lacks efficient subscription payment solutions due to
 - Dispute resolution
 - Fee collection
 
+### Contract Addresses
+- **Subpay Contract:** [0x1D0CB90Feb6eb94AeCC3aCBF9C958D3409916831](https://celo-alfajores.blockscout.com/address/0x1D0CB90Feb6eb94AeCC3aCBF9C958D3409916831)
+- **Subpay Contract:** [0x089D37C1Ca872221E37487c1F2D006907561B1fd](https://celo-alfajores.blockscout.com/address/0x089D37C1Ca872221E37487c1F2D006907561B1fd)
+
 ### Frontend
 - Next.js 15
 - Tailwind CSS
