@@ -220,6 +220,9 @@ interface SubPayHook {
         number // resolution
       ]
     | null;
+
+  // New functions
+  getEvidence: (disputeId: bigint) => Promise<string>;
 }
 
 export function useSubPay(): SubPayHook {
@@ -1207,6 +1210,27 @@ export function useSubPay(): SubPayHook {
         args: [disputeId],
       })) as Dispute;
 
+      // Check if the dispute exists by checking if all fields are default values
+      if (
+        data.subscriptionId === 0n &&
+        data.subscriber === '0x0000000000000000000000000000000000000000' &&
+        data.merchant === '0x0000000000000000000000000000000000000000' &&
+        data.paymentToken === '0x0000000000000000000000000000000000000000' &&
+        data.amount === 0n &&
+        data.createdAt === 0n &&
+        data.resolvedAt === 0n &&
+        data.status === 0 &&
+        data.resolution === 0 &&
+        data.reason === '' &&
+        data.merchantEvidence === '' &&
+        data.subscriberEvidence === '' &&
+        data.resolutionNotes === '' &&
+        data.resolver === '0x0000000000000000000000000000000000000000' &&
+        data.refundAmount === 0n
+      ) {
+        return undefined;
+      }
+
       return data;
     } catch (error) {
       console.error('Error fetching dispute details:', error);
@@ -1301,6 +1325,21 @@ export function useSubPay(): SubPayHook {
     } catch (error) {
       console.error('Error fetching merchant subscribers:', error);
       return undefined;
+    }
+  };
+
+  const getEvidence = async (disputeId: bigint): Promise<string> => {
+    if (!publicClient) throw new Error('Please connect your wallet first');
+
+    try {
+      const dispute = await getDispute(disputeId);
+      if (!dispute) {
+        throw new Error('Dispute not found');
+      }
+      return dispute.subscriberEvidence;
+    } catch (error) {
+      console.error('Error fetching evidence:', error);
+      throw error;
     }
   };
 
@@ -1399,5 +1438,8 @@ export function useSubPay(): SubPayHook {
           number
         ])
       : null,
+
+    // New functions
+    getEvidence,
   };
 }
