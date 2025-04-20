@@ -8,18 +8,27 @@ import {
   usePublicClient,
   useConfig,
 } from 'wagmi';
+import {
+  type UseWriteContractParameters,
+  type UseReadContractParameters,
+} from 'wagmi';
+import {
+  type UseWriteContractReturnType,
+  type UseReadContractReturnType,
+} from 'wagmi';
 import { parseEther } from 'viem';
 import { SUBPAY_ABI } from '@/constants/abi';
 import { SUBPAY_ADDRESS } from '@/constants/addresses';
 import { useToast } from '@/hooks/use-toast';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
 // Token addresses on Celo
 const CUSD_ADDRESS = process.env.NEXT_PUBLIC_CUSD_ADDRESS as `0x${string}`;
 const CEUR_ADDRESS = process.env.NEXT_PUBLIC_CEUR_ADDRESS as `0x${string}`;
 
-// Check if we're in a browser environment
-const isBrowser = typeof window !== 'undefined';
+if (!CUSD_ADDRESS || !CEUR_ADDRESS) {
+  throw new Error('Token addresses not found in environment variables');
+}
 
 // Define types for contract structures
 interface SubscriptionPlan {
@@ -130,7 +139,9 @@ interface SubPayHook {
   calculateLikelihood: (
     subscriptionId: bigint
   ) => Promise<{ likelihood: bigint; riskLevel: RiskLevel } | undefined>;
-  getPrediction: (subscriptionId: bigint) => Promise<
+  getPrediction: (
+    subscriptionId: bigint
+  ) => Promise<
     | {
         likelihood: bigint;
         lastUpdated: bigint;
@@ -209,91 +220,7 @@ interface SubPayHook {
 }
 
 export function useSubPay(): SubPayHook {
-  // Check if we're in a browser environment
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // If not mounted or not in browser, return placeholder values
   const { toast } = useToast();
-
-  const createToast = useCallback(
-    (
-      title: string,
-      description: string,
-      variant?: 'default' | 'destructive'
-    ) => {
-      toast({ title, description, variant });
-    },
-    [toast]
-  );
-
-  // If not mounted or not in browser, return placeholder values
-  if (!mounted || !isBrowser) {
-    // Return a placeholder object with the same shape as the real hook
-    return {
-      // Token balances
-      cUSDBalance: undefined,
-      cEURBalance: undefined,
-
-      // Subscription Management
-      createPlan: async () => undefined,
-      updatePlan: async () => undefined,
-      subscribe: async () => undefined,
-      cancelSubscription: async () => undefined,
-      processDuePayments: async () => undefined,
-
-      // Credit Scoring
-      getCreditScore: async () => undefined,
-      getPaymentHistory: async () => [],
-
-      // Payment Prediction
-      calculateLikelihood: async () => undefined,
-      getPrediction: async () => undefined,
-      getHighRiskSubscriptions: async () => undefined,
-
-      // Dispute Resolution
-      openDispute: async () => undefined,
-      submitEvidence: async () => undefined,
-      cancelDispute: async () => undefined,
-      getDispute: async () => undefined,
-      resolveSubscriptionDispute: async () => undefined,
-
-      // Read data
-      merchantPlans: undefined,
-      subscriberSubscriptions: undefined,
-      getDueSubscriptions: async () => undefined,
-      getPlanDetails: async () => undefined,
-      getSubscriptionDetails: async () => undefined,
-      getAllPlans: async () => undefined,
-
-      // Refetch functions
-      refetchMerchantPlans: async () => undefined,
-      refetchSubscriptions: async () => undefined,
-
-      // Loading states
-      isCreatingPlan: false,
-      isUpdatingPlan: false,
-      isSubscribing: false,
-      isCancelling: false,
-      isProcessingPayments: false,
-      isOpeningDispute: false,
-      isSubmittingEvidence: false,
-      isCancellingDispute: false,
-      isApproving: false,
-      isResolvingDispute: false,
-      isArbitrator: false,
-      dispute: null,
-    };
-  }
-
-  // Check if token addresses are available
-  if (!CUSD_ADDRESS || !CEUR_ADDRESS) {
-    console.error('Token addresses not found in environment variables');
-  }
-
   const { address } = useAccount();
   const publicClient = usePublicClient();
   const config = useConfig();
@@ -318,7 +245,10 @@ export function useSubPay(): SubPayHook {
     mutation: {
       onSuccess: (hash) => {
         console.log('Transaction hash:', hash);
-        createToast('Success', 'Plan created successfully');
+        toast({
+          title: 'Success',
+          description: 'Plan created successfully',
+        });
       },
     },
   });
@@ -379,11 +309,18 @@ export function useSubPay(): SubPayHook {
   } = useWriteContract({
     mutation: {
       onSuccess: () => {
-        createToast('Success', 'Dispute resolved successfully');
+        toast({
+          title: 'Success',
+          description: 'Dispute resolved successfully',
+        });
       },
       onError: (error) => {
         console.error('Error resolving dispute:', error);
-        createToast('Error', 'Failed to resolve dispute', 'destructive');
+        toast({
+          title: 'Error',
+          description: 'Failed to resolve dispute',
+          variant: 'destructive',
+        });
       },
     },
   });
@@ -440,7 +377,11 @@ export function useSubPay(): SubPayHook {
     metadata: string
   ): Promise<`0x${string}` | undefined> => {
     if (!address || !publicClient) {
-      createToast('Error', 'Please connect your wallet first', 'destructive');
+      toast({
+        title: 'Error',
+        description: 'Please connect your wallet first',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -474,11 +415,12 @@ export function useSubPay(): SubPayHook {
       return SUBPAY_ADDRESS;
     } catch (error) {
       console.error('Error creating plan:', error);
-      createToast(
-        'Error',
-        error instanceof Error ? error.message : 'Failed to create plan',
-        'destructive'
-      );
+      toast({
+        title: 'Error',
+        description:
+          error instanceof Error ? error.message : 'Failed to create plan',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -490,7 +432,11 @@ export function useSubPay(): SubPayHook {
     frequency: number
   ) => {
     if (!address || !publicClient) {
-      createToast('Error', 'Please connect your wallet first', 'destructive');
+      toast({
+        title: 'Error',
+        description: 'Please connect your wallet first',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -508,14 +454,22 @@ export function useSubPay(): SubPayHook {
       return SUBPAY_ADDRESS;
     } catch (error) {
       console.error('Error updating plan:', error);
-      createToast('Error', 'Failed to update plan', 'destructive');
+      toast({
+        title: 'Error',
+        description: 'Failed to update plan',
+        variant: 'destructive',
+      });
     }
   };
 
   // Subscribe wrapper function
   const subscribe = async (planId: bigint) => {
     if (!address || !publicClient) {
-      createToast('Error', 'Please connect your wallet first', 'destructive');
+      toast({
+        title: 'Error',
+        description: 'Please connect your wallet first',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -575,10 +529,10 @@ export function useSubPay(): SubPayHook {
         await approveTokenWrite(approveRequest);
 
         // Wait for approval to be confirmed
-        createToast(
-          'Approval Pending',
-          'Please approve token spending in your wallet'
-        );
+        toast({
+          title: 'Approval Pending',
+          description: 'Please approve token spending in your wallet',
+        });
       }
 
       // Now proceed with subscription
@@ -595,18 +549,23 @@ export function useSubPay(): SubPayHook {
       return SUBPAY_ADDRESS;
     } catch (error) {
       console.error('Error subscribing:', error);
-      createToast(
-        'Error',
-        error instanceof Error ? error.message : 'Failed to subscribe',
-        'destructive'
-      );
+      toast({
+        title: 'Error',
+        description:
+          error instanceof Error ? error.message : 'Failed to subscribe',
+        variant: 'destructive',
+      });
     }
   };
 
   // Cancel subscription wrapper function
   const cancelSubscription = async (subscriptionId: bigint) => {
     if (!address || !publicClient) {
-      createToast('Error', 'Please connect your wallet first', 'destructive');
+      toast({
+        title: 'Error',
+        description: 'Please connect your wallet first',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -624,14 +583,22 @@ export function useSubPay(): SubPayHook {
       return SUBPAY_ADDRESS;
     } catch (error) {
       console.error('Error cancelling subscription:', error);
-      createToast('Error', 'Failed to cancel subscription', 'destructive');
+      toast({
+        title: 'Error',
+        description: 'Failed to cancel subscription',
+        variant: 'destructive',
+      });
     }
   };
 
   // Process due payments wrapper function
   const processDuePayments = async (subscriptionIds: bigint[]) => {
     if (!address || !publicClient) {
-      createToast('Error', 'Please connect your wallet first', 'destructive');
+      toast({
+        title: 'Error',
+        description: 'Please connect your wallet first',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -648,14 +615,22 @@ export function useSubPay(): SubPayHook {
       return SUBPAY_ADDRESS;
     } catch (error) {
       console.error('Error processing payments:', error);
-      createToast('Error', 'Failed to process payments', 'destructive');
+      toast({
+        title: 'Error',
+        description: 'Failed to process payments',
+        variant: 'destructive',
+      });
     }
   };
 
   // Open dispute wrapper function
   const openDispute = async (subscriptionId: bigint, reason: string) => {
     if (!address || !publicClient) {
-      createToast('Error', 'Please connect your wallet first', 'destructive');
+      toast({
+        title: 'Error',
+        description: 'Please connect your wallet first',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -672,14 +647,22 @@ export function useSubPay(): SubPayHook {
       return SUBPAY_ADDRESS;
     } catch (error) {
       console.error('Error opening dispute:', error);
-      createToast('Error', 'Failed to open dispute', 'destructive');
+      toast({
+        title: 'Error',
+        description: 'Failed to open dispute',
+        variant: 'destructive',
+      });
     }
   };
 
   // Submit evidence wrapper function
   const submitEvidence = async (disputeId: bigint, evidence: string) => {
     if (!address || !publicClient) {
-      createToast('Error', 'Please connect your wallet first', 'destructive');
+      toast({
+        title: 'Error',
+        description: 'Please connect your wallet first',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -696,14 +679,22 @@ export function useSubPay(): SubPayHook {
       return SUBPAY_ADDRESS;
     } catch (error) {
       console.error('Error submitting evidence:', error);
-      createToast('Error', 'Failed to submit evidence', 'destructive');
+      toast({
+        title: 'Error',
+        description: 'Failed to submit evidence',
+        variant: 'destructive',
+      });
     }
   };
 
   // Cancel dispute wrapper function
   const cancelDispute = async (disputeId: bigint) => {
     if (!address || !publicClient) {
-      createToast('Error', 'Please connect your wallet first', 'destructive');
+      toast({
+        title: 'Error',
+        description: 'Please connect your wallet first',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -720,7 +711,11 @@ export function useSubPay(): SubPayHook {
       return SUBPAY_ADDRESS;
     } catch (error) {
       console.error('Error cancelling dispute:', error);
-      createToast('Error', 'Failed to cancel dispute', 'destructive');
+      toast({
+        title: 'Error',
+        description: 'Failed to cancel dispute',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -1179,7 +1174,11 @@ export function useSubPay(): SubPayHook {
     notes: string
   ): Promise<`0x${string}` | undefined> => {
     if (!address || !publicClient) {
-      createToast('Error', 'Please connect your wallet first', 'destructive');
+      toast({
+        title: 'Error',
+        description: 'Please connect your wallet first',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -1194,14 +1193,28 @@ export function useSubPay(): SubPayHook {
 
       await resolveDisputeWrite(request);
 
-      createToast('Success', 'Dispute resolved successfully');
+      toast({
+        title: 'Success',
+        description: 'Dispute resolved successfully',
+      });
 
       return SUBPAY_ADDRESS;
     } catch (error) {
       console.error('Error resolving dispute:', error);
-      createToast('Error', 'Failed to resolve dispute', 'destructive');
+      toast({
+        title: 'Error',
+        description: 'Failed to resolve dispute',
+        variant: 'destructive',
+      });
     }
   };
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   // Add getAllPlans to the return object in the hook's return statement
   return {

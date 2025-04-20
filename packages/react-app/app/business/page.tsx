@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowUpRight, TrendingDown, Coins } from "lucide-react"
 import DashboardLayout from "@/components/Layout/DashboardLayout"
 import { AnalyticsCharts } from "@/components/business/AnalyticsCharts"
+import { RiskAssessment } from "@/components/risk/RiskAssessment"
 import { formatEther } from "viem"
 import { CreatePlanModal } from "@/components/business/CreatePlanModal"
 import { Error } from "@/components/ui/error"
@@ -179,6 +180,14 @@ export default function BusinessDashboard() {
 
         {/* Analytics Charts */}
         <AnalyticsCharts />
+
+        {/* Risk Assessment */}
+        <Card>
+          <CardContent className="p-6">
+            <h2 className="text-2xl font-bold mb-4">Risk Assessment</h2>
+            <RiskAssessment address={address} />
+          </CardContent>
+        </Card>
       </div>
     </DashboardLayout>
   )
