@@ -21,6 +21,7 @@ import { SUBPAY_ABI } from '@/constants/abi';
 import { SUBPAY_ADDRESS } from '@/constants/addresses';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
+import { PublicClient } from 'viem';
 
 // Token addresses on Celo
 const CUSD_ADDRESS = process.env.NEXT_PUBLIC_CUSD_ADDRESS as `0x${string}`;
@@ -182,6 +183,8 @@ interface SubPayHook {
     subscriptionId: bigint
   ) => Promise<Subscription | undefined>;
   getAllPlans: (limit?: number) => Promise<bigint[] | undefined>;
+  getAllSubscribers: (limit?: number) => Promise<`0x${string}`[] | undefined>;
+  getMerchantSubscribers: (merchantAddress: `0x${string}`) => Promise<`0x${string}`[] | undefined>;
 
   // Refetch functions
   refetchMerchantPlans: () => Promise<any>;
@@ -1129,18 +1132,63 @@ export function useSubPay(): SubPayHook {
     limit: number
   ): Promise<bigint[] | undefined> => {
     if (!publicClient) return undefined;
-
     try {
-      const data = (await publicClient.readContract({
-        address: SUBPAY_ADDRESS as `0x${string}`,
+      const result = await publicClient.readContract({
+        address: SUBPAY_ADDRESS,
         abi: SUBPAY_ABI,
         functionName: 'getHighRiskSubscriptions',
         args: [BigInt(limit)],
-      })) as bigint[];
-
-      return data;
+      });
+      return result as bigint[];
     } catch (error) {
-      console.error('Error fetching high risk subscriptions:', error);
+      console.error('Error getting high risk subscriptions:', error);
+      return undefined;
+    }
+  };
+
+  const getAllSubscribers = async (limit = 100): Promise<`0x${string}`[] | undefined> => {
+    if (!publicClient || !address) return undefined;
+    const client = publicClient as PublicClient;
+    try {
+      // First get all subscription IDs for the merchant
+      const merchantSubscriptions = await client.readContract({
+        address: SUBPAY_ADDRESS,
+        abi: SUBPAY_ABI,
+        functionName: 'getMerchantPlans',
+        args: [address as `0x${string}`],
+      }) as bigint[];
+
+      console.log('Merchant plans:', merchantSubscriptions);
+
+      // Get subscription details for each plan to find subscribers
+      const subscribers = new Set<`0x${string}`>();
+      
+      // For each plan, get all subscriptions
+      for (const planId of merchantSubscriptions) {
+        try {
+          // Get subscription details for this plan
+          const subscription = await client.readContract({
+            address: SUBPAY_ADDRESS,
+            abi: SUBPAY_ABI,
+            functionName: 'subscriptions',
+            args: [planId],
+          }) as [bigint, `0x${string}`, bigint, bigint, bigint, boolean];
+
+          console.log(`Subscription for plan ${planId}:`, subscription);
+
+          // If the subscription is active and has a valid subscriber, add it to the set
+          if (subscription[5] && subscription[1] !== '0x0000000000000000000000000000000000000000') {
+            subscribers.add(subscription[1]);
+          }
+        } catch (error) {
+          console.error(`Error fetching subscription for plan ${planId}:`, error);
+          continue;
+        }
+      }
+
+      return Array.from(subscribers);
+    } catch (error) {
+      console.error('Error fetching subscribers:', error);
       return undefined;
     }
   };
@@ -1209,6 +1257,53 @@ export function useSubPay(): SubPayHook {
     }
   };
 
+  const getMerchantSubscribers = async (merchantAddress: `0x${string}`): Promise<`0x${string}`[] | undefined> => {
+    if (!publicClient) return undefined;
+    const client = publicClient as PublicClient;
+    try {
+      // First get all subscription IDs for the merchant
+      const merchantSubscriptions = await client.readContract({
+        address: SUBPAY_ADDRESS,
+        abi: SUBPAY_ABI,
+        functionName: 'getMerchantPlans',
+        args: [merchantAddress],
+      }) as bigint[];
+
+      console.log('Merchant plans:', merchantSubscriptions);
+
+      // Get subscription details for each plan to find subscribers
+      const subscribers = new Set<`0x${string}`>();
+      
+      // For each plan, get all subscriptions
+      for (const planId of merchantSubscriptions) {
+        try {
+          // Get subscription details for this plan
+          const subscription = await client.readContract({
+            address: SUBPAY_ADDRESS,
+            abi: SUBPAY_ABI,
+            functionName: 'subscriptions',
+            args: [planId],
+          }) as [bigint, `0x${string}`, bigint, bigint, bigint, boolean];
+
+          console.log(`Subscription for plan ${planId}:`, subscription);
+
+          // If the subscription is active and has a valid subscriber, add it to the set
+          if (subscription[5] && subscription[1] !== '0x0000000000000000000000000000000000000000') {
+            subscribers.add(subscription[1]);
+          }
+        } catch (error) {
+          console.error(`Error fetching subscription for plan ${planId}:`, error);
+          continue;
+        }
+      }
+
+      return Array.from(subscribers);
+    } catch (error) {
+      console.error('Error fetching merchant subscribers:', error);
+      return undefined;
+    }
+  };
+
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -1252,6 +1347,8 @@ export function useSubPay(): SubPayHook {
     getPlanDetails,
     getSubscriptionDetails,
     getAllPlans,
+    getAllSubscribers,
+    getMerchantSubscribers,
 
     // Refetch functions
     refetchMerchantPlans,
