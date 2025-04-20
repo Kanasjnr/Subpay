@@ -69,14 +69,21 @@ export function PlanList({ type }: PlanListProps) {
     let isMounted = true
 
     const fetchPlans = async () => {
-      if (!address) return
+      if (!address) {
+        console.log('No address available, skipping plan fetch');
+        return;
+      }
       
       try {
         setLoading(true)
-        const { getAllPlans, getPlanDetails, merchantPlans } = functionsRef.current
-        const planIds = typeRef.current === "business" ? merchantPlans : await getAllPlans()
+        console.log('Fetching plans for type:', typeRef.current);
+        console.log('Current merchant plans:', functionsRef.current.merchantPlans);
+        
+        const planIds = typeRef.current === "business" ? functionsRef.current.merchantPlans : await functionsRef.current.getAllPlans()
+        console.log('Retrieved plan IDs:', planIds);
         
         if (!planIds || planIds.length === 0) {
+          console.log('No plan IDs found');
           if (isMounted) {
             setPlans([])
             setLoading(false)
@@ -84,10 +91,16 @@ export function PlanList({ type }: PlanListProps) {
           return
         }
 
+        console.log('Fetching details for plans:', planIds);
         const planDetailsPromises = planIds.map(async (planId) => {
           try {
-            const plan = await getPlanDetails(planId)
-            if (!plan) return null
+            console.log('Fetching details for plan:', planId.toString());
+            const plan = await functionsRef.current.getPlanDetails(planId)
+            if (!plan) {
+              console.log('No details found for plan:', planId.toString());
+              return null;
+            }
+            console.log('Found plan details:', plan);
             return {
               ...plan,
               id: planId
@@ -101,7 +114,9 @@ export function PlanList({ type }: PlanListProps) {
         const planDetails = await Promise.all(planDetailsPromises)
         if (!isMounted) return
 
+        console.log('All plan details:', planDetails);
         const validPlans = planDetails.filter((plan): plan is Plan => plan !== null)
+        console.log('Valid plans:', validPlans);
         setPlans(validPlans)
       } catch (error) {
         console.error('Error fetching plans:', error)
@@ -125,7 +140,7 @@ export function PlanList({ type }: PlanListProps) {
     return () => {
       isMounted = false
     }
-  }, [address, toast]) // Minimal dependencies
+  }, [address, toast, merchantPlans]) // Only depend on address, toast, and merchantPlans
 
   if (!address) {
     return <Empty title="Connect Wallet" message="Please connect your wallet to view plans" />

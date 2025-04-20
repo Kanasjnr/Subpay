@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSubPay } from "@/hooks/useSubPay"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,27 +11,56 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { formatEther } from "viem"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { DisputeData } from "@/app/subscriber/disputes/page"
+
+// Add Resolution enum
+enum Resolution {
+  None = "0",
+  MerchantWins = "1",
+  SubscriberWins = "2",
+  Compromise = "3"
+}
 
 interface ResolveDisputeFormProps {
   onSuccess?: () => void
+  disputeData?: DisputeData
 }
 
-export function ResolveDisputeForm({ onSuccess }: ResolveDisputeFormProps) {
-  const { resolveSubscriptionDispute, isResolvingDispute, dispute, isArbitrator } = useSubPay()
+export function ResolveDisputeForm({ onSuccess, disputeData }: ResolveDisputeFormProps) {
+  const { resolveSubscriptionDispute, isResolvingDispute, isArbitrator } = useSubPay()
   const { toast } = useToast()
-  const [refundAmount, setRefundAmount] = useState("0")
-  const [resolutionType, setResolutionType] = useState<string>("1") // Default to merchant wins
-  const [notes, setNotes] = useState("")
 
-  console.log("ResolveDisputeForm: Current dispute data:", dispute)
+  const [resolutionType, setResolutionType] = useState<Resolution>(Resolution.None)
+  const [refundAmountValue, setRefundAmountValue] = useState<string>("0")
+  const [notes, setNotes] = useState<string>("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Update state when dispute changes
+  useEffect(() => {
+    if (disputeData) {
+      setRefundAmountValue(disputeData.refundAmount ? formatEther(disputeData.refundAmount) : "0")
+      setNotes(disputeData.resolutionNotes || "")
+    }
+  }, [disputeData])
+
+  console.log("ResolveDisputeForm: Current dispute data:", disputeData)
   console.log("ResolveDisputeForm: Is arbitrator:", isArbitrator)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!disputeData) {
+      toast({
+        title: "Error",
+        description: "No dispute data available",
+        variant: "destructive",
+      })
+      return
+    }
+
     console.log("ResolveDisputeForm: Form submitted", {
-      disputeId: dispute?.[0].toString(),
+      disputeId: disputeData.id.toString(),
       resolutionType,
-      refundAmount,
+      refundAmount: refundAmountValue,
       notes,
     })
 
@@ -40,16 +69,6 @@ export function ResolveDisputeForm({ onSuccess }: ResolveDisputeFormProps) {
       toast({
         title: "Error",
         description: "Only arbitrators can resolve disputes",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (!dispute) {
-      console.log("ResolveDisputeForm: No active dispute")
-      toast({
-        title: "Error",
-        description: "No active dispute found",
         variant: "destructive",
       })
       return
@@ -67,13 +86,18 @@ export function ResolveDisputeForm({ onSuccess }: ResolveDisputeFormProps) {
 
     try {
       console.log("ResolveDisputeForm: Resolving dispute", {
-        disputeId: dispute[0].toString(),
+        disputeId: disputeData.id.toString(),
         resolutionType: Number.parseInt(resolutionType),
-        refundAmount,
+        refundAmount: refundAmountValue,
         notes,
       })
 
-      const result = await resolveSubscriptionDispute(dispute[0], Number.parseInt(resolutionType), refundAmount, notes)
+      const result = await resolveSubscriptionDispute(
+        disputeData.id,
+        Number.parseInt(resolutionType),
+        refundAmountValue,
+        notes
+      )
 
       console.log("ResolveDisputeForm: Resolution result:", result)
 
@@ -83,8 +107,8 @@ export function ResolveDisputeForm({ onSuccess }: ResolveDisputeFormProps) {
           description: "Successfully resolved dispute!",
         })
 
-        setRefundAmount("0")
-        setResolutionType("1")
+        setRefundAmountValue("0")
+        setResolutionType(Resolution.None)
         setNotes("")
 
         if (onSuccess) {
@@ -101,7 +125,7 @@ export function ResolveDisputeForm({ onSuccess }: ResolveDisputeFormProps) {
     }
   }
 
-  if (!dispute) {
+  if (!disputeData) {
     return (
       <Card>
         <CardContent className="pt-6">
@@ -121,25 +145,7 @@ export function ResolveDisputeForm({ onSuccess }: ResolveDisputeFormProps) {
     )
   }
 
-  // Destructure the dispute data
-  const [
-    id,
-    subscriber,
-    merchant,
-    arbitrator,
-    subscriptionId,
-    refundAmountValue,
-    createdAt,
-    resolvedAt,
-    resolutionTypeValue,
-    resolutionNotes,
-    reason,
-    evidence,
-    status,
-    resolution,
-  ] = dispute
-
-  const maxRefundAmount = formatEther(refundAmountValue)
+  const maxRefundAmount = formatEther(disputeData.refundAmount)
 
   return (
     <Card>
@@ -149,44 +155,45 @@ export function ResolveDisputeForm({ onSuccess }: ResolveDisputeFormProps) {
       <CardContent>
         <div className="space-y-4 mb-6">
           <div>
-            <span className="font-semibold">Dispute ID:</span> {id.toString()}
+            <span className="font-semibold">Dispute ID:</span> {disputeData.id.toString()}
           </div>
           <div>
-            <span className="font-semibold">Subscriber:</span> {subscriber}
+            <span className="font-semibold">Subscriber:</span> {disputeData.subscriber}
           </div>
           <div>
-            <span className="font-semibold">Merchant:</span> {merchant}
+            <span className="font-semibold">Merchant:</span> {disputeData.merchant}
           </div>
           <div>
             <span className="font-semibold">Amount:</span> {maxRefundAmount} CELO
           </div>
           <div>
-            <span className="font-semibold">Reason:</span> {reason}
+            <span className="font-semibold">Reason:</span> {disputeData.reason}
           </div>
           <div>
-            <span className="font-semibold">Evidence:</span> {evidence}
+            <span className="font-semibold">Evidence:</span> {disputeData.merchantEvidence || disputeData.subscriberEvidence}
           </div>
           <div>
             <span className="font-semibold">Status:</span>{" "}
-            {status === 0
+            {disputeData.status === 0
               ? "None"
-              : status === 1
+              : disputeData.status === 1
                 ? "Opened"
-                : status === 2
+                : disputeData.status === 2
                   ? "Evidence Submitted"
-                  : status === 3
+                  : disputeData.status === 3
                     ? "Resolved"
-                    : status === 4
+                    : disputeData.status === 4
                       ? "Cancelled"
                       : "Unknown"}
           </div>
           <div>
-            <span className="font-semibold">Created At:</span> {new Date(Number(createdAt) * 1000).toLocaleDateString()}
+            <span className="font-semibold">Created At:</span>{" "}
+            {new Date(Number(disputeData.createdAt) * 1000).toLocaleDateString()}
           </div>
-          {resolvedAt > 0n && (
+          {disputeData.resolvedAt > 0n && (
             <div>
               <span className="font-semibold">Resolved At:</span>{" "}
-              {new Date(Number(resolvedAt) * 1000).toLocaleDateString()}
+              {new Date(Number(disputeData.resolvedAt) * 1000).toLocaleDateString()}
             </div>
           )}
         </div>
@@ -194,14 +201,17 @@ export function ResolveDisputeForm({ onSuccess }: ResolveDisputeFormProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="resolutionType">Resolution Type</Label>
-            <Select value={resolutionType} onValueChange={setResolutionType}>
+            <Select
+              value={resolutionType}
+              onValueChange={(value) => setResolutionType(value as Resolution)}
+            >
               <SelectTrigger id="resolutionType">
                 <SelectValue placeholder="Select resolution type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">Merchant Wins</SelectItem>
-                <SelectItem value="2">Subscriber Wins</SelectItem>
-                <SelectItem value="3">Compromise</SelectItem>
+                <SelectItem value={Resolution.MerchantWins}>Merchant Wins</SelectItem>
+                <SelectItem value={Resolution.SubscriberWins}>Subscriber Wins</SelectItem>
+                <SelectItem value={Resolution.Compromise}>Compromise</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -213,8 +223,8 @@ export function ResolveDisputeForm({ onSuccess }: ResolveDisputeFormProps) {
               step="0.000000000000000001"
               min="0"
               max={maxRefundAmount}
-              value={refundAmount}
-              onChange={(e) => setRefundAmount(e.target.value)}
+              value={refundAmountValue}
+              onChange={(e) => setRefundAmountValue(e.target.value)}
               required
             />
             <p className="text-sm text-muted-foreground">Maximum refund amount: {maxRefundAmount} CELO</p>

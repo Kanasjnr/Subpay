@@ -27,15 +27,18 @@ export interface Dispute {
   subscriptionId: bigint
   subscriber: Address
   merchant: Address
-  arbitrator: Address
-  reason: string
-  evidence: string
-  resolution: 'pending' | 'refund' | 'continue' | 'cancel'
-  refundAmount: bigint
-  resolutionNotes: string
+  paymentToken: Address
+  amount: bigint
   createdAt: bigint
   resolvedAt: bigint
-  status: 'open' | 'resolved' | 'cancelled'
+  status: number
+  resolution: number
+  reason: string
+  merchantEvidence: string
+  subscriberEvidence: string
+  resolutionNotes: string
+  resolver: Address
+  refundAmount: bigint
 }
 
 export interface PaymentHistory {

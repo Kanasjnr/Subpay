@@ -11,7 +11,7 @@ import { useSubPay } from "@/hooks/useSubPay"
 import { useToast } from "@/hooks/use-toast"
 import { Loading } from "@/components/ui/loading"
 import { Empty } from "@/components/ui/empty"
-import { formatDistanceToNow } from "date-fns"
+import { formatDistanceToNow } from 'date-fns'
 
 // Define a subscriber type
 interface Subscriber {
@@ -28,7 +28,7 @@ interface Subscriber {
 
 export default function SubscribersPage() {
   const { address } = useAccount()
-  const { merchantPlans, getPlanDetails, getSubscriptionDetails } = useSubPay()
+  const { merchantPlans, getPlanDetails, getAllSubscribers } = useSubPay()
   const [subscribers, setSubscribers] = useState<Subscriber[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
@@ -36,41 +36,71 @@ export default function SubscribersPage() {
   const { toast } = useToast()
 
   const fetchSubscribers = useCallback(async () => {
-    if (!address || !merchantPlans || hasInitialized.current) {
-      return
+    if (!address) {
+      console.error('No address available');
+      return;
+    }
+    if (hasInitialized.current) {
+      console.log('Already initialized, skipping fetch');
+      return;
     }
 
     try {
       setLoading(true)
-      console.log("Fetching subscribers for merchant plans:", merchantPlans)
+      console.log("Starting to fetch all subscribers for merchant:", address)
+
+      // Use getAllSubscribers to get all subscribers at once
+      const subscriptions = await getAllSubscribers(address)
+      console.log('Raw subscriptions data:', subscriptions);
 
       const allSubscribers: Subscriber[] = []
-      for (const planId of merchantPlans) {
-        const plan = await getPlanDetails(planId)
-        if (!plan) continue
+      for (const subscription of subscriptions) {
+        // Get plan details for each subscription
+        const plan = await getPlanDetails(subscription.planId)
+        if (!plan) {
+          console.log('Plan not found for subscription:', subscription.planId.toString());
+          continue;
+        }
 
-        // Get all subscribers for this plan
-        const subscriptions = await getSubscriptionDetails(planId)
-        if (!subscriptions) continue
+        // Create a unique ID for each subscription
+        const subscriptionId = subscription.planId // Use planId as subscriptionId for now
+        const id = `${subscriptionId}-${subscription.subscriber}`
 
-        // Add subscriber info
+        console.log('Processing subscription:', {
+          id,
+          subscriptionId: subscriptionId.toString(),
+          subscriber: subscription.subscriber,
+          planId: subscription.planId.toString(),
+          planName: plan.metadata,
+          active: subscription.active
+        });
+
         allSubscribers.push({
-          id: `${planId}-${subscriptions.subscriber}`,
-          address: subscriptions.subscriber,
-          subscriptionId: planId,
-          planId: subscriptions.planId,
-          planName: plan.metadata || `Plan #${planId.toString()}`,
-          startTime: subscriptions.startTime,
-          lastPaymentTime: subscriptions.lastPaymentTime,
-          nextPaymentTime: subscriptions.nextPaymentTime,
-          active: subscriptions.active
+          id,
+          address: subscription.subscriber,
+          subscriptionId,
+          planId: subscription.planId,
+          planName: plan.metadata || `Plan #${subscription.planId.toString()}`,
+          startTime: subscription.startTime,
+          lastPaymentTime: subscription.lastPaymentTime,
+          nextPaymentTime: subscription.nextPaymentTime,
+          active: subscription.active
         })
       }
 
+      console.log('Total subscribers processed:', allSubscribers.length);
+      console.log('Final subscribers array:', allSubscribers);
       setSubscribers(allSubscribers)
       hasInitialized.current = true
     } catch (error) {
-      console.error("Error fetching subscribers:", error)
+      console.error("Error in fetchSubscribers:", error);
+      if (error instanceof Error) {
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          name: error.name
+        });
+      }
       toast({
         title: "Error",
         description: "Failed to fetch subscribers. Please try again later.",
@@ -79,7 +109,7 @@ export default function SubscribersPage() {
     } finally {
       setLoading(false)
     }
-  }, [address, merchantPlans, getPlanDetails, getSubscriptionDetails])
+  }, [address, getAllSubscribers, getPlanDetails])
 
   // Initial fetch
   useEffect(() => {

@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { useSubPay } from '@/hooks/useSubPay';
 import { Coins, DollarSign, Euro } from 'lucide-react';
+import { DisputeList } from '@/components/dispute/DisputeList';
 
 export default function SubscriberDashboard() {
   const { address } = useAccount();
@@ -186,20 +187,7 @@ export default function SubscriberDashboard() {
               </TabsContent>
 
               <TabsContent value="disputes" className="mt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Open Disputes</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">
-                      If you&apos;re experiencing issues with a subscription,
-                      you can open a dispute to resolve the problem.
-                    </p>
-                    <div className="mt-4">
-                      {/* Disputes list will be implemented here */}
-                    </div>
-                  </CardContent>
-                </Card>
+                <DisputeList type="subscriber" />
               </TabsContent>
             </Tabs>
           </CardContent>

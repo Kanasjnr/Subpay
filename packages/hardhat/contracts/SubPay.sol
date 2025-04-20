@@ -419,14 +419,14 @@ contract SubPay is Ownable, ReentrancyGuard, Pausable {
         token.transferFrom(subscriber, feeCollector, fee);
       }
 
-      // Record successful payment for credit scoring
-      _recordPayment(subscriber, true, amount, paymentToken, '');
+      // Record successful payment for credit scoring with transaction hash
+      _recordPayment(subscriber, true, amount, paymentToken, string(abi.encodePacked("0x", bytes32(uint256(uint160(msg.sender))).toHexString())));
 
       emit PaymentProcessed(subscriptionId, subscriber, merchant, amount);
       return true;
     } catch (bytes memory reason) {
-      // Record failed payment for credit scoring
-      _recordPayment(subscriber, false, amount, paymentToken, '');
+      // Record failed payment for credit scoring with transaction hash
+      _recordPayment(subscriber, false, amount, paymentToken, string(abi.encodePacked("0x", bytes32(uint256(uint160(msg.sender))).toHexString())));
 
       emit PaymentFailed(subscriptionId, subscriber, string(reason));
       return false;

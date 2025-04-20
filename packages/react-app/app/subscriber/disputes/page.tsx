@@ -11,6 +11,7 @@ import { useSubPay } from "@/hooks/useSubPay"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { OpenDisputeForm } from "@/components/subscription/OpenDisputeForm"
 import { SubmitEvidenceForm } from "@/components/subscription/SubmitEvidenceForm"
+import { ResolveDisputeForm } from "@/components/subscription/ResolveDisputeForm"
 import { useToast } from "@/hooks/use-toast"
 import { Loading } from "@/components/ui/loading"
 import { Empty } from "@/components/ui/empty"
@@ -40,9 +41,21 @@ interface DisputeData {
   status: number
   resolution: number
   reason: string
-  evidence: string
+  merchantEvidence: string
+  subscriberEvidence: string
+  resolutionNotes: string
+  resolver: string
+  refundAmount: bigint
   planName?: string
   evidenceData?: {
+    text: string
+    images: string[]
+  }
+  merchantEvidenceData?: {
+    text: string
+    images: string[]
+  }
+  subscriberEvidenceData?: {
     text: string
     images: string[]
   }
@@ -54,13 +67,14 @@ export default function DisputesPage() {
   const [disputes, setDisputes] = useState<DisputeData[]>([])
   const [showNewDisputeModal, setShowNewDisputeModal] = useState(false)
   const [showEvidenceModal, setShowEvidenceModal] = useState(false)
+  const [showResolveModal, setShowResolveModal] = useState(false)
   const [selectedSubscriptionId, setSelectedSubscriptionId] = useState<bigint | null>(null)
   const [selectedDisputeId, setSelectedDisputeId] = useState<bigint | null>(null)
   const [viewDisputeDetails, setViewDisputeDetails] = useState<DisputeData | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [showImageModal, setShowImageModal] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  const { subscriberSubscriptions, getDispute, getSubscriptionDetails, getPlanDetails } = useSubPay()
+  const { subscriberSubscriptions, getDispute, getSubscriptionDetails, getPlanDetails, isArbitrator } = useSubPay()
   const [loading, setLoading] = useState(true)
   const dataFetchedRef = useRef(false)
   const { toast } = useToast()
@@ -70,114 +84,102 @@ export default function DisputesPage() {
     subscriberSubscriptions?.map((id) => id.toString()),
   )
 
-  // Function to fetch all disputes for the current user
-  useEffect(() => {
-    const fetchDisputes = async () => {
-      // Prevent multiple fetches in development mode (React 18 strict mode)
-      if (dataFetchedRef.current) return
-      if (!address || !subscriberSubscriptions) return
+  const fetchDisputes = async () => {
+    if (!address || !subscriberSubscriptions) return
 
-      console.log("DisputesPage: Fetching disputes for address:", address)
-      try {
-        setLoading(true)
+    try {
+      setLoading(true)
+      const disputesData: DisputeData[] = []
+      let disputeId = 1n // Start from 1 since 0 is invalid
 
-        // In a real implementation, we would need a contract function to get all disputes for a user
-        const disputesData: DisputeData[] = []
+      // Keep fetching disputes until we get a null response
+      while (true) {
+        try {
+          const dispute = await getDispute(disputeId)
+          if (!dispute) break // No more disputes
 
-        // For each subscription, check if there's an associated dispute
-        for (const subscriptionId of subscriberSubscriptions) {
-          try {
-            console.log("DisputesPage: Checking subscription for disputes:", subscriptionId.toString())
-
-            // Get subscription details
-            const subscription = await getSubscriptionDetails(subscriptionId)
+          // Only include disputes where the current user is the subscriber
+          if (dispute.subscriber.toLowerCase() === address.toLowerCase()) {
+            // Get subscription details to get the plan ID
+            const subscription = await getSubscriptionDetails(dispute.subscriptionId)
             if (!subscription) continue
 
-            // Get dispute details - use the actual dispute ID from the contract
-            // Here we're using the subscription ID directly, but in a real implementation
-            // you would get the actual dispute ID from the contract
-            const dispute = await getDispute(subscriptionId)
-            if (!dispute) continue
-
             // Get plan details to get the plan name
-            let planName = "Unknown Plan"
-            if (subscription.planId) {
-              const plan = await getPlanDetails(subscription.planId)
-              if (plan) {
-                // Extract the plan name from the metadata
-                if (plan.metadata) {
-                  try {
-                    // Try to parse the metadata as JSON
-                    const metadata = JSON.parse(plan.metadata)
-                    if (metadata && metadata.name) {
-                      planName = metadata.name
-                    } else {
-                      // If no name in metadata, use the raw metadata if it's a string
-                      planName =
-                        typeof plan.metadata === "string" ? plan.metadata : `Plan #${subscription.planId.toString()}`
-                    }
-                  } catch (error) {
-                    // If metadata is not valid JSON, use it directly as the plan name
-                    planName = plan.metadata
-                  }
-                } else {
-                  planName = `Plan #${subscription.planId.toString()}`
-                }
-              }
-            }
+            const plan = await getPlanDetails(subscription.planId)
+            const planName = plan?.metadata || "Unknown Plan"
 
-            // Parse evidence data if it exists and is in JSON format
-            let evidenceData
-            if (dispute.evidence) {
+            // Parse evidence data if it exists
+            let merchantEvidenceData = { text: "", images: [] }
+            let subscriberEvidenceData = { text: "", images: [] }
+
+            if (dispute.merchantEvidence) {
               try {
-                evidenceData = JSON.parse(dispute.evidence)
-                console.log("DisputesPage: Parsed evidence data:", evidenceData)
+                merchantEvidenceData = JSON.parse(dispute.merchantEvidence)
               } catch (e) {
-                // If not valid JSON, treat as plain text
-                console.log("DisputesPage: Evidence is not JSON format, treating as plain text")
-                evidenceData = { text: dispute.evidence, images: [] }
+                merchantEvidenceData = { text: dispute.merchantEvidence, images: [] }
               }
             }
 
-            // Add to disputes list with real data
-            disputesData.push({
-              id: dispute.id || subscriptionId,
-              subscriptionId,
-              subscriber: dispute.subscriber || address,
-              merchant: dispute.merchant || "0xMerchant",
-              paymentToken: dispute.paymentToken || "0xToken",
-              amount: dispute.amount || dispute.refundAmountValue || 1000000000000000000n,
-              createdAt: dispute.createdAt || BigInt(Math.floor(Date.now() / 1000) - 86400),
-              resolvedAt: dispute.resolvedAt || 0n,
-              status: dispute.status || 1,
-              resolution: dispute.resolution || 0,
-              reason: dispute.reason || "Dispute reason",
-              evidence: dispute.evidence || "",
+            if (dispute.subscriberEvidence) {
+              try {
+                subscriberEvidenceData = JSON.parse(dispute.subscriberEvidence)
+              } catch (e) {
+                subscriberEvidenceData = { text: dispute.subscriberEvidence, images: [] }
+              }
+            }
+
+            const disputeData: DisputeData = {
+              id: disputeId,
+              subscriptionId: dispute.subscriptionId,
+              subscriber: dispute.subscriber,
+              merchant: dispute.merchant,
+              paymentToken: dispute.paymentToken,
+              amount: dispute.amount || dispute.refundAmount || 1000000000000000000n,
+              createdAt: dispute.createdAt,
+              resolvedAt: dispute.resolvedAt,
+              status: dispute.status,
+              resolution: dispute.resolution,
+              reason: dispute.reason,
+              merchantEvidence: dispute.merchantEvidence || "",
+              subscriberEvidence: dispute.subscriberEvidence || "",
+              resolutionNotes: dispute.resolutionNotes || "",
+              resolver: dispute.resolver || "0xResolver",
+              refundAmount: dispute.refundAmount || 0n,
               planName,
-              evidenceData,
-            })
-          } catch (error) {
-            console.error(`DisputesPage: Error processing subscription ${subscriptionId}:`, error)
+              merchantEvidenceData,
+              subscriberEvidenceData
+            }
+
+            disputesData.push(disputeData)
           }
+          
+          disputeId++
+        } catch (error) {
+          console.error(`Error fetching dispute ${disputeId}:`, error)
+          // If we get an error, we've likely reached the end of the disputes
+          break
         }
-
-        console.log("DisputesPage: Found disputes:", disputesData)
-        setDisputes(disputesData)
-        dataFetchedRef.current = true
-      } catch (error) {
-        console.error("DisputesPage: Error fetching disputes:", error)
-        toast({
-          title: "Error",
-          description: "Failed to fetch disputes. Please try again later.",
-          variant: "destructive",
-        })
-      } finally {
-        setLoading(false)
       }
-    }
 
-    fetchDisputes()
-  }, [address, subscriberSubscriptions, getDispute, getSubscriptionDetails, getPlanDetails, toast])
+      setDisputes(disputesData)
+    } catch (error) {
+      console.error("Error fetching disputes:", error)
+      toast({
+        title: "Error",
+        description: "Failed to fetch disputes",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (address && subscriberSubscriptions && !dataFetchedRef.current) {
+      fetchDisputes()
+      dataFetchedRef.current = true
+    }
+  }, [address, subscriberSubscriptions])
 
   const filteredDisputes = disputes.filter(
     (dispute) =>
@@ -213,10 +215,27 @@ export default function DisputesPage() {
     setShowDetailsModal(true)
   }
 
-  const handleSubmitEvidence = (disputeId: bigint) => {
-    console.log("DisputesPage: Opening submit evidence modal for dispute:", disputeId.toString())
+  const handleSubmitEvidence = (disputeId: bigint, status: number) => {
+    console.log("DisputesPage: Opening submit evidence modal for dispute:", disputeId.toString(), "Status:", status)
+
+    // Allow evidence submission for both open disputes (status === 1) and evidence submitted disputes (status === 2)
+    if (status !== 1 && status !== 2) {
+      toast({
+        title: "Cannot Submit Evidence",
+        description: "Evidence can only be submitted for open or ongoing disputes",
+        variant: "destructive",
+      })
+      return
+    }
+
     setSelectedDisputeId(disputeId)
     setShowEvidenceModal(true)
+  }
+
+  const handleResolveDispute = (disputeId: bigint) => {
+    console.log("DisputesPage: Opening resolve dispute modal for dispute:", disputeId.toString())
+    setSelectedDisputeId(disputeId)
+    setShowResolveModal(true)
   }
 
   const handleViewImage = (imageUrl: string) => {
@@ -240,13 +259,22 @@ export default function DisputesPage() {
   }
 
   const hasEvidenceImages = (dispute: DisputeData) => {
-    return dispute.evidenceData?.images && dispute.evidenceData.images.length > 0
+    return (
+      (dispute.evidenceData?.images && dispute.evidenceData.images.length > 0) ||
+      (dispute.subscriberEvidenceData?.images && dispute.subscriberEvidenceData.images.length > 0) ||
+      (dispute.merchantEvidenceData?.images && dispute.merchantEvidenceData.images.length > 0)
+    )
   }
 
   if (!address) {
     return (
       <DashboardLayout type="subscriber">
-        <Empty title="Connect Wallet" message="Please connect your wallet to view disputes" />
+        <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+          <div className="text-center">
+            <Loading size="lg" />
+            <p className="text-muted-foreground">Loading your disputes...</p>
+          </div>
+        </div>
       </DashboardLayout>
     )
   }
@@ -254,7 +282,12 @@ export default function DisputesPage() {
   if (loading) {
     return (
       <DashboardLayout type="subscriber">
-        <Loading size="lg" message="Loading your disputes..." />
+        <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+          <div className="text-center">
+            <Loading size="lg" />
+            <p className="text-muted-foreground">Loading your disputes...</p>
+          </div>
+        </div>
       </DashboardLayout>
     )
   }
@@ -320,7 +353,7 @@ export default function DisputesPage() {
                     >
                       <div className="md:col-span-1">{dispute.planName}</div>
                       <div className="md:col-span-1 font-mono truncate">{dispute.merchant}</div>
-                      <div className="md:col-span-1">{formatEther(dispute.amount)} cUSD</div>
+                      <div className="md:col-span-1">{formatEther(dispute.amount)} CELO</div>
                       <div className="md:col-span-1">
                         {new Date(Number(dispute.createdAt) * 1000).toLocaleDateString()}
                       </div>
@@ -333,9 +366,18 @@ export default function DisputesPage() {
                         <Button variant="outline" size="sm" onClick={() => handleViewDetails(dispute)}>
                           View Details
                         </Button>
-                        {dispute.status === 1 && (
-                          <Button variant="outline" size="sm" onClick={() => handleSubmitEvidence(dispute.id)}>
+                        {(dispute.status === 1 || dispute.status === 2) && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleSubmitEvidence(dispute.id, dispute.status)}
+                          >
                             Submit Evidence
+                          </Button>
+                        )}
+                        {isArbitrator && (dispute.status === 1 || dispute.status === 2) && (
+                          <Button variant="secondary" size="sm" onClick={() => handleResolveDispute(dispute.id)}>
+                            Resolve
                           </Button>
                         )}
                       </div>
@@ -395,6 +437,24 @@ export default function DisputesPage() {
           </DialogContent>
         </Dialog>
 
+        {/* Resolve Dispute Modal */}
+        <Dialog open={showResolveModal} onOpenChange={setShowResolveModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Resolve Dispute</DialogTitle>
+            </DialogHeader>
+            {selectedDisputeId && (
+              <ResolveDisputeForm
+                disputeData={disputes.find(d => d.id === selectedDisputeId)}
+                onSuccess={() => {
+                  setShowResolveModal(false)
+                  fetchDisputes()
+                }}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+
         {/* Dispute Details Modal */}
         <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
           <DialogContent className="max-w-2xl">
@@ -439,61 +499,155 @@ export default function DisputesPage() {
                   <p className="mt-1 p-3 bg-muted rounded-md">{viewDisputeDetails.reason}</p>
                 </div>
 
-                {/* Display evidence text and images if available */}
-                {viewDisputeDetails.evidenceData ? (
-                  <>
-                    {viewDisputeDetails.evidenceData.text && (
+                {/* Display subscriber evidence */}
+                {viewDisputeDetails.subscriberEvidenceData && (
+                  <div className="border rounded-md p-4 bg-blue-50">
+                    <h3 className="text-sm font-medium mb-2">Subscriber Evidence</h3>
+
+                    {viewDisputeDetails.subscriberEvidenceData.text && (
                       <div>
-                        <h3 className="text-sm font-medium text-muted-foreground">Evidence Text</h3>
-                        <p className="mt-1 p-3 bg-muted rounded-md whitespace-pre-wrap">
-                          {viewDisputeDetails.evidenceData.text}
+                        <h4 className="text-xs font-medium text-muted-foreground">Text</h4>
+                        <p className="mt-1 p-3 bg-white rounded-md whitespace-pre-wrap">
+                          {viewDisputeDetails.subscriberEvidenceData.text}
                         </p>
                       </div>
                     )}
 
-                    {viewDisputeDetails.evidenceData.images && viewDisputeDetails.evidenceData.images.length > 0 && (
-                      <div>
-                        <h3 className="text-sm font-medium text-muted-foreground">
-                          Evidence Images ({viewDisputeDetails.evidenceData.images.length})
-                        </h3>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
-                          {viewDisputeDetails.evidenceData.images.map((imageUrl, index) => (
-                            <div
-                              key={index}
-                              className="aspect-square rounded-md overflow-hidden border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
-                              onClick={() => handleViewImage(imageUrl)}
-                            >
-                              <Image
-                                src={imageUrl || "/placeholder.svg"}
-                                alt={`Evidence ${index + 1}`}
-                                width={200}
-                                height={200}
-                                className="object-cover w-full h-full"
-                              />
-                            </div>
-                          ))}
+                    {viewDisputeDetails.subscriberEvidenceData.images &&
+                      viewDisputeDetails.subscriberEvidenceData.images.length > 0 && (
+                        <div className="mt-3">
+                          <h4 className="text-xs font-medium text-muted-foreground">
+                            Images ({viewDisputeDetails.subscriberEvidenceData.images.length})
+                          </h4>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+                            {viewDisputeDetails.subscriberEvidenceData.images.map((imageUrl, index) => (
+                              <div
+                                key={index}
+                                className="aspect-square rounded-md overflow-hidden border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => handleViewImage(imageUrl)}
+                              >
+                                <Image
+                                  src={imageUrl || "/placeholder.svg"}
+                                  alt={`Subscriber Evidence ${index + 1}`}
+                                  width={200}
+                                  height={200}
+                                  className="object-cover w-full h-full"
+                                />
+                              </div>
+                            ))}
+                          </div>
                         </div>
+                      )}
+                  </div>
+                )}
+
+                {/* Display merchant evidence */}
+                {viewDisputeDetails.merchantEvidenceData && (
+                  <div className="border rounded-md p-4 bg-green-50">
+                    <h3 className="text-sm font-medium mb-2">Merchant Evidence</h3>
+
+                    {viewDisputeDetails.merchantEvidenceData.text && (
+                      <div>
+                        <h4 className="text-xs font-medium text-muted-foreground">Text</h4>
+                        <p className="mt-1 p-3 bg-white rounded-md whitespace-pre-wrap">
+                          {viewDisputeDetails.merchantEvidenceData.text}
+                        </p>
                       </div>
                     )}
-                  </>
-                ) : viewDisputeDetails.evidence ? (
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">Evidence</h3>
-                    <p className="mt-1 p-3 bg-muted rounded-md whitespace-pre-wrap">{viewDisputeDetails.evidence}</p>
+
+                    {viewDisputeDetails.merchantEvidenceData.images &&
+                      viewDisputeDetails.merchantEvidenceData.images.length > 0 && (
+                        <div className="mt-3">
+                          <h4 className="text-xs font-medium text-muted-foreground">
+                            Images ({viewDisputeDetails.merchantEvidenceData.images.length})
+                          </h4>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+                            {viewDisputeDetails.merchantEvidenceData.images.map((imageUrl, index) => (
+                              <div
+                                key={index}
+                                className="aspect-square rounded-md overflow-hidden border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => handleViewImage(imageUrl)}
+                              >
+                                <Image
+                                  src={imageUrl || "/placeholder.svg"}
+                                  alt={`Merchant Evidence ${index + 1}`}
+                                  width={200}
+                                  height={200}
+                                  className="object-cover w-full h-full"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                   </div>
-                ) : null}
+                )}
+
+                {/* Display general evidence (for backward compatibility) */}
+                {viewDisputeDetails.evidenceData &&
+                  !viewDisputeDetails.subscriberEvidenceData &&
+                  !viewDisputeDetails.merchantEvidenceData && (
+                    <>
+                      {viewDisputeDetails.evidenceData.text && (
+                        <div>
+                          <h3 className="text-sm font-medium text-muted-foreground">Evidence Text</h3>
+                          <p className="mt-1 p-3 bg-muted rounded-md whitespace-pre-wrap">
+                            {viewDisputeDetails.evidenceData.text}
+                          </p>
+                        </div>
+                      )}
+
+                      {viewDisputeDetails.evidenceData.images && viewDisputeDetails.evidenceData.images.length > 0 && (
+                        <div>
+                          <h3 className="text-sm font-medium text-muted-foreground">
+                            Evidence Images ({viewDisputeDetails.evidenceData.images.length})
+                          </h3>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+                            {viewDisputeDetails.evidenceData.images.map((imageUrl, index) => (
+                              <div
+                                key={index}
+                                className="aspect-square rounded-md overflow-hidden border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => handleViewImage(imageUrl)}
+                              >
+                                <Image
+                                  src={imageUrl || "/placeholder.svg"}
+                                  alt={`Evidence ${index + 1}`}
+                                  width={200}
+                                  height={200}
+                                  className="object-cover w-full h-full"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
 
                 <div className="flex justify-end gap-2 pt-4">
-                  {viewDisputeDetails.status === 1 && (
+                  {(viewDisputeDetails.status === 1 || viewDisputeDetails.status === 2) && (
                     <Button
                       onClick={() => {
                         setShowDetailsModal(false)
-                        handleSubmitEvidence(viewDisputeDetails.id)
+                        handleSubmitEvidence(viewDisputeDetails.id, viewDisputeDetails.status)
                       }}
                     >
                       Submit Evidence
                     </Button>
                   )}
+
+                  {isArbitrator && (viewDisputeDetails.status === 1 || viewDisputeDetails.status === 2) && (
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setShowDetailsModal(false)
+                        handleResolveDispute(viewDisputeDetails.id)
+                      }}
+                    >
+                      Resolve Dispute
+                    </Button>
+                  )}
+
                   <Button variant="outline" onClick={() => setShowDetailsModal(false)}>
                     Close
                   </Button>
