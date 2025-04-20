@@ -120,6 +120,7 @@ The current Web3 ecosystem lacks efficient subscription payment solutions due to
 - **Mobile-First Design:** Built for Celo's mobile-friendly blockchain.
 - **Global Accessibility:** Borderless payments with stablecoin support.
 - **Security & Transparency:** Immutable smart contract-based billing.
+
 - **Programmable Subscriptions:** Dynamic pricing and usage-based billing.
 
 ## 🚀 Project Milestones
@@ -172,6 +173,7 @@ The current Web3 ecosystem lacks efficient subscription payment solutions due to
 - Fraud detection
 - Analytics
 - Notification system
+
 
 ## 📱 SubPay PWA Features
 
