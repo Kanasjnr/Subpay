@@ -17,18 +17,14 @@ import { formatDistanceToNow } from 'date-fns'
 interface Subscriber {
   id: string
   address: `0x${string}`
-  subscriptionId: bigint
   planId: bigint
   planName: string
-  startTime: bigint
-  lastPaymentTime: bigint
-  nextPaymentTime: bigint
   active: boolean
 }
 
 export default function SubscribersPage() {
   const { address } = useAccount()
-  const { merchantPlans, getPlanDetails, getAllSubscribers } = useSubPay()
+  const { merchantPlans, getPlanDetails, getMerchantSubscribers } = useSubPay()
   const [subscribers, setSubscribers] = useState<Subscriber[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
@@ -49,43 +45,51 @@ export default function SubscribersPage() {
       setLoading(true)
       console.log("Starting to fetch all subscribers for merchant:", address)
 
-      // Use getAllSubscribers to get all subscribers at once
-      const subscriptions = await getAllSubscribers(address)
-      console.log('Raw subscriptions data:', subscriptions);
+      // Use getMerchantSubscribers to get all subscribers for this merchant
+      const subscriberAddresses = await getMerchantSubscribers(address)
+      console.log('Raw subscriber addresses:', subscriberAddresses);
+
+      if (!subscriberAddresses || subscriberAddresses.length === 0) {
+        console.log('No subscribers found for merchant');
+        setSubscribers([]);
+        return;
+      }
 
       const allSubscribers: Subscriber[] = []
-      for (const subscription of subscriptions) {
-        // Get plan details for each subscription
-        const plan = await getPlanDetails(subscription.planId)
-        if (!plan) {
-          console.log('Plan not found for subscription:', subscription.planId.toString());
-          continue;
+      for (const subscriberAddress of subscriberAddresses) {
+        // Get merchant plans to find which plan this subscriber is on
+        const plans = merchantPlans || []
+        for (const planId of plans) {
+          try {
+            const plan = await getPlanDetails(planId)
+            if (!plan) {
+              console.log('Plan not found:', planId.toString());
+              continue;
+            }
+
+            // Create a unique ID for this subscriber-plan combination
+            const id = `${planId}-${subscriberAddress}`
+
+            console.log('Processing subscriber:', {
+              id,
+              address: subscriberAddress,
+              planId: planId.toString(),
+              planName: plan.metadata,
+              active: plan.active
+            });
+
+            allSubscribers.push({
+              id,
+              address: subscriberAddress,
+              planId,
+              planName: plan.metadata || `Plan #${planId.toString()}`,
+              active: plan.active
+            })
+          } catch (error) {
+            console.error(`Error processing plan ${planId}:`, error);
+            continue;
+          }
         }
-
-        // Create a unique ID for each subscription
-        const subscriptionId = subscription.planId // Use planId as subscriptionId for now
-        const id = `${subscriptionId}-${subscription.subscriber}`
-
-        console.log('Processing subscription:', {
-          id,
-          subscriptionId: subscriptionId.toString(),
-          subscriber: subscription.subscriber,
-          planId: subscription.planId.toString(),
-          planName: plan.metadata,
-          active: subscription.active
-        });
-
-        allSubscribers.push({
-          id,
-          address: subscription.subscriber,
-          subscriptionId,
-          planId: subscription.planId,
-          planName: plan.metadata || `Plan #${subscription.planId.toString()}`,
-          startTime: subscription.startTime,
-          lastPaymentTime: subscription.lastPaymentTime,
-          nextPaymentTime: subscription.nextPaymentTime,
-          active: subscription.active
-        })
       }
 
       console.log('Total subscribers processed:', allSubscribers.length);
@@ -109,7 +113,7 @@ export default function SubscribersPage() {
     } finally {
       setLoading(false)
     }
-  }, [address, getAllSubscribers, getPlanDetails])
+  }, [address, getMerchantSubscribers, getPlanDetails, merchantPlans])
 
   // Initial fetch
   useEffect(() => {
@@ -176,34 +180,20 @@ export default function SubscribersPage() {
               <Empty title="No Subscribers Found" message="You don't have any subscribers yet" />
             ) : (
               <div className="rounded-md border">
-                <div className="grid grid-cols-6 gap-4 p-4 bg-muted/50 text-sm font-medium">
+                <div className="grid grid-cols-4 gap-4 p-4 bg-muted/50 text-sm font-medium">
                   <div>Subscriber</div>
-                  <div>Subscription ID</div>
+                  <div>Plan ID</div>
                   <div>Plan Name</div>
-                  <div>Start Time</div>
-                  <div>Next Payment</div>
                   <div>Status</div>
                 </div>
                 <div className="divide-y divide-border">
                   {filteredSubscribers.map((subscriber) => (
-                    <div key={subscriber.id} className="grid grid-cols-6 gap-4 p-4 items-center text-sm">
+                    <div key={subscriber.id} className="grid grid-cols-4 gap-4 p-4 items-center text-sm">
                       <div className="font-mono truncate" title={subscriber.address}>
                         {subscriber.address.substring(0, 6)}...{subscriber.address.substring(38)}
                       </div>
-                      <div>{subscriber.subscriptionId.toString()}</div>
+                      <div>{subscriber.planId.toString()}</div>
                       <div className="truncate" title={subscriber.planName}>{subscriber.planName}</div>
-                      <div>
-                        {subscriber.startTime > 0
-                          ? formatDistanceToNow(new Date(Number(subscriber.startTime) * 1000), { addSuffix: true })
-                          : "N/A"}
-                      </div>
-                      <div>
-                        {subscriber.nextPaymentTime > 0
-                          ? formatDistanceToNow(new Date(Number(subscriber.nextPaymentTime) * 1000), {
-                              addSuffix: true,
-                            })
-                          : "N/A"}
-                      </div>
                       <div>
                         <span
                           className={`px-2 py-1 rounded-full text-xs ${subscriber.active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
