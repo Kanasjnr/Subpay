@@ -90,24 +90,24 @@ export default function DisputesPage() {
     try {
       setLoading(true)
       const disputesData: DisputeData[] = []
-      let disputeId = 1n // Start from 1 since 0 is invalid
-
-      // Keep fetching disputes until we get a null response
-      while (true) {
+      
+      // Get all disputes for each subscription
+      for (const subscriptionId of subscriberSubscriptions) {
         try {
-          const dispute = await getDispute(disputeId)
-          if (!dispute) break // No more disputes
+          // Get subscription details to get the plan ID
+          const subscription = await getSubscriptionDetails(subscriptionId)
+          if (!subscription) continue
+
+          // Get plan details to get the plan name
+          const plan = await getPlanDetails(subscription.planId)
+          const planName = plan?.metadata || "Unknown Plan"
+
+          // Get dispute for this subscription
+          const dispute = await getDispute(subscriptionId)
+          if (!dispute) continue
 
           // Only include disputes where the current user is the subscriber
           if (dispute.subscriber.toLowerCase() === address.toLowerCase()) {
-            // Get subscription details to get the plan ID
-            const subscription = await getSubscriptionDetails(dispute.subscriptionId)
-            if (!subscription) continue
-
-            // Get plan details to get the plan name
-            const plan = await getPlanDetails(subscription.planId)
-            const planName = plan?.metadata || "Unknown Plan"
-
             // Parse evidence data if it exists
             let merchantEvidenceData = { text: "", images: [] }
             let subscriberEvidenceData = { text: "", images: [] }
@@ -129,7 +129,7 @@ export default function DisputesPage() {
             }
 
             const disputeData: DisputeData = {
-              id: disputeId,
+              id: subscriptionId, // Use subscriptionId as the dispute ID
               subscriptionId: dispute.subscriptionId,
               subscriber: dispute.subscriber,
               merchant: dispute.merchant,
@@ -152,12 +152,9 @@ export default function DisputesPage() {
 
             disputesData.push(disputeData)
           }
-          
-          disputeId++
         } catch (error) {
-          console.error(`Error fetching dispute ${disputeId}:`, error)
-          // If we get an error, we've likely reached the end of the disputes
-          break
+          console.error(`Error fetching dispute for subscription ${subscriptionId}:`, error)
+          continue
         }
       }
 
