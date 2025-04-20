@@ -1,25 +1,17 @@
 import { NextResponse } from 'next/server'
-import { analyzeWalletBehavior } from '@/lib/ai/fraudDetection'
 
 export async function POST(request: Request) {
   try {
-    const { address } = await request.json()
-
-    if (!address) {
-      return NextResponse.json(
-        { error: 'Address is required' },
-        { status: 400 }
-      )
-    }
-
-    // Analyze wallet behavior using the fraud detection system
-    const analysis = await analyzeWalletBehavior(address)
-
-    return NextResponse.json(analysis)
+    const data = await request.json()
+    
+    // Return a response that tells the client to handle the analysis
+    return NextResponse.json({
+      message: 'Analysis should be performed on the client side',
+      data
+    })
   } catch (error) {
-    console.error('Error analyzing fraud:', error)
     return NextResponse.json(
-      { error: 'Failed to analyze fraud risk' },
+      { error: 'Failed to process request' },
       { status: 500 }
     )
   }
