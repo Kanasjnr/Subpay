@@ -6,7 +6,6 @@ import {
   useAccount,
   useBalance,
   usePublicClient,
-  useConfig,
 } from 'wagmi';
 import {
   type UseWriteContractParameters,
@@ -223,7 +222,6 @@ export function useSubPay(): SubPayHook {
   const { toast } = useToast();
   const { address } = useAccount();
   const publicClient = usePublicClient();
-  const config = useConfig();
 
   // Get token balances
   const { data: cUSDBalance } = useBalance({

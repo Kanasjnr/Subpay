@@ -1,10 +1,14 @@
+'use client';
+
 import { Web3Provider } from './Web3Provider'
 import { ModalProvider } from './ModalProvider'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <Web3Provider>
-      <ModalProvider>{children}</ModalProvider>
+      <ModalProvider>
+        {children}
+      </ModalProvider>
     </Web3Provider>
-  )
+  );
 } 
