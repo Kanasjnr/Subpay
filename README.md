@@ -241,6 +241,7 @@ The project has successfully implemented:
 ## 🔮 Future Development
 
 ### Short-term Goals
+- Implement Superfluid subscription widget for enhanced payment streaming capabilities
 - Enhance fraud detection accuracy
 - Add more subscription models
 - Improve user experience
