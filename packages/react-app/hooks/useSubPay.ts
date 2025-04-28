@@ -942,7 +942,8 @@ export function useSubPay(): SubPayHook {
 
       try {
         const currentBlock = await publicClient.getBlockNumber();
-        const fromBlock = currentBlock - BigInt(100000); // Look back further in history
+        // Look back 5,000,000 blocks (approximately 20 months on Celo)
+        const fromBlock = currentBlock - BigInt(5000000);
         console.log(
           `Searching for events from block ${fromBlock} to ${currentBlock}`
         );
@@ -967,61 +968,95 @@ export function useSubPay(): SubPayHook {
 
         console.log('PaymentProcessed events found:', processedEvents);
         console.log('PaymentRecorded events found:', recordedEvents);
+        console.log('Total events found:', processedEvents.length + recordedEvents.length);
+
+        // Log all events for debugging
+        console.log('All PaymentProcessed events:', processedEvents.map(e => ({
+          subscriber: e.args.subscriber,
+          amount: e.args.amount,
+          txHash: e.transactionHash,
+          blockNumber: e.blockNumber,
+          timestamp: e.blockTimestamp
+        })));
+        console.log('All PaymentRecorded events:', recordedEvents.map(e => ({
+          user: e.args.user,
+          amount: e.args.amount,
+          txHash: e.transactionHash,
+          blockNumber: e.blockNumber,
+          timestamp: e.blockTimestamp
+        })));
 
         // Combine and process both types of events
         const paymentRecords: PaymentRecord[] = [];
         const seenTxHashes = new Set<string>();
 
         // Process PaymentProcessed events first (these have the correct token address)
-        for (const event of processedEvents.filter((event) => {
-          const args = event.args as any;
-          return (
-            args.subscriber &&
-            args.subscriber.toLowerCase() === user.toLowerCase()
-          );
-        })) {
+        for (const event of processedEvents) {
           const args = event.args as any;
           const txHash = event.transactionHash || 'Unknown';
-          if (!seenTxHashes.has(txHash)) {
-            seenTxHashes.add(txHash);
-            const block = await publicClient.getBlock({
-              blockNumber: event.blockNumber,
-            });
-            console.log('PaymentProcessed event args:', args);
-            paymentRecords.push({
-              timestamp: block.timestamp,
-              success: true,
-              amount: args.amount || BigInt(0),
-              token: CUSD_ADDRESS as `0x${string}`,
-              metadata: txHash,
-              subscriptionId: args.subscriptionId,
-              merchant: args.merchant,
-            });
+          
+          // Log the event details for debugging
+          console.log('Processing PaymentProcessed event:', {
+            subscriber: args.subscriber,
+            user: user,
+            matches: args.subscriber && args.subscriber.toLowerCase() === user.toLowerCase(),
+            txHash,
+            blockNumber: event.blockNumber
+          });
+
+          if (args.subscriber && args.subscriber.toLowerCase() === user.toLowerCase()) {
+            if (!seenTxHashes.has(txHash)) {
+              seenTxHashes.add(txHash);
+              const block = await publicClient.getBlock({
+                blockNumber: event.blockNumber,
+              });
+              console.log('PaymentProcessed event args:', args);
+              console.log('Transaction hash:', txHash);
+              paymentRecords.push({
+                timestamp: block.timestamp,
+                success: true,
+                amount: args.amount || BigInt(0),
+                token: CUSD_ADDRESS as `0x${string}`,
+                metadata: txHash,
+                subscriptionId: args.subscriptionId,
+                merchant: args.merchant,
+              });
+            }
           }
         }
 
         // Process PaymentRecorded events (only if we haven't seen the transaction)
-        for (const event of recordedEvents.filter((event) => {
-          const args = event.args as any;
-          return args.user && args.user.toLowerCase() === user.toLowerCase();
-        })) {
+        for (const event of recordedEvents) {
           const args = event.args as any;
           const txHash = event.transactionHash || 'Unknown';
-          if (!seenTxHashes.has(txHash)) {
-            seenTxHashes.add(txHash);
-            const block = await publicClient.getBlock({
-              blockNumber: event.blockNumber,
-            });
-            console.log('PaymentRecorded event args:', args);
-            paymentRecords.push({
-              timestamp: block.timestamp,
-              success: args.success || false,
-              amount: args.amount || BigInt(0),
-              token: args.token || (CUSD_ADDRESS as `0x${string}`),
-              metadata: txHash,
-              subscriptionId: args.subscriptionId,
-              merchant: args.merchant,
-            });
+          
+          // Log the event details for debugging
+          console.log('Processing PaymentRecorded event:', {
+            user: args.user,
+            targetUser: user,
+            matches: args.user && args.user.toLowerCase() === user.toLowerCase(),
+            txHash,
+            blockNumber: event.blockNumber
+          });
+
+          if (args.user && args.user.toLowerCase() === user.toLowerCase()) {
+            if (!seenTxHashes.has(txHash)) {
+              seenTxHashes.add(txHash);
+              const block = await publicClient.getBlock({
+                blockNumber: event.blockNumber,
+              });
+              console.log('PaymentRecorded event args:', args);
+              console.log('Transaction hash:', txHash);
+              paymentRecords.push({
+                timestamp: block.timestamp,
+                success: args.success || false,
+                amount: args.amount || BigInt(0),
+                token: args.token || (CUSD_ADDRESS as `0x${string}`),
+                metadata: txHash,
+                subscriptionId: args.subscriptionId,
+                merchant: args.merchant,
+              });
+            }
           }
         }
 
