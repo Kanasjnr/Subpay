@@ -25,6 +25,12 @@ const safeFormatEther = (value: bigint | undefined) => {
   }
 };
 
+// Helper function to format transaction hash
+const formatTxHash = (hash: string) => {
+  if (!hash || hash === 'Unknown') return 'Unknown';
+  return `${hash.slice(0, 6)}...${hash.slice(-4)}`;
+};
+
 export default function TransactionsPage() {
   const { address } = useAccount();
   const [search, setSearch] = useState('');
@@ -56,31 +62,13 @@ export default function TransactionsPage() {
     return obj;
   };
 
-  // Memoize the fetch function to prevent recreating it on every render
   const fetchTransactions = useCallback(async () => {
     if (!address) return;
 
+    setLoading(true);
     try {
-      setLoading(true);
       console.log('Fetching transactions for address:', address);
-      setDebugInfo('Fetching payment history...');
-
-      // Try to get real payment history with a higher limit to ensure we get all transactions
-      const paymentHistory = await getPaymentHistory(
-        address as `0x${string}`,
-        50
-      );
-
-      // Convert BigInt values to strings before JSON stringify
-      const safePaymentHistory = convertBigIntToString(paymentHistory);
-      setDebugInfo(
-        `Raw payment history: ${JSON.stringify(safePaymentHistory, null, 2)}`
-      );
-
-      // Ensure paymentHistory is an array (even if empty)
-      const processedHistory = Array.isArray(paymentHistory)
-        ? paymentHistory
-        : [];
+      const processedHistory = await getPaymentHistory(address, 50);
 
       if (processedHistory.length > 0) {
         // If we have real payment history, use it
@@ -128,7 +116,8 @@ export default function TransactionsPage() {
               ? safeFormatEther(payment.amount) + ' cUSD'
               : '0 cUSD',
             status: payment.success ? 'Success' : 'Failed',
-            txHash: payment.metadata || 'Unknown',
+            txHash: formatTxHash(payment.metadata),
+            fullTxHash: payment.metadata || 'Unknown'
           });
         }
 
@@ -139,18 +128,11 @@ export default function TransactionsPage() {
       }
     } catch (error) {
       console.error('Error fetching transactions:', error);
-      setDebugInfo(
-        `Error fetching transactions: ${
-          error instanceof Error ? error.message : String(error)
-        }`
-      );
       toast({
         title: 'Error',
-        description:
-          'Failed to fetch transactions. Please check console for details.',
+        description: 'Failed to fetch transactions',
         variant: 'destructive',
       });
-      setTransactions([]);
     } finally {
       setLoading(false);
     }
@@ -309,14 +291,13 @@ export default function TransactionsPage() {
                       </div>
                       <div className="font-mono truncate">
                         <a
-                          href={`https://celo-alfajores.blockscout.com/tx/${tx.txHash}`}
+                          href={`https://celo-alfajores.blockscout.com/tx/${tx.fullTxHash}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-primary hover:underline"
-                          title={tx.txHash}
+                          title={tx.fullTxHash}
                         >
-                          {tx.txHash.substring(0, 6)}...
-                          {tx.txHash.substring(tx.txHash.length - 4)}
+                          {tx.txHash}
                         </a>
                       </div>
                     </div>

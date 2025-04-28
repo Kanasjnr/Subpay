@@ -973,8 +973,8 @@ export function useSubPay(): SubPayHook {
           );
         })) {
           const args = event.args as any;
-          const txHash = event.transactionHash || 'Unknown';
-          if (!seenTxHashes.has(txHash)) {
+          const txHash = event.transactionHash;
+          if (txHash && !seenTxHashes.has(txHash)) {
             seenTxHashes.add(txHash);
             const block = await publicClient.getBlock({
               blockNumber: event.blockNumber,
@@ -998,8 +998,8 @@ export function useSubPay(): SubPayHook {
           return args.user && args.user.toLowerCase() === user.toLowerCase();
         })) {
           const args = event.args as any;
-          const txHash = event.transactionHash || 'Unknown';
-          if (!seenTxHashes.has(txHash)) {
+          const txHash = event.transactionHash;
+          if (txHash && !seenTxHashes.has(txHash)) {
             seenTxHashes.add(txHash);
             const block = await publicClient.getBlock({
               blockNumber: event.blockNumber,
@@ -1043,9 +1043,60 @@ export function useSubPay(): SubPayHook {
 
         console.log('Raw payment history data from contract:', data);
 
-        // If we got data back, return it
+        // If we got data back, process the payment records
         if (Array.isArray(data) && data.length > 0) {
-          return data as PaymentRecord[];
+          const paymentRecords = data as PaymentRecord[];
+          
+          // For each payment, try to find its transaction hash
+          for (const payment of paymentRecords) {
+            if (!payment.metadata) {
+              try {
+                // Get the current block number
+                const currentBlock = await publicClient.getBlockNumber();
+                
+                // If the payment timestamp is in the future, we can't find the block
+                if (payment.timestamp > BigInt(Math.floor(Date.now() / 1000))) {
+                  console.log('Payment timestamp is in the future, skipping block lookup');
+                  continue;
+                }
+
+                // Calculate approximate block number based on timestamp
+                // Celo produces a block every ~5 seconds
+                const blocksPerSecond = 0.2; // 1 block per 5 seconds
+                const blockNumber = BigInt(Math.floor(Number(payment.timestamp) * blocksPerSecond));
+                
+                // Ensure block number is within valid range
+                if (blockNumber > currentBlock) {
+                  console.log('Calculated block number is in the future, skipping');
+                  continue;
+                }
+
+                // Get the block
+                const block = await publicClient.getBlock({
+                  blockNumber,
+                  includeTransactions: true,
+                });
+
+                // Find the transaction that matches this payment
+                const matchingTx = block.transactions.find(tx => {
+                  if (typeof tx === 'string') return false;
+                  return tx.to?.toLowerCase() === SUBPAY_ADDRESS.toLowerCase();
+                });
+
+                if (matchingTx && typeof matchingTx !== 'string') {
+                  payment.metadata = matchingTx.hash;
+                }
+              } catch (error) {
+                console.error('Error finding transaction hash:', error);
+              }
+            }
+          }
+
+          // Ensure all payment records have a valid metadata field
+          return paymentRecords.map(record => ({
+            ...record,
+            metadata: record.metadata || 'Unknown'
+          }));
         }
       } catch (contractError) {
         console.error(
