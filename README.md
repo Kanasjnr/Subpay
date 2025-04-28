@@ -91,6 +91,50 @@ The current Web3 ecosystem lacks efficient subscription payment solutions due to
 - Resolution process
 - Refund handling
 
+## 📊 Contract Flow
+
+```mermaid
+graph TD
+    A[Business] -->|Create Subscription Plan| B[Smart Contract]
+    B -->|Store Plan Details| C[On-chain Storage]
+    D[Subscriber] -->|Connect Wallet| E[Wallet Integration]
+    E -->|Approve cUSD| F[Payment Authorization]
+    F -->|Subscribe| B
+    B -->|Schedule Payment| G[Payment Scheduler]
+    G -->|Execute Payment| H[Payment Processor]
+    H -->|Verify Balance| I[Balance Checker]
+    I -->|Process Payment| J[Transaction Handler]
+    J -->|Update Status| K[Subscription State]
+    K -->|Notify| L[Notification System]
+    M[Fraud Detection] -->|Monitor| H
+    M -->|Alert| N[Risk Management]
+    N -->|Update Score| O[Credit Scoring]
+```
+
+The diagram above illustrates the flow of interactions between different components of the SubPay protocol:
+
+1. **Business Layer**
+   - Businesses create subscription plans
+   - Plans are stored on-chain
+   - Parameters are immutable once set
+
+2. **Subscriber Layer**
+   - Wallet connection and authorization
+   - cUSD approval for recurring payments
+   - Subscription management
+
+3. **Payment Layer**
+   - Automated payment scheduling
+   - Balance verification
+   - Transaction processing
+   - State management
+
+4. **Security Layer**
+   - Real-time fraud monitoring
+   - Risk assessment
+   - Credit scoring
+   - Automated alerts
+
 ## 🎯 Use Cases
 
 ### 1. Content Platforms
