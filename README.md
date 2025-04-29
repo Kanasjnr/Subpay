@@ -4,6 +4,10 @@
 
 SubPay is a decentralized finance (DeFi) protocol that enables automated, recurring subscription payments using stablecoins on the Celo blockchain. It bridges the gap between traditional subscription models and blockchain technology, offering businesses an efficient way to manage subscriptions while giving users full control over their payments.
 
+### Recent Updates
+- Watch our latest update video for Proof of Ship Season 3: [SubPay Update Video](https://youtu.be/GxkoArHgBBI)
+- Watch our Proof of Ship Season 2 update: [SubPay Season 2 Update](https://www.youtube.com/watch?v=xqlpGN4L31o)
+
 ### Key Features (Implemented)
 
 - **Smart Contract-Based Subscriptions** – Automates recurring payments with user-defined parameters.
