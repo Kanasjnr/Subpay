@@ -350,7 +350,7 @@ export default function DisputesPage() {
                     >
                       <div className="md:col-span-1">{dispute.planName}</div>
                       <div className="md:col-span-1 font-mono truncate">{dispute.merchant}</div>
-                      <div className="md:col-span-1">{formatEther(dispute.amount)} CELO</div>
+                      <div className="md:col-span-1">{formatEther(dispute.amount)} cUSD</div>
                       <div className="md:col-span-1">
                         {new Date(Number(dispute.createdAt) * 1000).toLocaleDateString()}
                       </div>
@@ -477,7 +477,7 @@ export default function DisputesPage() {
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">Amount</h3>
-                    <p>{formatEther(viewDisputeDetails.amount)} CELO</p>
+                    <p>{formatEther(viewDisputeDetails.amount)} cUSD</p>
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">Created</h3>

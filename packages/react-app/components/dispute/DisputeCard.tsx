@@ -201,13 +201,13 @@ export const DisputeCard: React.FC<DisputeCardProps> = ({ dispute, onResolve, ty
       <CardContent>
         <div className="space-y-2">
           <p><strong>Plan:</strong> {dispute.planName}</p>
-          <p><strong>Amount:</strong> {formatAmount(dispute.amount)} ETH</p>
+          <p><strong>Amount:</strong> {formatAmount(dispute.amount)} cUSD</p>
           <p><strong>Reason:</strong> {dispute.reason}</p>
           {dispute.status === DisputeStatus.Resolved && (
             <>
               <p><strong>Resolution:</strong> {getResolutionText(dispute.resolution)}</p>
               {dispute.refundAmount > 0n && (
-                <p><strong>Refund Amount:</strong> {formatAmount(dispute.refundAmount)} ETH</p>
+                <p><strong>Refund Amount:</strong> {formatAmount(dispute.refundAmount)} cUSD</p>
               )}
             </>
           )}

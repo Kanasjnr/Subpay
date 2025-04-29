@@ -164,7 +164,7 @@ export function ResolveDisputeForm({ onSuccess, disputeData }: ResolveDisputeFor
             <span className="font-semibold">Merchant:</span> {disputeData.merchant}
           </div>
           <div>
-            <span className="font-semibold">Amount:</span> {maxRefundAmount} CELO
+            <span className="font-semibold">Amount:</span> {maxRefundAmount} cUSD
           </div>
           <div>
             <span className="font-semibold">Reason:</span> {disputeData.reason}
@@ -216,7 +216,7 @@ export function ResolveDisputeForm({ onSuccess, disputeData }: ResolveDisputeFor
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="refundAmount">Refund Amount (CELO)</Label>
+            <Label htmlFor="refundAmount">Refund Amount (cUSD)</Label>
             <Input
               id="refundAmount"
               type="number"
@@ -227,7 +227,7 @@ export function ResolveDisputeForm({ onSuccess, disputeData }: ResolveDisputeFor
               onChange={(e) => setRefundAmountValue(e.target.value)}
               required
             />
-            <p className="text-sm text-muted-foreground">Maximum refund amount: {maxRefundAmount} CELO</p>
+            <p className="text-sm text-muted-foreground">Maximum refund amount: {maxRefundAmount} cUSD</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="notes">Resolution Notes</Label>
