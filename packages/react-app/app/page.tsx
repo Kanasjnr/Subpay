@@ -10,7 +10,7 @@ import UseCases from "@/components/sections/UsesCases"
 import FAQ from "@/components/sections/FAQ"
 import Contact from "@/components/sections/Contact"
 import Footer from "@/components/Layout/Footer"
-import SplashScreen from "@/components/SplashScreen"
+import SplashScreen from "@/components/ui/SplashScreen"
 
 
 export default function Home() {
