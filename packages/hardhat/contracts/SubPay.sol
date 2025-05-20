@@ -420,13 +420,13 @@ contract SubPay is Ownable, ReentrancyGuard, Pausable {
       }
 
       // Record successful payment for credit scoring with transaction hash
-      _recordPayment(subscriber, true, amount, paymentToken, string(abi.encodePacked("0x", bytes32(uint256(uint160(msg.sender))).toHexString())));
+      _recordPayment(subscriber, true, amount, paymentToken, string(abi.encodePacked("0x", toAsciiString(msg.sender))));
 
       emit PaymentProcessed(subscriptionId, subscriber, merchant, amount);
       return true;
     } catch (bytes memory reason) {
       // Record failed payment for credit scoring with transaction hash
-      _recordPayment(subscriber, false, amount, paymentToken, string(abi.encodePacked("0x", bytes32(uint256(uint160(msg.sender))).toHexString())));
+      _recordPayment(subscriber, false, amount, paymentToken, string(abi.encodePacked("0x", toAsciiString(msg.sender))));
 
       emit PaymentFailed(subscriptionId, subscriber, string(reason));
       return false;
@@ -568,7 +568,7 @@ contract SubPay is Ownable, ReentrancyGuard, Pausable {
     uint256 amount,
     address token,
     string memory metadata
-  ) private {
+  ) internal {
     // Add payment record to history
     paymentHistory[user].push(
       PaymentRecord({
@@ -789,37 +789,22 @@ contract SubPay is Ownable, ReentrancyGuard, Pausable {
 
   function getPrediction(
     uint256 subscriptionId
-  )
-    external
-    view
-    returns (
-      uint256 likelihood,
-      uint256 lastUpdated,
-      string memory factors,
-      RiskLevel riskLevel
-    )
-  {
-    // If we have a recent oracle prediction, use it
-    if (block.timestamp - lastPredicted[subscriptionId] < 1 days) {
-      likelihood = successLikelihood[subscriptionId];
-      lastUpdated = lastPredicted[subscriptionId];
-      factors = riskFactors[subscriptionId];
+  ) external view returns (uint256 likelihood, uint256 lastPredictionTime, string memory factors, RiskLevel riskLevel) {
+    require(subscriptions[subscriptionId].active, "Subscription not active");
 
-      if (likelihood >= 80) {
-        riskLevel = RiskLevel.Low;
-      } else if (likelihood >= 50) {
-        riskLevel = RiskLevel.Medium;
-      } else {
-        riskLevel = RiskLevel.High;
-      }
+    likelihood = successLikelihood[subscriptionId];
+    lastPredictionTime = lastPredicted[subscriptionId];
+    factors = riskFactors[subscriptionId];
+
+    if (likelihood >= highSuccessThreshold) {
+      riskLevel = RiskLevel.Low;
+    } else if (likelihood >= mediumSuccessThreshold) {
+      riskLevel = RiskLevel.Medium;
     } else {
-      // Otherwise calculate on-chain
-      (likelihood, riskLevel) = calculateLikelihood(subscriptionId);
-      lastUpdated = 0;
-      factors = '';
+      riskLevel = RiskLevel.High;
     }
 
-    return (likelihood, lastUpdated, factors, riskLevel);
+    return (likelihood, lastPredictionTime, factors, riskLevel);
   }
 
   // Split into two functions to avoid stack too deep
@@ -1077,5 +1062,23 @@ contract SubPay is Ownable, ReentrancyGuard, Pausable {
       (dispute.status == DisputeStatus.Opened ||
         dispute.status == DisputeStatus.EvidenceSubmitted) &&
       block.timestamp >= dispute.createdAt + resolutionTimeout;
+  }
+
+  // Helper function to convert address to ASCII string
+  function toAsciiString(address x) internal pure returns (string memory) {
+    bytes memory s = new bytes(40);
+    for (uint i = 0; i < 20; i++) {
+        bytes1 b = bytes1(uint8(uint(uint160(x)) / (2**(8*(19 - i)))));
+        bytes1 hi = bytes1(uint8(b) / 16);
+        bytes1 lo = bytes1(uint8(b) - 16 * uint8(hi));
+        s[2*i] = char(hi);
+        s[2*i+1] = char(lo);            
+    }
+    return string(s);
+  }
+
+  function char(bytes1 b) internal pure returns (bytes1 c) {
+    if (uint8(b) < 10) return bytes1(uint8(b) + 0x30);
+    else return bytes1(uint8(b) + 0x57);
   }
 }
