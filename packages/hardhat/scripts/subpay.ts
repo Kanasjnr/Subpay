@@ -8,7 +8,7 @@ dotenv.config()
 // Token addresses for Celo Mainnet
 const TOKENS = {
   celo: {
-    cUSD: "0x765DE816845861e75A25fCA122bb6898B8B1282a", // Celo Dollar (cUSD)
+    cUSD: "0x765de816845861e75a25fca122bb6898b8b1282a", // Celo Dollar (cUSD)
     cEUR: "0xd8763cba276a3738e6de85b4b3bf5fded6d6ca73", // Celo Euro (cEUR)
   }
 }

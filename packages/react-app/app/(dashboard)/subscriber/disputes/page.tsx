@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button"
 import DashboardLayout from "@/components/Layout/DashboardLayout"
 import { useSubPay } from "@/hooks/useSubPay"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { OpenDisputeForm } from "@/components/subscription/OpenDisputeForm"
-import { SubmitEvidenceForm } from "@/components/subscription/SubmitEvidenceForm"
-import { ResolveDisputeForm } from "@/components/subscription/ResolveDisputeForm"
+import { OpenDisputeForm } from "@/components/features/subscription/OpenDisputeForm"
+import { SubmitEvidenceForm } from "@/components/features/subscription/SubmitEvidenceForm"
+import { ResolveDisputeForm } from "@/components/features/subscription/ResolveDisputeForm"
 import { useToast } from "@/hooks/use-toast"
 import { Loading } from "@/components/ui/loading"
 import { Empty } from "@/components/ui/empty"
@@ -29,7 +29,7 @@ const DisputeStatusMap = {
 }
 
 // Define dispute interface
-interface DisputeData {
+export interface DisputeData {
   id: bigint
   subscriptionId: bigint
   subscriber: string

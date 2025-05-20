@@ -1,8 +1,8 @@
 // Default addresses (fallbacks)
 const DEFAULT_ADDRESSES = {
   SUBPAY: '0x089D37C1Ca872221E37487c1F2D006907561B1fd',
-  CUSD: '0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1',
-  CEUR: '0x10c892A6EC43a53E45D0B916B4b7D383B1b78C0F',
+  CUSD: '0x765de816845861e75a25fca122bb6898b8b1282a',
+  CEUR: '0xd8763cba276a3738e6de85b4b3bf5fded6d6ca73',
 } as const
 
 // Helper function to validate address

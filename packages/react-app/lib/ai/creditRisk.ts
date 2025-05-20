@@ -178,7 +178,10 @@ export async function analyzeCreditRisk(
 
     // Load model and make prediction
     const model = await loadCreditRiskModel()
-    const prediction = await model.predict(features).data()
+    const predictionTensor = model.predict(features);
+    const prediction = Array.isArray(predictionTensor)
+      ? await predictionTensor[0].data()
+      : await predictionTensor.data();
     const creditScore = prediction[0] * 100
 
     // Determine risk level

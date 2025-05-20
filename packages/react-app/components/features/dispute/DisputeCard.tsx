@@ -1,18 +1,18 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Badge } from '../ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { DisputeStatus, Resolution } from './DisputeList';
 import { formatEther } from 'viem';
-import { Textarea } from '../ui/textarea';
+import { Textarea } from '@/components/ui/textarea';
 import { useSubPay } from '@/hooks/useSubPay';
-import { useToast } from '../ui/use-toast';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { useToast } from '@/components/ui/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, FileText, Upload, Image as ImageIcon } from 'lucide-react';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface EvidenceData {
   text: string;

@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAccount } from 'wagmi';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { DisputeList } from '@/components/dispute/DisputeList';
+import { DisputeList } from '@/components/features/dispute/DisputeList';
 
 export default function DisputesPage() {
   const { address } = useAccount();

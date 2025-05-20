@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { formatEther } from "viem"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { DisputeData } from "@/app/subscriber/disputes/page"
+import { DisputeData } from "@/app/(dashboard)/subscriber/disputes/page"
 
 // Add Resolution enum
 enum Resolution {
