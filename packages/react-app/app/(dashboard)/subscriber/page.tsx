@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAccount } from 'wagmi';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -34,35 +34,35 @@ export default function SubscriberDashboard() {
     }
   }, [address, router]);
 
-  useEffect(() => {
-    const fetchSubscriptionStats = async () => {
-      if (!subscriberSubscriptions || !Array.isArray(subscriberSubscriptions) || hasInitialized) return;
+  const fetchSubscriptionStats = useCallback(async () => {
+    if (!subscriberSubscriptions || !Array.isArray(subscriberSubscriptions) || hasInitialized) return;
+    
+    try {
+      const details = await Promise.all(
+        subscriberSubscriptions.map(async (id) => {
+          const subscription = await getSubscriptionDetails(id);
+          return subscription?.active;
+        })
+      );
       
-      try {
-        const details = await Promise.all(
-          subscriberSubscriptions.map(async (id) => {
-            const subscription = await getSubscriptionDetails(id);
-            return subscription?.active;
-          })
-        );
-        
-        const stats = details.reduce(
-          (acc, isActive) => ({
-            active: acc.active + (isActive ? 1 : 0),
-            canceled: acc.canceled + (isActive ? 0 : 1),
-          }),
-          { active: 0, canceled: 0 }
-        );
-        
-        setSubscriptionStats(stats);
-        setHasInitialized(true);
-      } catch (error) {
-        console.error("Error fetching subscription stats:", error);
-      }
-    };
-
-    fetchSubscriptionStats();
+      const stats = details.reduce(
+        (acc, isActive) => ({
+          active: acc.active + (isActive ? 1 : 0),
+          canceled: acc.canceled + (isActive ? 0 : 1),
+        }),
+        { active: 0, canceled: 0 }
+      );
+      
+      setSubscriptionStats(stats);
+      setHasInitialized(true);
+    } catch (error) {
+      console.error("Error fetching subscription stats:", error);
+    }
   }, [subscriberSubscriptions, getSubscriptionDetails, hasInitialized]);
+
+  useEffect(() => {
+    fetchSubscriptionStats();
+  }, [fetchSubscriptionStats]);
 
   // Reset initialization when subscriptions change
   useEffect(() => {

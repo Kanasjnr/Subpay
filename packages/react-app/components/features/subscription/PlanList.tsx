@@ -30,20 +30,106 @@ interface PlanListProps {
 
 export function PlanList({ type }: PlanListProps) {
   const [search, setSearch] = useState("")
-  const [showCreateModal, setShowCreateModal] = useState(false)
   const [plans, setPlans] = useState<Plan[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [showCreateModal, setShowCreateModal] = useState(false)
   const { address } = useAccount()
   const { toast } = useToast()
-  const { merchantPlans, getPlanDetails, subscribe, isSubscribing, refetchMerchantPlans, getAllPlans } = useSubPay()
-
-  // Store the type in a ref to avoid dependency changes
+  const { 
+    merchantPlans, 
+    getAllPlans, 
+    getPlanDetails, 
+    subscribe: subscribeToPlan,
+    isSubscribing,
+    refetchMerchantPlans 
+  } = useSubPay()
   const typeRef = useRef(type)
-  typeRef.current = type
+  const functionsRef = useRef({ merchantPlans, getAllPlans, getPlanDetails })
+  const mountedRef = useRef(true)
 
-  // Store the functions in refs to maintain stable references
-  const functionsRef = useRef({ getAllPlans, getPlanDetails, merchantPlans })
-  functionsRef.current = { getAllPlans, getPlanDetails, merchantPlans }
+  // Update refs when props change
+  useEffect(() => {
+    typeRef.current = type;
+    functionsRef.current = { merchantPlans, getAllPlans, getPlanDetails };
+  }, [type, merchantPlans, getAllPlans, getPlanDetails]);
+
+  // Effect for fetching plans
+  const fetchPlans = useCallback(async () => {
+    if (!address || !mountedRef.current) {
+      console.log('No address available or component unmounted, skipping plan fetch');
+      return;
+    }
+    
+    try {
+      setLoading(true)
+      console.log('Fetching plans for type:', typeRef.current);
+      console.log('Current merchant plans:', functionsRef.current.merchantPlans);
+      
+      const planIds = typeRef.current === "business" 
+        ? functionsRef.current.merchantPlans 
+        : await functionsRef.current.getAllPlans();
+      
+      console.log('Retrieved plan IDs:', planIds);
+      
+      if (!planIds || planIds.length === 0) {
+        console.log('No plan IDs found');
+        if (mountedRef.current) {
+          setPlans([])
+          setLoading(false)
+        }
+        return
+      }
+
+      console.log('Fetching details for plans:', planIds);
+      const planDetailsPromises = planIds.map(async (planId) => {
+        try {
+          console.log('Fetching details for plan:', planId.toString());
+          const plan = await functionsRef.current.getPlanDetails(planId)
+          if (!plan) {
+            console.log('No details found for plan:', planId.toString());
+            return null;
+          }
+          console.log('Found plan details:', plan);
+          return {
+            ...plan,
+            id: planId
+          } as Plan
+        } catch (error) {
+          console.error(`Error fetching details for plan ${planId}:`, error)
+          return null
+        }
+      })
+
+      const planDetails = await Promise.all(planDetailsPromises)
+      if (!mountedRef.current) return
+
+      console.log('All plan details:', planDetails);
+      const validPlans = planDetails.filter((plan): plan is Plan => plan !== null)
+      console.log('Valid plans:', validPlans);
+      setPlans(validPlans)
+    } catch (error) {
+      console.error('Error fetching plans:', error)
+      if (mountedRef.current) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch plans",
+          variant: "destructive",
+        })
+        setPlans([])
+      }
+    } finally {
+      if (mountedRef.current) {
+        setLoading(false)
+      }
+    }
+  }, [address, toast]);
+
+  useEffect(() => {
+    fetchPlans();
+    return () => {
+      mountedRef.current = false;
+    };
+  }, [fetchPlans]);
 
   // Helper function to check if value is a bigint array
   const isBigIntArray = (value: unknown): value is bigint[] => {
@@ -63,84 +149,6 @@ export function PlanList({ type }: PlanListProps) {
       return "0"
     }
   }
-
-  // Effect for fetching plans
-  useEffect(() => {
-    let isMounted = true
-
-    const fetchPlans = async () => {
-      if (!address) {
-        console.log('No address available, skipping plan fetch');
-        return;
-      }
-      
-      try {
-        setLoading(true)
-        console.log('Fetching plans for type:', typeRef.current);
-        console.log('Current merchant plans:', functionsRef.current.merchantPlans);
-        
-        const planIds = typeRef.current === "business" ? functionsRef.current.merchantPlans : await functionsRef.current.getAllPlans()
-        console.log('Retrieved plan IDs:', planIds);
-        
-        if (!planIds || planIds.length === 0) {
-          console.log('No plan IDs found');
-          if (isMounted) {
-            setPlans([])
-            setLoading(false)
-          }
-          return
-        }
-
-        console.log('Fetching details for plans:', planIds);
-        const planDetailsPromises = planIds.map(async (planId) => {
-          try {
-            console.log('Fetching details for plan:', planId.toString());
-            const plan = await functionsRef.current.getPlanDetails(planId)
-            if (!plan) {
-              console.log('No details found for plan:', planId.toString());
-              return null;
-            }
-            console.log('Found plan details:', plan);
-            return {
-              ...plan,
-              id: planId
-            } as Plan
-          } catch (error) {
-            console.error(`Error fetching details for plan ${planId}:`, error)
-            return null
-          }
-        })
-
-        const planDetails = await Promise.all(planDetailsPromises)
-        if (!isMounted) return
-
-        console.log('All plan details:', planDetails);
-        const validPlans = planDetails.filter((plan): plan is Plan => plan !== null)
-        console.log('Valid plans:', validPlans);
-        setPlans(validPlans)
-      } catch (error) {
-        console.error('Error fetching plans:', error)
-        if (isMounted) {
-          toast({
-            title: "Error",
-            description: "Failed to fetch plans",
-            variant: "destructive",
-          })
-          setPlans([])
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false)
-        }
-      }
-    }
-
-    fetchPlans()
-
-    return () => {
-      isMounted = false
-    }
-  }, [address, toast, merchantPlans]) // Only depend on address, toast, and merchantPlans
 
   if (!address) {
     return <Empty title="Connect Wallet" message="Please connect your wallet to view plans" />
@@ -243,7 +251,7 @@ export function PlanList({ type }: PlanListProps) {
                 </p>
                 {type === "subscriber" && plan.active && (
                   <Button
-                    onClick={() => plan.id && subscribe(plan.id)}
+                    onClick={() => plan.id && subscribeToPlan(plan.id)}
                     disabled={isSubscribing || !plan.id}
                     className="w-full mt-4"
                   >

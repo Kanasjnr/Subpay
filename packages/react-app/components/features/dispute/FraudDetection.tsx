@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useSubPay } from "@/hooks/useSubPay"
 import { useToast } from "@/components/ui/use-toast"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -67,13 +67,9 @@ export function FraudDetection() {
   const [loading, setLoading] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
 
-  useEffect(() => {
-    if (address) {
-      analyzeFraudRisk()
-    }
-  }, [address])
-
-  const analyzeFraudRisk = async () => {
+  const analyzeFraudRisk = useCallback(async () => {
+    if (!address) return;
+    
     try {
       setLoading(true)
       
@@ -132,7 +128,11 @@ export function FraudDetection() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [address, subPay, toast])
+
+  useEffect(() => {
+    analyzeFraudRisk()
+  }, [analyzeFraudRisk])
 
   // Helper function to get dispute count
   async function getDisputeCount(subscriptions: Subscription[]): Promise<number> {

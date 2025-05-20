@@ -6,6 +6,8 @@ import {
   useAccount,
   useBalance,
   usePublicClient,
+  useConfig,
+  useWalletClient,
 } from 'wagmi';
 import {
   type UseWriteContractParameters,
@@ -20,7 +22,7 @@ import { SUBPAY_ABI } from '@/constants/abi';
 import { SUBPAY_ADDRESS } from '@/constants/addresses';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
-import { PublicClient } from 'viem';
+import { PublicClient, type Chain } from 'viem';
 import { appendReferralData, submitReferralTransaction } from '@/lib/referral';
 
 // Token addresses on Celo
@@ -229,6 +231,8 @@ export function useSubPay(): SubPayHook {
   const { toast } = useToast();
   const { address } = useAccount();
   const publicClient = usePublicClient();
+  const config = useConfig();
+  const { data: walletClient } = useWalletClient();
 
   // Get token balances
   const { data: cUSDBalance } = useBalance({
@@ -469,7 +473,7 @@ export function useSubPay(): SubPayHook {
 
   // Subscribe wrapper function
   const subscribe = async (planId: bigint) => {
-    if (!address || !publicClient) {
+    if (!address || !publicClient || !config || !walletClient) {
       toast({
         title: 'Error',
         description: 'Please connect your wallet first',
@@ -560,15 +564,14 @@ export function useSubPay(): SubPayHook {
       // Submit the referral after the transaction is confirmed
       if (txHash != null) {
         try {
-          // Defensive checks for config structure
-          const chain = (config.state as any)?.chain ?? (config.state as any)?.chainId;
-          const connection = (config.state as any)?.connections?.get?.((config.state as any)?.current);
-          const walletClient = connection?.walletClient;
+          const chainId = config.state.chainId;
+          const chains = (config.state as any).chains as Chain[];
+          const chain = chains?.find(c => c.id === chainId);
           if (chain && walletClient) {
             await submitReferralTransaction(txHash, chain, walletClient);
             console.log('Referral submitted successfully');
           } else {
-            console.warn('Could not submit referral: missing chain or walletClient');
+            console.warn('Could not submit referral: missing chain or wallet client');
           }
         } catch (referralError) {
           console.error('Error submitting referral:', referralError);
