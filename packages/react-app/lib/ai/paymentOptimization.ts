@@ -145,10 +145,10 @@ export async function optimizePayment(
           amount,
           timestamp: block.timestamp,
           success: receipt.status === 1,
-          gasUsed: receipt.gasUsed
+          gasUsed: Number(receipt.gasUsed)
         })
 
-        totalGasUsed += receipt.gasUsed
+        totalGasUsed += Number(receipt.gasUsed)
         if (receipt.status === 1) successfulPayments++
       }
     }
@@ -167,8 +167,15 @@ export async function optimizePayment(
 
     // Load model and make prediction
     const model = await loadOptimizationModel()
-    const prediction = await model.predict(features).data()
-    const [optimalAmount, optimalTime] = Array.from(prediction)
+    const predictionTensor = model.predict(features)
+    const prediction = Array.isArray(predictionTensor) 
+      ? await predictionTensor[0].data()
+      : await predictionTensor.data()
+    
+    // Ensure we have valid numbers and handle potential undefined values
+    const [rawOptimalAmount, rawOptimalTime] = Array.from(prediction)
+    const optimalAmount = Number(rawOptimalAmount) || 0
+    const optimalTime = Number(rawOptimalTime) || 0
 
     // Calculate potential savings
     const savings = calculateSavings(patterns, optimalAmount, optimalTime)

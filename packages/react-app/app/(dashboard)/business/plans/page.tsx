@@ -4,8 +4,8 @@ import { useState } from "react"
 import { useAccount } from "wagmi"
 import DashboardLayout from "@/components/Layout/DashboardLayout"
 import { Card, CardContent } from "@/components/ui/card"
-import { CreatePlanForm } from "@/components/subscription/CreatePlanForm"
-import { PlanList } from "@/components/subscription/PlanList"
+import { CreatePlanForm } from "@/components/features/subscription/CreatePlanForm"
+import { PlanList } from "@/components/features/subscription/PlanList"
 import { useSubPay } from "@/hooks/useSubPay"
 
 export default function PlansPage() {

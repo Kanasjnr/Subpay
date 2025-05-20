@@ -6,9 +6,9 @@ import { useAccount } from 'wagmi';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { PlanList } from '@/components/subscription/PlanList';
-import { SubscriptionList } from '@/components/subscription/SubscriptionList';
-import { OpenDisputeForm } from '@/components/subscription/OpenDisputeForm';
+import { PlanList } from '@/components/features/subscription/PlanList';
+import { SubscriptionList } from '@/components/features/subscription/SubscriptionList';
+import { OpenDisputeForm } from '@/components/features/subscription/OpenDisputeForm';
 import {
   Dialog,
   DialogContent,
@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { useSubPay } from '@/hooks/useSubPay';
 import { Coins, DollarSign, Euro } from 'lucide-react';
-import { DisputeList } from '@/components/dispute/DisputeList';
+import { DisputeList } from '@/components/features/dispute/DisputeList';
 
 export default function SubscriberDashboard() {
   const { address } = useAccount();

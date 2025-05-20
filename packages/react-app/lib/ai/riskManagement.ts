@@ -63,7 +63,7 @@ export async function assessRisk(
 
     // Calculate overall risk score
     const overallScore = calculateOverallRisk(
-      fraudAnalysis.riskScore,
+      fraudAnalysis.aiPrediction.isFraudulent ? 100 : 0,
       creditAnalysis.creditScore,
       paymentOptimization?.confidence ?? 0.5
     )
@@ -80,7 +80,7 @@ export async function assessRisk(
 
     return {
       fraudRisk: {
-        score: fraudAnalysis.riskScore,
+        score: fraudAnalysis.aiPrediction.isFraudulent ? 100 : 0,
         isFraudulent: fraudAnalysis.aiPrediction.isFraudulent,
         confidence: fraudAnalysis.aiPrediction.confidence,
         reasons: fraudAnalysis.reasons,

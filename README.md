@@ -208,9 +208,8 @@ The diagram above illustrates the flow of interactions between different compone
 - Fee collection
 
 ### Contract Addresses
-- **Subpay Mainnet Contract:** [0x...] (Add your mainnet contract address here)
-- **Subpay Alfajores Contract:** [0x1D0CB90Feb6eb94AeCC3aCBF9C958D3409916831](https://celo-alfajores.blockscout.com/address/0x1D0CB90Feb6eb94AeCC3aCBF9C958D3409916831)
-- **Subpay Alfajores Contract:** [0x089D37C1Ca872221E37487c1F2D006907561B1fd](https://celo-alfajores.blockscout.com/address/0x089D37C1Ca872221E37487c1F2D006907561B1fd)
+- **Subpay Mainnet Contract:** [0xEe4A24B5138D2C09e160EBe60E579a48DAff0BE1](https://celoscan.io/address/0xEe4A24B5138D2C09e160EBe60E579a48DAff0BE1)
+<!-- - **Subpay Alfajores Contract:** [0x089D37C1Ca872221E37487c1F2D006907561B1fd](https://celo-alfajores.blockscout.com/address/0x089D37C1Ca872221E37487c1F2D006907561B1fd) -->
 
 ### Frontend
 - Next.js 15
@@ -224,6 +223,115 @@ The diagram above illustrates the flow of interactions between different compone
 - Analytics
 - Notification system
 
+## 📁 Project Structure
+
+```
+packages/
+├── react-app/                # Frontend application
+│   ├── app/                 # Next.js app directory
+│   │   ├── (dashboard)/    # Dashboard routes
+│   │   │   ├── business/   # Business dashboard pages
+│   │   │   └── subscriber/ # Subscriber dashboard pages
+│   │   ├── api/           # API routes for backend services
+│   │   └── layout.tsx     # Root layout with PWA support
+│   │
+│   ├── components/         # React components
+│   │   ├── ui/           # Reusable UI components (buttons, cards, etc.)
+│   │   ├── features/     # Feature-specific components
+│   │   │   ├── subscription/  # Subscription management UI
+│   │   │   ├── risk/         # Risk assessment components
+│   │   │   └── dispute/      # Dispute resolution UI
+│   │   └── business/     # Business-specific components
+│   │
+│   ├── config/           # Application configuration
+│   │   ├── env.ts       # Environment variables and validation
+│   │   └── constants.ts # Application constants and settings
+│   │
+│   ├── hooks/           # Custom React hooks
+│   │   └── useSubPay.ts # Main hook for SubPay contract interaction
+│   │
+│   ├── lib/            # Utility functions and services
+│   │   └── ai/        # AI/ML features for risk assessment
+│   │
+│   ├── providers/      # React context providers
+│   │   ├── wagmi.config.ts    # Web3 wallet configuration
+│   │   ├── Web3Provider.tsx   # Web3 context provider
+│   │   └── ModalProvider.tsx  # Modal management
+│   │
+│   ├── public/        # Static assets
+│   │   ├── icons/    # PWA icons
+│   │   └── manifest.json  # PWA manifest
+│   │
+│   ├── styles/       # Global styles and Tailwind config
+│   └── types/        # TypeScript type definitions
+│       └── subpay.ts # SubPay-specific types
+│
+└── hardhat/          # Smart contract development
+    ├── contracts/    # Solidity smart contracts
+    ├── scripts/      # Deployment and utility scripts
+    └── test/        # Contract tests
+```
+
+### Key Directories Explained
+
+#### Frontend (`packages/react-app/`)
+- **`app/`**: Contains all Next.js pages and API routes
+  - `(dashboard)/`: Grouped routes for business and subscriber dashboards
+  - `api/`: Backend API endpoints for analytics and webhooks
+
+- **`components/`**: React components organized by feature
+  - `ui/`: Reusable UI components (buttons, cards, modals)
+  - `features/`: Feature-specific components (subscriptions, risk, disputes)
+  - `business/`: Components specific to business dashboard
+
+- **`config/`**: Application configuration
+  - `env.ts`: Environment variables with validation
+  - `constants.ts`: Application-wide constants
+
+- **`hooks/`**: Custom React hooks
+  - `useSubPay.ts`: Main hook for interacting with SubPay contract
+
+- **`lib/`**: Utility functions and services
+  - `ai/`: AI/ML features for risk assessment and fraud detection
+
+- **`providers/`**: React context providers
+  - Web3 wallet integration
+  - Modal management
+  - Application state
+
+#### Smart Contracts (`packages/hardhat/`)
+- **`contracts/`**: Solidity smart contracts
+  - Subscription management
+  - Payment processing
+  - Dispute resolution
+
+- **`scripts/`**: Deployment and utility scripts
+  - Contract deployment
+  - Contract interaction
+  - Testing utilities
+
+- **`test/`**: Smart contract tests
+  - Unit tests
+  - Integration tests
+  - Security tests
+
+### Development Workflow
+
+1. **Frontend Development**
+   - Components are organized by feature for better maintainability
+   - Shared UI components in `components/ui/`
+   - Feature-specific logic in respective feature directories
+   - Web3 integration through custom hooks and providers
+
+2. **Smart Contract Development**
+   - Contracts are developed and tested in the hardhat package
+   - Contract ABIs are automatically synced to the frontend
+   - Deployment scripts handle contract deployment and verification
+
+3. **Testing Strategy**
+   - Frontend: Component and integration tests
+   - Smart Contracts: Unit tests and security audits
+   - End-to-end: User flow testing
 
 ## 📱 SubPay PWA Features
 
@@ -262,7 +370,6 @@ The project has successfully implemented:
   - Scale infrastructure for increased usage
 
 ### Long-term Vision
-- Cross-chain compatibility
 - Advanced AI integration
 - Global payment network
 - Enterprise solutions

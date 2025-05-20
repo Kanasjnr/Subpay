@@ -22,6 +22,7 @@ import { SUBPAY_ADDRESS } from '@/constants/addresses';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
 import { PublicClient } from 'viem';
+import { appendReferralData, submitReferralTransaction } from '@/lib/referral';
 
 // Token addresses on Celo
 const CUSD_ADDRESS = process.env.NEXT_PUBLIC_CUSD_ADDRESS as `0x${string}`;
@@ -550,7 +551,33 @@ export function useSubPay(): SubPayHook {
         account: address,
       });
 
-      await subscribeWrite(request);
+      // Append referral data to the transaction
+      const txWithReferral =
+        typeof (request as any).data === 'string'
+          ? { ...request, data: appendReferralData((request as any).data) }
+          : request;
+
+      const txHash = await subscribeWrite(txWithReferral);
+      
+      // Submit the referral after the transaction is confirmed
+      if (txHash != null) {
+        try {
+          // Defensive checks for config structure
+          const chain = (config.state as any)?.chain ?? (config.state as any)?.chainId;
+          const connection = (config.state as any)?.connections?.get?.((config.state as any)?.current);
+          const walletClient = connection?.walletClient;
+          if (chain && walletClient) {
+            await submitReferralTransaction(txHash, chain, walletClient);
+            console.log('Referral submitted successfully');
+          } else {
+            console.warn('Could not submit referral: missing chain or walletClient');
+          }
+        } catch (referralError) {
+          console.error('Error submitting referral:', referralError);
+          // Don't throw here - we don't want to fail the subscription if referral fails
+        }
+      }
+
       await refetchSubscriptions();
       return SUBPAY_ADDRESS;
     } catch (error) {
@@ -970,21 +997,7 @@ export function useSubPay(): SubPayHook {
         console.log('PaymentRecorded events found:', recordedEvents);
         console.log('Total events found:', processedEvents.length + recordedEvents.length);
 
-        // Log all events for debugging
-        console.log('All PaymentProcessed events:', processedEvents.map(e => ({
-          subscriber: e.args.subscriber,
-          amount: e.args.amount,
-          txHash: e.transactionHash,
-          blockNumber: e.blockNumber,
-          timestamp: e.blockTimestamp
-        })));
-        console.log('All PaymentRecorded events:', recordedEvents.map(e => ({
-          user: e.args.user,
-          amount: e.args.amount,
-          txHash: e.transactionHash,
-          blockNumber: e.blockNumber,
-          timestamp: e.blockTimestamp
-        })));
+       
 
         // Combine and process both types of events
         const paymentRecords: PaymentRecord[] = [];

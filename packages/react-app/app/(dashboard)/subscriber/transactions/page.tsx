@@ -310,7 +310,7 @@ export default function TransactionsPage() {
                         </div>
                         <div className="font-mono truncate">
                           <a
-                            href={`https://celo-alfajores.blockscout.com/tx/${tx.txHash}`}
+                            href={`https://explorer.celo.org/tx/${tx.txHash}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-primary hover:underline"
