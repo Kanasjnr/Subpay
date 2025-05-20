@@ -164,23 +164,23 @@ export default function Hero() {
   return (
     <section
       ref={containerRef}
-      className="relative pt-32 pb-20 overflow-hidden bg-gradient-to-b from-[#f8fcfa] to-white min-h-screen flex items-center"
+      className="relative pt-24 sm:pt-28 md:pt-32 pb-16 sm:pb-20 overflow-hidden bg-gradient-to-b from-[#f8fcfa] to-white min-h-screen flex items-center"
     >
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12">
           {/* Left Content */}
           <motion.div
-            className="w-full lg:w-1/2"
+            className="w-full lg:w-1/2 text-center lg:text-left"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="max-w-lg">
+            <div className="max-w-lg mx-auto lg:mx-0">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
                 <motion.span
-                  className="inline-block py-1 px-3 rounded-full bg-[#35D07F]/20 text-[#35D07F] text-sm font-medium mb-6"
+                  className="inline-block py-1 px-3 rounded-full bg-[#35D07F]/20 text-[#35D07F] text-sm font-medium mb-4 sm:mb-6"
                   animate={{
                     boxShadow: [
                       "0px 0px 0px rgba(53, 208, 127, 0)",
@@ -194,7 +194,7 @@ export default function Hero() {
                 </motion.span>
               </motion.div>
               <motion.h1
-                className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6 text-gray-900"
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-4 sm:mb-6 text-gray-900"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
@@ -214,7 +214,7 @@ export default function Hero() {
                 </span>
               </motion.h1>
               <motion.p
-                className="text-xl text-gray-600 mb-8"
+                className="text-lg sm:text-xl text-gray-600 mb-6 sm:mb-8"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
@@ -222,14 +222,14 @@ export default function Hero() {
                 Seamless, automated recurring payments on the blockchain with full user control and transparency.
               </motion.p>
               <motion.div
-                className="flex flex-wrap gap-4"
+                className="flex flex-wrap justify-center lg:justify-start gap-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
               >
                 <motion.a
                   href="#get-started"
-                  className="bg-[#35D07F] hover:bg-[#35D07F]/90 text-white font-medium rounded-lg px-6 py-3 inline-flex items-center transition-colors"
+                  className="w-full sm:w-auto bg-[#35D07F] hover:bg-[#35D07F]/90 text-white font-medium rounded-lg px-6 py-3 inline-flex items-center justify-center transition-colors"
                   whileHover={{ scale: 1.05, x: 5 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -244,7 +244,7 @@ export default function Hero() {
                 </motion.a>
                 <motion.a
                   href="#demo"
-                  className="bg-transparent hover:bg-[#35D07F]/10 text-gray-800 border border-gray-300 font-medium rounded-lg px-6 py-3 inline-flex items-center transition-colors"
+                  className="w-full sm:w-auto bg-transparent hover:bg-[#35D07F]/10 text-gray-800 border border-gray-300 font-medium rounded-lg px-6 py-3 inline-flex items-center justify-center transition-colors"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >

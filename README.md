@@ -5,6 +5,7 @@
 SubPay is a decentralized finance (DeFi) protocol that enables automated, recurring subscription payments using stablecoins on the Celo blockchain. It bridges the gap between traditional subscription models and blockchain technology, offering businesses an efficient way to manage subscriptions while giving users full control over their payments.
 
 ### Recent Updates
+- **Proof of Ship Season 4 Update**: Successfully deployed on Celo Mainnet! 🎉
 - Watch our latest update video for Proof of Ship Season 3: [SubPay Update Video](https://youtu.be/GxkoArHgBBI)
 - Watch our Proof of Ship Season 2 update: [SubPay Season 2 Update](https://www.youtube.com/watch?v=xqlpGN4L31o)
 
@@ -207,8 +208,9 @@ The diagram above illustrates the flow of interactions between different compone
 - Fee collection
 
 ### Contract Addresses
-- **Subpay Contract:** [0x1D0CB90Feb6eb94AeCC3aCBF9C958D3409916831](https://celo-alfajores.blockscout.com/address/0x1D0CB90Feb6eb94AeCC3aCBF9C958D3409916831)
-- **Subpay Contract:** [0x089D37C1Ca872221E37487c1F2D006907561B1fd](https://celo-alfajores.blockscout.com/address/0x089D37C1Ca872221E37487c1F2D006907561B1fd)
+- **Subpay Mainnet Contract:** [0x...] (Add your mainnet contract address here)
+- **Subpay Alfajores Contract:** [0x1D0CB90Feb6eb94AeCC3aCBF9C958D3409916831](https://celo-alfajores.blockscout.com/address/0x1D0CB90Feb6eb94AeCC3aCBF9C958D3409916831)
+- **Subpay Alfajores Contract:** [0x089D37C1Ca872221E37487c1F2D006907561B1fd](https://celo-alfajores.blockscout.com/address/0x089D37C1Ca872221E37487c1F2D006907561B1fd)
 
 ### Frontend
 - Next.js 15
@@ -241,6 +243,9 @@ The project has successfully implemented:
 - Business and subscriber dashboards
 - Payment processing with cUSD
 - Dispute resolution system
+- **Mainnet Deployment** on Celo Network
+- Enhanced security features based on Season 3 feedback
+- Improved gas optimization for mainnet deployment
 
 ## 🔮 Future Development
 
@@ -250,6 +255,11 @@ The project has successfully implemented:
 - Add more subscription models
 - Improve user experience
 - Expand analytics capabilities
+- **Post-Mainnet Launch**:
+  - Monitor and optimize gas usage
+  - Gather user feedback from mainnet deployment
+  - Implement additional security measures
+  - Scale infrastructure for increased usage
 
 ### Long-term Vision
 - Cross-chain compatibility
