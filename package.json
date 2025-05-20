@@ -1,20 +1,23 @@
 {
   "author": "kanas",
   "bugs": {
-    "url": "https://github.com/celo-org/celo-composer/issues"
+    "url": "https://github.com/kanas/subpay/issues"
   },
-  "description": "Custom Celo Composer project.",
-  "homepage": "https://github.com/celo-org/celo-composer/blob/main/README.md",
+  "description": "SubPay - A subscription payment platform on Celo",
+  "homepage": "https://github.com/kanas/subpay/blob/main/README.md",
   "keywords": [
-    "celo-composer",
-    "celo"
+    "celo",
+    "web3",
+    "subscription",
+    "payments",
+    "defi"
   ],
   "license": "MIT",
   "name": "subpay",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/celo-org/celo-composer.git"
+    "url": "git+https://github.com/kanas/subpay.git"
   },
   "scripts": {
     "react-app:dev": "yarn workspace @subpay/react-app dev",
