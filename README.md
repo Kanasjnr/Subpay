@@ -2,18 +2,22 @@
 
 ## 📑 Project Description
 
-SubPay is a decentralized finance (DeFi) protocol that enables automated, recurring subscription payments using stablecoins. It bridges the gap between traditional subscription models and blockchain technology, offering businesses an efficient way to manage subscriptions while giving users full control over their payments.
+SubPay is a decentralized finance (DeFi) protocol that enables automated, recurring subscription payments using stablecoins on the Celo blockchain. It bridges the gap between traditional subscription models and blockchain technology, offering businesses an efficient way to manage subscriptions while giving users full control over their payments.
 
-### Key Features
+### Recent Updates
+- **Proof of Ship Season 4 Update**: Successfully deployed on Celo Mainnet! 🎉
+- Watch our latest update video for Proof of Ship Season 3: [SubPay Update Video](https://youtu.be/GxkoArHgBBI)
+- Watch our Proof of Ship Season 2 update: [SubPay Season 2 Update](https://www.youtube.com/watch?v=xqlpGN4L31o)
+
+### Key Features (Implemented)
 
 - **Smart Contract-Based Subscriptions** – Automates recurring payments with user-defined parameters.
-- **Stablecoin Integration** – Eliminates volatility concerns with Stable coin payments.
-- **AI-Powered Risk Management** – Credit risk assessment, fraud detection, and payment optimization.
+- **Stablecoin Integration** – Uses cUSD for stable payments.
+- **Fraud Detection System** – Real-time monitoring of suspicious activities and payment patterns.
 - **Business Management Dashboard** – Tools for creating, monitoring, and managing subscriptions.
 - **User Sovereignty** – Transparent billing, easy modifications, and full user control over payments.
-- **Low Transaction Costs** – Reduces fees (0.1-0.5%) compared to traditional payment processors (2-5%).
+- **Low Transaction Costs** – Reduces fees compared to traditional payment processors.
 - **Progressive Web App** – Access features across desktop and mobile with offline support.
-
 
 ## 🔍 Problem Statement
 
@@ -26,112 +30,308 @@ The current Web3 ecosystem lacks efficient subscription payment solutions due to
 - **Complex User Experience** – Many existing crypto subscription models require manual renewals.
 - **Cross-Border Limitations** – High fees and regulatory barriers for global transactions.
 
-
-**SubPay solves these issues by enabling smart contract-driven, stablecoin-based, and AI-optimized subscription payments.**
-
 ## 💡 Solution Overview
 
 ### Core Components
 
 1. **Smart Contract Subscription Framework**
-
-1. Handles subscription creation, execution, and termination.
-
-
+   - Handles subscription creation, execution, and termination.
+   - Manages recurring payments and billing cycles.
+   - Provides dispute resolution mechanisms.
 
 2. **Stablecoin-Powered Payments**
+   - Uses cUSD for price stability.
+   - Enables global payments without volatility.
+   - Reduces transaction costs.
 
-1. Uses **cUSD & cEUR** to provide price stability.
-
-
-
-3. **AI-Enhanced Risk Management**
-
-1. Detects fraud, predicts payment failures, and assesses creditworthiness.
-
-
+3. **Fraud Detection & Risk Management**
+   - Real-time monitoring of payment patterns.
+   - Credit score assessment.
+   - Suspicious activity detection.
+   - Automated risk scoring.
 
 4. **Automated Billing & Notifications**
-
-1. Smart contracts handle scheduled payments, sending alerts for upcoming transactions.
-
-
+   - Smart contracts handle scheduled payments.
+   - Automated alerts for upcoming transactions.
+   - Payment success/failure notifications.
 
 5. **User & Business Dashboards**
-
-1. **Subscribers:** Manage subscriptions, cancel, or modify anytime.
-2. **Businesses:** Set up pricing models, track revenue, and manage subscribers.
-
-
+   - **Subscribers:** Manage subscriptions, cancel, or modify anytime.
+   - **Businesses:** Set up pricing models, track revenue, and manage subscribers.
 
 6. **On-Chain Dispute Resolution**
+   - Transparent mechanism for handling disputes.
+   - Evidence submission and verification.
+   - Automated refund processing.
 
-1. Provides a transparent mechanism for handling disputes and refunds.
+## 🔄 Application Flow
 
+### 1. Subscription Creation
+- Business creates subscription plan with parameters (price, duration, etc.)
+- Smart contract validates and stores plan details
+- Plan becomes available for subscribers
 
+### 2. Subscription Management
+- Subscribers browse available plans
+- Connect wallet and approve cUSD spending
+- Subscribe to chosen plan
+- Smart contract handles recurring payments automatically
 
+### 3. Payment Processing
+- Automated payment execution at scheduled intervals
+- Real-time balance checking
+- Payment success/failure notifications
+- Transaction history tracking
 
+### 4. Fraud Detection & Risk Management
+- Real-time monitoring of payment patterns
+- Credit score assessment
+- Suspicious activity detection
+- Risk score calculation
+- Automated alerts for potential fraud
+
+### 5. Dispute Resolution
+- On-chain dispute creation
+- Evidence submission
+- Resolution process
+- Refund handling
+
+## 📊 Contract Flow
+
+```mermaid
+graph TD
+    A[Business] -->|Create Subscription Plan| B[Smart Contract]
+    B -->|Store Plan Details| C[On-chain Storage]
+    D[Subscriber] -->|Connect Wallet| E[Wallet Integration]
+    E -->|Approve cUSD| F[Payment Authorization]
+    F -->|Subscribe| B
+    B -->|Schedule Payment| G[Payment Scheduler]
+    G -->|Execute Payment| H[Payment Processor]
+    H -->|Verify Balance| I[Balance Checker]
+    I -->|Process Payment| J[Transaction Handler]
+    J -->|Update Status| K[Subscription State]
+    K -->|Notify| L[Notification System]
+    M[Fraud Detection] -->|Monitor| H
+    M -->|Alert| N[Risk Management]
+    N -->|Update Score| O[Credit Scoring]
+```
+
+The diagram above illustrates the flow of interactions between different components of the SubPay protocol:
+
+1. **Business Layer**
+   - Businesses create subscription plans
+   - Plans are stored on-chain
+   - Parameters are immutable once set
+
+2. **Subscriber Layer**
+   - Wallet connection and authorization
+   - cUSD approval for recurring payments
+   - Subscription management
+
+3. **Payment Layer**
+   - Automated payment scheduling
+   - Balance verification
+   - Transaction processing
+   - State management
+
+4. **Security Layer**
+   - Real-time fraud monitoring
+   - Risk assessment
+   - Credit scoring
+   - Automated alerts
+
+## 🎯 Use Cases
+
+### 1. Content Platforms
+- News websites
+- Streaming services
+- Educational platforms
+
+### 2. SaaS Businesses
+- Software subscriptions
+- Cloud services
+- API access
+
+### 3. Membership Services
+- DAO memberships
+- Community access
+- Premium features
+
+### 4. Utility Services
+- Internet providers
+- Cloud storage
+- API services
 
 ## 🏆 Competitive Advantages
 
 - **Cost Efficiency:** Lower fees compared to traditional processors.
-- **AI-Driven Risk Management:** Unique fraud detection and credit scoring features.
+- **Advanced Risk Management:** Real-time fraud detection and credit scoring.
 - **Mobile-First Design:** Built for Celo's mobile-friendly blockchain.
 - **Global Accessibility:** Borderless payments with stablecoin support.
 - **Security & Transparency:** Immutable smart contract-based billing.
-- **⚙️ Programmable Subscriptions:** Dynamic pricing, usage-based billing, and DAO membership models.
 
+- **Programmable Subscriptions:** Dynamic pricing and usage-based billing.
 
-## 📐 Technical Architecture
+## 🚀 Project Milestones
 
-### **1️⃣ Core Protocol Layer**
+### ✅ Completed
+- Smart contract development and deployment
+- Basic subscription functionality
+- Wallet integration
+- Payment processing
+- Basic fraud detection system
+- Business dashboard
+- Subscriber interface
+- PWA implementation
 
-- **Subpay Contract** – Performs all core functions.
-  
-- **Subpay Contract Addresses :** 0x1D0CB90Feb6eb94AeCC3aCBF9C958D3409916831
-- **Subpay Contract Addresses :** 0x089D37C1Ca872221E37487c1F2D006907561B1fd
+### 🚧 In Progress
+- Enhanced fraud detection algorithms
+- Advanced analytics dashboard
+- Multi-currency support
+- Automated dispute resolution
+- Integration with more wallets
 
- - **View on alfajores scan:** (https://celo-alfajores.blockscout.com/address/0x1D0CB90Feb6eb94AeCC3aCBF9C958D3409916831)
- - **View on alfajores scan:** (https://celo-alfajores.blockscout.com/address/0x089D37C1Ca872221E37487c1F2D006907561B1fd)
+### 📅 Upcoming
+- AI-powered risk assessment
+- Cross-chain compatibility
+- Advanced subscription models
+- Developer API
+- Mobile app development
+- Integration with traditional payment systems
 
+## 🛠️ Technical Implementation
 
- 
+### Smart Contracts
+- Subscription management
+- Payment processing
+- Dispute resolution
+- Fee collection
 
+### Contract Addresses
+- **Subpay Mainnet Contract:** [0xEe4A24B5138D2C09e160EBe60E579a48DAff0BE1](https://celoscan.io/address/0xEe4A24B5138D2C09e160EBe60E579a48DAff0BE1)
+<!-- - **Subpay Alfajores Contract:** [0x089D37C1Ca872221E37487c1F2D006907561B1fd](https://celo-alfajores.blockscout.com/address/0x089D37C1Ca872221E37487c1F2D006907561B1fd) -->
 
+### Frontend
+- Next.js 15
+- Tailwind CSS
+- RainbowKit for wallet integration
+- Real-time updates
 
-### **2️⃣ AI Analytics Layer**
+### Backend Services
+- Payment processing
+- Fraud detection
+- Analytics
+- Notification system
 
-- **Risk Assessment Engine** – Generates credit risk profiles.
-- **Fraud Detection System** – Monitors suspicious activities.
-- **Payment Prediction Module** – Forecasts potential failures.
-- **Churn Analysis System** – Identifies at-risk subscribers.
+## 📁 Project Structure
 
+```
+packages/
+├── react-app/                # Frontend application
+│   ├── app/                 # Next.js app directory
+│   │   ├── (dashboard)/    # Dashboard routes
+│   │   │   ├── business/   # Business dashboard pages
+│   │   │   └── subscriber/ # Subscriber dashboard pages
+│   │   ├── api/           # API routes for backend services
+│   │   └── layout.tsx     # Root layout with PWA support
+│   │
+│   ├── components/         # React components
+│   │   ├── ui/           # Reusable UI components (buttons, cards, etc.)
+│   │   ├── features/     # Feature-specific components
+│   │   │   ├── subscription/  # Subscription management UI
+│   │   │   ├── risk/         # Risk assessment components
+│   │   │   └── dispute/      # Dispute resolution UI
+│   │   └── business/     # Business-specific components
+│   │
+│   ├── config/           # Application configuration
+│   │   ├── env.ts       # Environment variables and validation
+│   │   └── constants.ts # Application constants and settings
+│   │
+│   ├── hooks/           # Custom React hooks
+│   │   └── useSubPay.ts # Main hook for SubPay contract interaction
+│   │
+│   ├── lib/            # Utility functions and services
+│   │   └── ai/        # AI/ML features for risk assessment
+│   │
+│   ├── providers/      # React context providers
+│   │   ├── wagmi.config.ts    # Web3 wallet configuration
+│   │   ├── Web3Provider.tsx   # Web3 context provider
+│   │   └── ModalProvider.tsx  # Modal management
+│   │
+│   ├── public/        # Static assets
+│   │   ├── icons/    # PWA icons
+│   │   └── manifest.json  # PWA manifest
+│   │
+│   ├── styles/       # Global styles and Tailwind config
+│   └── types/        # TypeScript type definitions
+│       └── subpay.ts # SubPay-specific types
+│
+└── hardhat/          # Smart contract development
+    ├── contracts/    # Solidity smart contracts
+    ├── scripts/      # Deployment and utility scripts
+    └── test/        # Contract tests
+```
 
-### **3️⃣ Interface Layer**
+### Key Directories Explained
 
-- **Subscriber dApp** – Mobile-optimized UI for managing subscriptions.
-- **Business Dashboard** – Tools for subscription plan creation and revenue tracking.
-- **Developer Console** – SDKs and APIs for third-party integration.
-- **Analytics Portal** – Reporting tools for performance insights.
+#### Frontend (`packages/react-app/`)
+- **`app/`**: Contains all Next.js pages and API routes
+  - `(dashboard)/`: Grouped routes for business and subscriber dashboards
+  - `api/`: Backend API endpoints for analytics and webhooks
 
+- **`components/`**: React components organized by feature
+  - `ui/`: Reusable UI components (buttons, cards, modals)
+  - `features/`: Feature-specific components (subscriptions, risk, disputes)
+  - `business/`: Components specific to business dashboard
 
-### **4️⃣ Integration Layer**
+- **`config/`**: Application configuration
+  - `env.ts`: Environment variables with validation
+  - `constants.ts`: Application-wide constants
 
-- **API Gateway** – RESTful APIs for easy service integration.
-- **SDK Library** – Development kits for various programming languages.
-- **Webhook System** – Real-time event notifications.
-- **Identity Verification Module** – Optional KYC integration.
-- **Accounting Connectors** – Integrates with existing ERP systems.
+- **`hooks/`**: Custom React hooks
+  - `useSubPay.ts`: Main hook for interacting with SubPay contract
 
+- **`lib/`**: Utility functions and services
+  - `ai/`: AI/ML features for risk assessment and fraud detection
 
-## 💰 Revenue Model & Tokenomics
+- **`providers/`**: React context providers
+  - Web3 wallet integration
+  - Modal management
+  - Application state
 
-### **Fee Structure**
+#### Smart Contracts (`packages/hardhat/`)
+- **`contracts/`**: Solidity smart contracts
+  - Subscription management
+  - Payment processing
+  - Dispute resolution
 
-- **0.5-1%** transaction fee per successful subscription payment.
-- **Tiered pricing** for businesses (lower fees for higher volumes).
-- **Premium features** available via paid subscriptions.
+- **`scripts/`**: Deployment and utility scripts
+  - Contract deployment
+  - Contract interaction
+  - Testing utilities
 
+- **`test/`**: Smart contract tests
+  - Unit tests
+  - Integration tests
+  - Security tests
+
+### Development Workflow
+
+1. **Frontend Development**
+   - Components are organized by feature for better maintainability
+   - Shared UI components in `components/ui/`
+   - Feature-specific logic in respective feature directories
+   - Web3 integration through custom hooks and providers
+
+2. **Smart Contract Development**
+   - Contracts are developed and tested in the hardhat package
+   - Contract ABIs are automatically synced to the frontend
+   - Deployment scripts handle contract deployment and verification
+
+3. **Testing Strategy**
+   - Frontend: Component and integration tests
+   - Smart Contracts: Unit tests and security audits
+   - End-to-end: User flow testing
 
 ## 📱 SubPay PWA Features
 
@@ -143,104 +343,45 @@ The current Web3 ecosystem lacks efficient subscription payment solutions due to
 - **Push Notifications**: Receive updates about payments and subscription status
 - **Responsive Design**: Seamless experience across desktop and mobile devices
 
+## 📊 Current Status
 
-## 🚀 Getting Started
+The project has successfully implemented:
+- Core subscription functionality
+- Basic fraud detection
+- Business and subscriber dashboards
+- Payment processing with cUSD
+- Dispute resolution system
+- **Mainnet Deployment** on Celo Network
+- Enhanced security features based on Season 3 feedback
+- Improved gas optimization for mainnet deployment
 
-### Prerequisites
+## 🔮 Future Development
 
-- **Node.js** & **Yarn/npm** installed
-- **Hardhat** for smart contract development
-- **Celo Wallet** for test transactions
+### Short-term Goals
+- Implement Superfluid subscription widget for enhanced payment streaming capabilities
+- Enhance fraud detection accuracy
+- Add more subscription models
+- Improve user experience
+- Expand analytics capabilities
+- **Post-Mainnet Launch**:
+  - Monitor and optimize gas usage
+  - Gather user feedback from mainnet deployment
+  - Implement additional security measures
+  - Scale infrastructure for increased usage
 
+### Long-term Vision
+- Advanced AI integration
+- Global payment network
+- Enterprise solutions
 
-### Installation
+## 🌎 Connect with Us
 
-Clone the repository and install dependencies:
-
-```shellscript
-$ git clone https://github.com/your-repo/celosubpay.git
-$ cd celosubpay
-$ yarn install
-```
-
-### Deploy Smart Contracts
-
-```shellscript
-$ npx hardhat compile
-$ npx hardhat run scripts/deploy.js --network alfajores
-```
-
-### Run the Frontend
-
-```shellscript
-$ cd react-app
-$ yarn start
-```
-
-### Set up environment variables:
-
-```shellscript
-cp .env.template .env.local
-```
-
-Fill in the required environment variables:
-
-- `NEXT_PUBLIC_SUBPAY_CONTRACT_ADDRESS`: Your deployed SubPay contract address
-- `NEXT_PUBLIC_VAPID_PUBLIC_KEY`: Your VAPID public key for push notifications
-
-
-## 📁 Project Structure
-
-```plaintext
-packages/react-app/
-├── app/                    # Next.js app directory
-│   ├── business/          # Business dashboard pages
-│   ├── subscriber/        # Subscriber dashboard pages
-│   └── layout.tsx         # Root layout with PWA meta tags
-├── components/            # Reusable UI components
-│   └── ui/               # Base UI components
-├── hooks/                # Custom React hooks
-│   ├── useSubPay.ts      # Smart contract interaction
-│   └── usePushNotifications.ts  # Push notification management
-├── lib/                  # Utility functions and constants
-├── public/              # Static assets
-│   ├── icons/          # PWA icons
-│   ├── manifest.json   # PWA manifest
-│   └── sw.js           # Service worker
-└── styles/             # Global styles
-```
-
-## 🛠️ Tech Stack
-
-- **Frontend:** Next.js 15, Tailwind CSS, RainbowKit, Wagmi, Framer Motion, Radix UI
-- **Smart Contracts:** Solidity, Hardhat
-- **AI Components:** TensorFlow.js
-- **Testing:** Chai
-
-
-## 👥 Contributing
-
-We welcome contributions from the community! 🚀
-
-1. Fork the repository
-2. Create a new feature branch (`git checkout -b feature-name`)
-3. Commit your changes (`git commit -m 'Add new feature'`)
-4. Push to your fork (`git push origin feature-name`)
-5. Open a Pull Request 🎉
-
+- **Documentation:** [Docs](https://subpay.hashnode.space/default-guide/celosubpay-a-defi-based-subscription-payment-protocol)
+- **Email:** [nasihudeen04@gmail.com](mailto:nasihudeen04@gmail.com)
 
 ## 🛡️ License
 
 This project is licensed under the **MIT License** – see the [LICENSE](LICENSE) file for details.
-
-## 🌎 Connect with Us
-
-- **Website:** [Coming Soon]
-<!-- - **Twitter:** [@CeloSubPay](https://twitter.com/CeloSubPay)
-- **Discord:** [Join the Community](https://discord.gg/celosubpay) -->
-- **Documentation:** [Docs](https://subpay.hashnode.space/default-guide/celosubpay-a-defi-based-subscription-payment-protocol)
-- **Email:** [nasihudeen04@gmail.com](mailto:nasihudeen04@gmail.com)
-
 
 ## 📊 Project Status
 

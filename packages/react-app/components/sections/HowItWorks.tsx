@@ -55,28 +55,28 @@ export default function HowItWorks() {
     <section
       ref={containerRef}
       id="how-it-works"
-      className="py-24 bg-white relative overflow-hidden"
+      className="py-16 sm:py-20 md:py-24 bg-white relative overflow-hidden"
     >
       {/* Animated background elements */}
       <motion.div
-        className="absolute top-0 right-0 w-1/3 h-1/3 bg-green-50 rounded-bl-full opacity-50"
+        className="absolute top-0 right-0 w-1/2 sm:w-1/3 h-1/2 sm:h-1/3 bg-green-50 rounded-bl-full opacity-50"
         style={{ y: useTransform(scrollYProgress, [0, 1], [-50, 50]) }}
       />
       <motion.div
-        className="absolute bottom-0 left-0 w-1/4 h-1/4 bg-green-50 rounded-tr-full opacity-50"
+        className="absolute bottom-0 left-0 w-1/3 sm:w-1/4 h-1/3 sm:h-1/4 bg-green-50 rounded-tr-full opacity-50"
         style={{ y: useTransform(scrollYProgress, [0, 1], [50, -50]) }}
       />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div
-          className="text-center max-w-3xl mx-auto mb-16"
+          className="text-center max-w-3xl mx-auto mb-12 sm:mb-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
           <motion.span
-            className="inline-block py-1 px-3 rounded-full bg-green-100 text-forest text-sm font-medium mb-6"
+            className="inline-block py-1 px-3 rounded-full bg-green-100 text-forest text-sm font-medium mb-4 sm:mb-6"
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
@@ -85,7 +85,7 @@ export default function HowItWorks() {
             Simple Process
           </motion.span>
           <motion.h2
-            className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
+            className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -94,7 +94,7 @@ export default function HowItWorks() {
             How SubPay Works
           </motion.h2>
           <motion.p
-            className="text-lg text-gray-600"
+            className="text-base sm:text-lg text-gray-600"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -105,20 +105,20 @@ export default function HowItWorks() {
           </motion.p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 md:gap-16 items-center">
           {/* Left - Steps */}
-          <div className="space-y-10">
+          <div className="space-y-8 sm:space-y-10">
             {steps.map((step, index) => (
               <motion.div
                 key={index}
-                className="flex gap-4"
+                className="flex gap-3 sm:gap-4"
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: '-100px' }}
                 transition={{ duration: 0.5, delay: index * 0.05 }}
               >
                 <motion.div
-                  className={`h-14 w-14 shrink-0 rounded-full ${step.color} flex items-center justify-center`}
+                  className={`h-12 w-12 sm:h-14 sm:w-14 shrink-0 rounded-full ${step.color} flex items-center justify-center`}
                   animate={{
                     boxShadow: [
                       '0px 0px 0px rgba(0,0,0,0)',
@@ -137,7 +137,7 @@ export default function HowItWorks() {
                 <div>
                   <div className="flex items-center">
                     <motion.span
-                      className="bg-gray-200 text-gray-800 font-bold text-xs rounded-full h-6 w-6 flex items-center justify-center mr-2"
+                      className="bg-gray-200 text-gray-800 font-bold text-xs rounded-full h-5 w-5 sm:h-6 sm:w-6 flex items-center justify-center mr-2"
                       initial={{ scale: 0 }}
                       whileInView={{ scale: 1 }}
                       viewport={{ once: true }}
@@ -149,27 +149,26 @@ export default function HowItWorks() {
                     >
                       {index + 1}
                     </motion.span>
-                    <h3 className="font-semibold text-xl text-gray-900">
+                    <h3 className="font-semibold text-lg sm:text-xl text-gray-900">
                       {step.title}
                     </h3>
                   </div>
-                  <p className="mt-2 text-gray-600">{step.description}</p>
+                  <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600">{step.description}</p>
                 </div>
               </motion.div>
             ))}
 
             {/* Connecting lines between steps */}
-
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="mt-8"
+              className="mt-6 sm:mt-8"
             >
               <motion.a
                 href="#"
-                className="inline-flex items-center bg-forest hover:bg-forest/90 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                className="inline-flex items-center justify-center w-full sm:w-auto bg-forest hover:bg-forest/90 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                 whileHover={{ scale: 1.05, x: 5 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -199,7 +198,7 @@ export default function HowItWorks() {
 
           {/* Right - Illustration */}
           <motion.div
-            className="relative"
+            className="relative mt-8 md:mt-0"
             style={{ y }}
             initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -207,7 +206,7 @@ export default function HowItWorks() {
             transition={{ duration: 0.8 }}
           >
             <motion.div
-              className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 relative z-10"
+              className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-gray-100 relative z-10"
               animate={{
                 y: [0, -10, 0],
                 boxShadow: [
@@ -222,10 +221,10 @@ export default function HowItWorks() {
                 repeatType: 'reverse',
               }}
             >
-              <div className="flex justify-between items-center mb-8">
+              <div className="flex justify-between items-center mb-6 sm:mb-8">
                 <div className="flex items-center">
-                  <Logo size={36} className="mr-3" animated={false} />
-                  <h3 className="text-xl font-bold text-gray-900">
+                  <Logo size={28} className="mr-2 sm:mr-3" animated={false} />
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900">
                     SubPay Dashboard
                   </h3>
                 </div>
@@ -240,7 +239,7 @@ export default function HowItWorks() {
                   }}
                 >
                   <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                  <span className="text-sm text-green-600 font-medium">
+                  <span className="text-xs sm:text-sm text-green-600 font-medium">
                     Live
                   </span>
                 </motion.div>

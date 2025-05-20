@@ -74,9 +74,9 @@ export default function Header() {
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center">
-              <Logo size={32} className="mr-2" animated={false} />
+              <Logo size={28} className="mr-2" animated={false} />
               <motion.span
-                className="font-extrabold text-lg sm:text-xl text-gray-900"
+                className="font-extrabold text-base sm:text-lg md:text-xl text-gray-900"
                 initial={{ opacity: 1, x: 0 }}
                 animate={{ opacity: 1, x: 0 }}
               >
@@ -110,16 +110,17 @@ export default function Header() {
 
             {/* Mobile Menu Button */}
             <motion.button
-              className="lg:hidden text-gray-900"
+              className="lg:hidden text-gray-900 p-2 -mr-2"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               initial={{ opacity: 1 }}
               animate={{ opacity: 1 }}
               whileTap={{ scale: 0.95 }}
+              aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
-                <X className="h-5 w-5" />
+                <X className="h-6 w-6" />
               ) : (
-                <Menu className="h-5 w-5" />
+                <Menu className="h-6 w-6" />
               )}
             </motion.button>
           </div>
@@ -130,25 +131,26 @@ export default function Header() {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 1, height: 'auto' }}
+            initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-white border-t border-gray-100"
+            className="lg:hidden fixed top-[60px] left-0 right-0 bg-white border-t border-gray-100 shadow-lg z-40"
           >
-            <div className="container mx-auto px-4 py-3 space-y-3">
+            <div className="container mx-auto px-4 py-4 space-y-4">
               {navItems.map((item) => (
                 <motion.a
                   key={item.name}
                   href={item.href}
-                  className="block text-gray-700 py-2 font-extrabold"
+                  className="block text-gray-700 py-3 font-extrabold text-lg border-b border-gray-100 last:border-0"
                   onClick={() => setMobileMenuOpen(false)}
-                  initial={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2 }}
                 >
                   {item.name}
                 </motion.a>
               ))}
-              <div className="pt-2 border-t border-gray-100">
+              <div className="pt-4 border-t border-gray-100">
                 <ConnectButton />
               </div>
             </div>

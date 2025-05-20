@@ -1,25 +1,35 @@
-import { ethers, network, run } from "hardhat"
+import { network, run } from "hardhat"
+import { ethers } from "hardhat"
 import dotenv from "dotenv"
 
 // Load environment variables
 dotenv.config()
 
-// Constants for cUSD and cEUR addresses on different networks
+// Token addresses for Celo Mainnet
 const TOKENS = {
- 
-  // Celo Alfajores Testnet
-  alfajores: {
-    cUSD: process.env.CUSD_ADDRESS ,
-    cEUR: process.env.CEUR_ADDRESS ,
-  },
- 
-  
+  celo: {
+    cUSD: "0x765de816845861e75a25fca122bb6898b8b1282a", // Celo Dollar (cUSD)
+    cEUR: "0xd8763cba276a3738e6de85b4b3bf5fded6d6ca73", // Celo Euro (cEUR)
+  }
 }
 
 async function main() {
-  console.log(`Deploying SubPay to ${network.name}...`)
+  console.log("🚀 Starting SubPay Mainnet Deployment")
+  console.log("==========================================")
+  console.log(`🌐 Network: ${network.name}`)
+  console.log(`🔗 Chain ID: ${network.config.chainId}`)
+  console.log("==========================================")
 
-  // Get signers - FIXED: Handle case where not all signers are available
+  if (network.name !== "celo") {
+    throw new Error("This script is intended for Celo Mainnet deployment only")
+  }
+
+  console.log("⚠️  ATTENTION: Deploying to Celo Mainnet")
+  console.log("💰 This will cost real CELO tokens")
+  console.log("🔒 Make sure you have sufficient funds for deployment")
+  console.log("==========================================")
+
+  // Get signers
   const signers = await ethers.getSigners();
   const deployer = signers[0];
   const feeCollector = signers.length > 1 ? signers[1] : deployer;
@@ -27,79 +37,74 @@ async function main() {
   const oracle = signers.length > 3 ? signers[3] : deployer;
   const provider = signers.length > 4 ? signers[4] : deployer;
   
-  console.log(`Deployer address: ${deployer.address}`)
-  console.log(`Fee collector address: ${feeCollector.address}`)
-  console.log(`Arbitrator address: ${arbitrator.address}`)
-  console.log(`Oracle address: ${oracle.address}`)
-  console.log(`Provider address: ${provider.address}`)
+  console.log("👥 Role Assignments:")
+  console.log(`   👤 Deployer: ${deployer.address}`)
+  console.log(`   💰 Fee Collector: ${feeCollector.address}`)
+  console.log(`   ⚖️  Arbitrator: ${arbitrator.address}`)
+  console.log(`   🔮 Oracle: ${oracle.address}`)
+  console.log(`   🏥 Provider: ${provider.address}`)
+  console.log("==========================================")
 
-  // Deploy mock tokens if on local network
-  let cUSDAddress = TOKENS[network.name]?.cUSD
-  let cEURAddress = TOKENS[network.name]?.cEUR
+  // Get token addresses
+  const cUSDAddress = TOKENS.celo.cUSD
+  const cEURAddress = TOKENS.celo.cEUR
 
-  if (!cUSDAddress || !cEURAddress) {
-    console.log("Deploying mock tokens for local development...")
-
-    const MockToken = await ethers.getContractFactory("MockERC20")
-
-    const mockCUSD = await MockToken.deploy("Mock cUSD", "cUSD", 18)
-    await mockCUSD.waitForDeployment()
-    cUSDAddress = await mockCUSD.getAddress()
-    console.log(`Mock cUSD deployed to: ${cUSDAddress}`)
-
-    const mockCEUR = await MockToken.deploy("Mock cEUR", "cEUR", 18)
-    await mockCEUR.waitForDeployment()
-    cEURAddress = await mockCEUR.getAddress()
-    console.log(`Mock cEUR deployed to: ${cEURAddress}`)
-  } else {
-    console.log(`Using existing token addresses for ${network.name}:`)
-    console.log(`cUSD: ${cUSDAddress}`)
-    console.log(`cEUR: ${cEURAddress}`)
-  }
+  console.log("💎 Token Addresses:")
+  console.log(`   💵 cUSD: ${cUSDAddress}`)
+  console.log(`   💶 cEUR: ${cEURAddress}`)
+  console.log("==========================================")
 
   // Deploy SubPay contract
+  console.log("📦 Deploying SubPay contract...")
   const SubPay = await ethers.getContractFactory("SubPay")
   const subPay = await SubPay.deploy(deployer.address, feeCollector.address)
   await subPay.waitForDeployment()
 
   const subPayAddress = await subPay.getAddress()
-  console.log(`SubPay deployed to: ${subPayAddress}`)
+  console.log(`✅ SubPay deployed to: ${subPayAddress}`)
+  console.log("==========================================")
 
   // Configure SubPay contract
-  console.log("Configuring SubPay contract...")
+  console.log("⚙️  Configuring SubPay contract...")
 
   // Add supported tokens
-  console.log("Adding supported tokens...")
+  console.log("➕ Adding supported tokens...")
   await (await subPay.addSupportedToken(cUSDAddress)).wait()
+  console.log("   ✅ Added cUSD token")
   await (await subPay.addSupportedToken(cEURAddress)).wait()
+  console.log("   ✅ Added cEUR token")
 
   // Add arbitrator
-  console.log("Adding arbitrator...")
+  console.log("➕ Adding arbitrator...")
   await (await subPay.addArbitrator(arbitrator.address)).wait()
+  console.log("   ✅ Arbitrator added")
 
   // Authorize oracle and provider
-  console.log("Authorizing oracle and provider...")
+  console.log("🔑 Authorizing roles...")
   await (await subPay.authorizeOracle(oracle.address)).wait()
+  console.log("   ✅ Oracle authorized")
   await (await subPay.authorizeProvider(provider.address)).wait()
+  console.log("   ✅ Provider authorized")
 
-  console.log("SubPay configuration complete!")
+  console.log("✅ SubPay configuration complete!")
+  console.log("==========================================")
 
-  // Verify contract on Etherscan if on a public network
-  if (network.name !== "hardhat" && network.name !== "localhost") {
-    console.log("Verifying contract on Etherscan...")
-    try {
-      await run("verify:verify", {
-        address: subPayAddress,
-        constructorArguments: [deployer.address, feeCollector.address],
-      })
-      console.log("Contract verified on Etherscan!")
-    } catch (error) {
-      console.error("Error verifying contract:", error)
-    }
+  // Verify contract on Celoscan
+  console.log("🔍 Verifying contract on Celoscan...")
+  try {
+    await run("verify:verify", {
+      address: subPayAddress,
+      constructorArguments: [deployer.address, feeCollector.address],
+    })
+    console.log("✅ Contract verified on Celoscan!")
+  } catch (error) {
+    console.error("❌ Error verifying contract:", error)
   }
 
   // Return deployment info
-  return {
+  const deploymentInfo = {
+    network: network.name,
+    chainId: network.config.chainId,
     subPay: subPayAddress,
     cUSD: cUSDAddress,
     cEUR: cEURAddress,
@@ -109,16 +114,23 @@ async function main() {
     oracle: oracle.address,
     provider: provider.address,
   }
+
+  console.log("📋 Deployment Summary:")
+  console.log(JSON.stringify(deploymentInfo, null, 2))
+  console.log("==========================================")
+
+  return deploymentInfo
 }
 
 // Execute the deployment
 main()
   .then((deploymentInfo) => {
-    console.log("Deployment successful!")
-    console.log("Deployment Info:", deploymentInfo)
+    console.log("🎉 Deployment successful!")
+    console.log("==========================================")
     process.exit(0)
   })
   .catch((error) => {
-    console.error("Error during deployment:", error)
+    console.error("❌ Error during deployment:", error)
+    console.log("==========================================")
     process.exit(1)
   })

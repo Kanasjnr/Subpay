@@ -1,7 +1,8 @@
-'use client';
+"use client"
 
-import { Web3Provider } from './Web3Provider'
-import { ModalProvider } from './ModalProvider'
+import type React from "react"
+import { Web3Provider } from "./Web3Provider"
+import { ModalProvider } from "./ModalProvider"
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -10,5 +11,5 @@ export function Providers({ children }: { children: React.ReactNode }) {
         {children}
       </ModalProvider>
     </Web3Provider>
-  );
-} 
+  )
+}

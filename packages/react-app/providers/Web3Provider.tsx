@@ -1,34 +1,65 @@
 "use client"
 
+import type React from "react"
+import { useState, useEffect } from "react"
 import "@rainbow-me/rainbowkit/styles.css"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { RainbowKitProvider, getDefaultConfig } from "@rainbow-me/rainbowkit"
-import { WagmiProvider } from "wagmi"
-import { celo, celoAlfajores } from "wagmi/chains"
-import { http } from "viem"
+import { RainbowKitProvider, darkTheme, getDefaultWallets } from "@rainbow-me/rainbowkit"
+import { WagmiProvider, createConfig, http } from "wagmi"
+import { celo } from "viem/chains"
 
-// Get project ID from environment variables
-const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID ?? "044601f65212332475a09bc14ceb3c34"
+// Debug environment variable
+console.log('WalletConnect Project ID:', process.env.NEXT_PUBLIC_WC_PROJECT_ID)
 
-// Create config outside of component to ensure it's only created once
-const config = getDefaultConfig({
-  appName: "Subpay",
-  projectId,
-  chains: [celo, celoAlfajores],
-  ssr: true
+// Create a client outside of the component to ensure it's not recreated on every render
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      refetchOnWindowFocus: false
+    }
+  }
 })
 
-// Create QueryClient outside of component to ensure it's only created once
-const queryClient = new QueryClient()
+// Get project ID from environment variable
+const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID || ""
 
-export function Web3Provider({ children }: { children: React.ReactNode }) {
+// Configure wallets
+const { connectors } = getDefaultWallets({
+  appName: 'SubPay',
+  projectId
+})
+
+// Create wagmi config
+const config = createConfig({
+  chains: [celo],
+  transports: {
+    [celo.id]: http(process.env.NEXT_PUBLIC_CELO_RPC_URL),
+  },
+  connectors
+})
+
+function Providers({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
+
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider>
+        <RainbowKitProvider theme={darkTheme()}>
           {children}
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   )
 }
+
+export { Providers as Web3Provider }

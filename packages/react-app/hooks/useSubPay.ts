@@ -20,6 +20,8 @@ import { SUBPAY_ABI } from '@/constants/abi';
 import { SUBPAY_ADDRESS } from '@/constants/addresses';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
+import { PublicClient } from 'viem';
+import { appendReferralData, submitReferralTransaction } from '@/lib/referral';
 
 // Token addresses on Celo
 const CUSD_ADDRESS = process.env.NEXT_PUBLIC_CUSD_ADDRESS as `0x${string}`;
@@ -181,6 +183,8 @@ interface SubPayHook {
     subscriptionId: bigint
   ) => Promise<Subscription | undefined>;
   getAllPlans: (limit?: number) => Promise<bigint[] | undefined>;
+  getAllSubscribers: (limit?: number) => Promise<`0x${string}`[] | undefined>;
+  getMerchantSubscribers: (merchantAddress: `0x${string}`) => Promise<`0x${string}`[] | undefined>;
 
   // Refetch functions
   refetchMerchantPlans: () => Promise<any>;
@@ -216,6 +220,9 @@ interface SubPayHook {
         number // resolution
       ]
     | null;
+
+  // New functions
+  getEvidence: (disputeId: bigint) => Promise<string>;
 }
 
 export function useSubPay(): SubPayHook {
@@ -542,7 +549,33 @@ export function useSubPay(): SubPayHook {
         account: address,
       });
 
-      await subscribeWrite(request);
+      // Append referral data to the transaction
+      const txWithReferral =
+        typeof (request as any).data === 'string'
+          ? { ...request, data: appendReferralData((request as any).data) }
+          : request;
+
+      const txHash = await subscribeWrite(txWithReferral);
+      
+      // Submit the referral after the transaction is confirmed
+      if (txHash != null) {
+        try {
+          // Defensive checks for config structure
+          const chain = (config.state as any)?.chain ?? (config.state as any)?.chainId;
+          const connection = (config.state as any)?.connections?.get?.((config.state as any)?.current);
+          const walletClient = connection?.walletClient;
+          if (chain && walletClient) {
+            await submitReferralTransaction(txHash, chain, walletClient);
+            console.log('Referral submitted successfully');
+          } else {
+            console.warn('Could not submit referral: missing chain or walletClient');
+          }
+        } catch (referralError) {
+          console.error('Error submitting referral:', referralError);
+          // Don't throw here - we don't want to fail the subscription if referral fails
+        }
+      }
+
       await refetchSubscriptions();
       return SUBPAY_ADDRESS;
     } catch (error) {
@@ -934,7 +967,8 @@ export function useSubPay(): SubPayHook {
 
       try {
         const currentBlock = await publicClient.getBlockNumber();
-        const fromBlock = currentBlock - BigInt(100000); // Look back further in history
+        // Look back 5,000,000 blocks (approximately 20 months on Celo)
+        const fromBlock = currentBlock - BigInt(5000000);
         console.log(
           `Searching for events from block ${fromBlock} to ${currentBlock}`
         );
@@ -959,61 +993,81 @@ export function useSubPay(): SubPayHook {
 
         console.log('PaymentProcessed events found:', processedEvents);
         console.log('PaymentRecorded events found:', recordedEvents);
+        console.log('Total events found:', processedEvents.length + recordedEvents.length);
+
+       
 
         // Combine and process both types of events
         const paymentRecords: PaymentRecord[] = [];
         const seenTxHashes = new Set<string>();
 
         // Process PaymentProcessed events first (these have the correct token address)
-        for (const event of processedEvents.filter((event) => {
+        for (const event of processedEvents) {
           const args = event.args as any;
-          return (
-            args.subscriber &&
-            args.subscriber.toLowerCase() === user.toLowerCase()
-          );
-        })) {
-          const args = event.args as any;
-          const txHash = event.transactionHash;
-          if (txHash && !seenTxHashes.has(txHash)) {
-            seenTxHashes.add(txHash);
-            const block = await publicClient.getBlock({
-              blockNumber: event.blockNumber,
-            });
-            console.log('PaymentProcessed event args:', args);
-            paymentRecords.push({
-              timestamp: block.timestamp,
-              success: true,
-              amount: args.amount || BigInt(0),
-              token: CUSD_ADDRESS as `0x${string}`,
-              metadata: txHash,
-              subscriptionId: args.subscriptionId,
-              merchant: args.merchant,
-            });
+          const txHash = event.transactionHash || 'Unknown';
+          
+          // Log the event details for debugging
+          console.log('Processing PaymentProcessed event:', {
+            subscriber: args.subscriber,
+            user: user,
+            matches: args.subscriber && args.subscriber.toLowerCase() === user.toLowerCase(),
+            txHash,
+            blockNumber: event.blockNumber
+          });
+
+          if (args.subscriber && args.subscriber.toLowerCase() === user.toLowerCase()) {
+            if (!seenTxHashes.has(txHash)) {
+              seenTxHashes.add(txHash);
+              const block = await publicClient.getBlock({
+                blockNumber: event.blockNumber,
+              });
+              console.log('PaymentProcessed event args:', args);
+              console.log('Transaction hash:', txHash);
+              paymentRecords.push({
+                timestamp: block.timestamp,
+                success: true,
+                amount: args.amount || BigInt(0),
+                token: CUSD_ADDRESS as `0x${string}`,
+                metadata: txHash,
+                subscriptionId: args.subscriptionId,
+                merchant: args.merchant,
+              });
+            }
           }
         }
 
         // Process PaymentRecorded events (only if we haven't seen the transaction)
-        for (const event of recordedEvents.filter((event) => {
+        for (const event of recordedEvents) {
           const args = event.args as any;
-          return args.user && args.user.toLowerCase() === user.toLowerCase();
-        })) {
-          const args = event.args as any;
-          const txHash = event.transactionHash;
-          if (txHash && !seenTxHashes.has(txHash)) {
-            seenTxHashes.add(txHash);
-            const block = await publicClient.getBlock({
-              blockNumber: event.blockNumber,
-            });
-            console.log('PaymentRecorded event args:', args);
-            paymentRecords.push({
-              timestamp: block.timestamp,
-              success: args.success || false,
-              amount: args.amount || BigInt(0),
-              token: args.token || (CUSD_ADDRESS as `0x${string}`),
-              metadata: txHash,
-              subscriptionId: args.subscriptionId,
-              merchant: args.merchant,
-            });
+          const txHash = event.transactionHash || 'Unknown';
+          
+          // Log the event details for debugging
+          console.log('Processing PaymentRecorded event:', {
+            user: args.user,
+            targetUser: user,
+            matches: args.user && args.user.toLowerCase() === user.toLowerCase(),
+            txHash,
+            blockNumber: event.blockNumber
+          });
+
+          if (args.user && args.user.toLowerCase() === user.toLowerCase()) {
+            if (!seenTxHashes.has(txHash)) {
+              seenTxHashes.add(txHash);
+              const block = await publicClient.getBlock({
+                blockNumber: event.blockNumber,
+              });
+              console.log('PaymentRecorded event args:', args);
+              console.log('Transaction hash:', txHash);
+              paymentRecords.push({
+                timestamp: block.timestamp,
+                success: args.success || false,
+                amount: args.amount || BigInt(0),
+                token: args.token || (CUSD_ADDRESS as `0x${string}`),
+                metadata: txHash,
+                subscriptionId: args.subscriptionId,
+                merchant: args.merchant,
+              });
+            }
           }
         }
 
@@ -1178,18 +1232,63 @@ export function useSubPay(): SubPayHook {
     limit: number
   ): Promise<bigint[] | undefined> => {
     if (!publicClient) return undefined;
-
     try {
-      const data = (await publicClient.readContract({
-        address: SUBPAY_ADDRESS as `0x${string}`,
+      const result = await publicClient.readContract({
+        address: SUBPAY_ADDRESS,
         abi: SUBPAY_ABI,
         functionName: 'getHighRiskSubscriptions',
         args: [BigInt(limit)],
-      })) as bigint[];
-
-      return data;
+      });
+      return result as bigint[];
     } catch (error) {
-      console.error('Error fetching high risk subscriptions:', error);
+      console.error('Error getting high risk subscriptions:', error);
+      return undefined;
+    }
+  };
+
+  const getAllSubscribers = async (limit = 100): Promise<`0x${string}`[] | undefined> => {
+    if (!publicClient || !address) return undefined;
+    const client = publicClient as PublicClient;
+    try {
+      // First get all subscription IDs for the merchant
+      const merchantSubscriptions = await client.readContract({
+        address: SUBPAY_ADDRESS,
+        abi: SUBPAY_ABI,
+        functionName: 'getMerchantPlans',
+        args: [address as `0x${string}`],
+      }) as bigint[];
+
+      console.log('Merchant plans:', merchantSubscriptions);
+
+      // Get subscription details for each plan to find subscribers
+      const subscribers = new Set<`0x${string}`>();
+      
+      // For each plan, get all subscriptions
+      for (const planId of merchantSubscriptions) {
+        try {
+          // Get subscription details for this plan
+          const subscription = await client.readContract({
+            address: SUBPAY_ADDRESS,
+            abi: SUBPAY_ABI,
+            functionName: 'subscriptions',
+            args: [planId],
+          }) as [bigint, `0x${string}`, bigint, bigint, bigint, boolean];
+
+          console.log(`Subscription for plan ${planId}:`, subscription);
+
+          // If the subscription is active and has a valid subscriber, add it to the set
+          if (subscription[5] && subscription[1] !== '0x0000000000000000000000000000000000000000') {
+            subscribers.add(subscription[1]);
+          }
+        } catch (error) {
+          console.error(`Error fetching subscription for plan ${planId}:`, error);
+          continue;
+        }
+      }
+
+      return Array.from(subscribers);
+    } catch (error) {
+      console.error('Error fetching subscribers:', error);
       return undefined;
     }
   };
@@ -1207,6 +1306,27 @@ export function useSubPay(): SubPayHook {
         functionName: 'getDispute',
         args: [disputeId],
       })) as Dispute;
+
+      // Check if the dispute exists by checking if all fields are default values
+      if (
+        data.subscriptionId === 0n &&
+        data.subscriber === '0x0000000000000000000000000000000000000000' &&
+        data.merchant === '0x0000000000000000000000000000000000000000' &&
+        data.paymentToken === '0x0000000000000000000000000000000000000000' &&
+        data.amount === 0n &&
+        data.createdAt === 0n &&
+        data.resolvedAt === 0n &&
+        data.status === 0 &&
+        data.resolution === 0 &&
+        data.reason === '' &&
+        data.merchantEvidence === '' &&
+        data.subscriberEvidence === '' &&
+        data.resolutionNotes === '' &&
+        data.resolver === '0x0000000000000000000000000000000000000000' &&
+        data.refundAmount === 0n
+      ) {
+        return undefined;
+      }
 
       return data;
     } catch (error) {
@@ -1258,6 +1378,68 @@ export function useSubPay(): SubPayHook {
     }
   };
 
+  const getMerchantSubscribers = async (merchantAddress: `0x${string}`): Promise<`0x${string}`[] | undefined> => {
+    if (!publicClient) return undefined;
+    const client = publicClient as PublicClient;
+    try {
+      // First get all subscription IDs for the merchant
+      const merchantSubscriptions = await client.readContract({
+        address: SUBPAY_ADDRESS,
+        abi: SUBPAY_ABI,
+        functionName: 'getMerchantPlans',
+        args: [merchantAddress],
+      }) as bigint[];
+
+      console.log('Merchant plans:', merchantSubscriptions);
+
+      // Get subscription details for each plan to find subscribers
+      const subscribers = new Set<`0x${string}`>();
+      
+      // For each plan, get all subscriptions
+      for (const planId of merchantSubscriptions) {
+        try {
+          // Get subscription details for this plan
+          const subscription = await client.readContract({
+            address: SUBPAY_ADDRESS,
+            abi: SUBPAY_ABI,
+            functionName: 'subscriptions',
+            args: [planId],
+          }) as [bigint, `0x${string}`, bigint, bigint, bigint, boolean];
+
+          console.log(`Subscription for plan ${planId}:`, subscription);
+
+          // If the subscription is active and has a valid subscriber, add it to the set
+          if (subscription[5] && subscription[1] !== '0x0000000000000000000000000000000000000000') {
+            subscribers.add(subscription[1]);
+          }
+        } catch (error) {
+          console.error(`Error fetching subscription for plan ${planId}:`, error);
+          continue;
+        }
+      }
+
+      return Array.from(subscribers);
+    } catch (error) {
+      console.error('Error fetching merchant subscribers:', error);
+      return undefined;
+    }
+  };
+
+  const getEvidence = async (disputeId: bigint): Promise<string> => {
+    if (!publicClient) throw new Error('Please connect your wallet first');
+
+    try {
+      const dispute = await getDispute(disputeId);
+      if (!dispute) {
+        throw new Error('Dispute not found');
+      }
+      return dispute.subscriberEvidence;
+    } catch (error) {
+      console.error('Error fetching evidence:', error);
+      throw error;
+    }
+  };
+
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -1301,6 +1483,8 @@ export function useSubPay(): SubPayHook {
     getPlanDetails,
     getSubscriptionDetails,
     getAllPlans,
+    getAllSubscribers,
+    getMerchantSubscribers,
 
     // Refetch functions
     refetchMerchantPlans,
@@ -1351,5 +1535,8 @@ export function useSubPay(): SubPayHook {
           number
         ])
       : null,
+
+    // New functions
+    getEvidence,
   };
 }
