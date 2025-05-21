@@ -48,11 +48,14 @@ interface RiskAssessment {
   }
 }
 
-// Celo testnet provider
+// Celo mainnet provider
 const provider = createPublicClient({
   chain: celo,
-  transport: http('https://alfajores-forno.celo-testnet.org')
-})
+  transport: http('https://forno.celo.org'),
+  batch: {
+    multicall: true
+  }
+}) as PublicClient
 
 export async function assessRisk(
   address: string,
