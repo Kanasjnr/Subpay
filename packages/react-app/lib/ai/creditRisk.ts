@@ -1,5 +1,5 @@
 import * as tf from '@tensorflow/tfjs'
-import { ethers } from 'ethers'
+import { type PublicClient, type Log } from 'viem'
 
 interface CreditRiskFactors {
   transactionHistory: {
@@ -125,39 +125,47 @@ export async function loadCreditRiskModel() {
 // Analyze credit risk
 export async function analyzeCreditRisk(
   address: string,
-  provider: ethers.JsonRpcProvider
+  provider: PublicClient
 ): Promise<CreditRiskAssessment> {
   try {
     // Get transaction history
     const blockNumber = await provider.getBlockNumber()
-    const startBlock = Math.max(0, blockNumber - 1000)
-    
-    const blocks = await Promise.all(
-      Array.from({ length: blockNumber - startBlock + 1 }, (_, i) => 
-        provider.getBlock(startBlock + i)
-      )
-    )
+    const logs = await provider.getLogs({
+      address: address as `0x${string}`,
+      fromBlock: blockNumber - 10000n, // Last ~10000 blocks
+      toBlock: blockNumber
+    })
 
     // Calculate credit factors
-    const transactions = []
     let totalVolume = 0
     let onTimePayments = 0
     let latePayments = 0
     let failedPayments = 0
+    const transactions: { amount: number; timestamp: number }[] = []
 
-    for (const block of blocks) {
-      if (!block) continue
+    for (const log of logs) {
+      if (!log) continue
       
-      for (const txHash of block.transactions) {
-        const tx = await provider.getTransaction(txHash)
-        if (!tx || (tx.from !== address && tx.to !== address)) continue
-        
-        const amount = parseFloat(ethers.formatEther(tx.value))
+      // Parse transaction data from log
+      const txData = log.data
+      if (typeof txData === 'string') {
+        // Handle raw transaction data
+        const amount = parseInt(txData.slice(2, 66), 16) / 1e18 // Convert from wei to ether
         totalVolume += amount
         transactions.push({
           amount,
-          timestamp: block.timestamp
+          timestamp: Number(log.blockNumber)
         })
+      }
+
+      // Check transaction status from topics
+      const status = log.topics[1] // Assuming status is encoded in the second topic
+      if (status === '0x0000000000000000000000000000000000000000000000000000000000000001') {
+        onTimePayments++
+      } else if (status === '0x0000000000000000000000000000000000000000000000000000000000000002') {
+        latePayments++
+      } else if (status === '0x0000000000000000000000000000000000000000000000000000000000000003') {
+        failedPayments++
       }
     }
 
