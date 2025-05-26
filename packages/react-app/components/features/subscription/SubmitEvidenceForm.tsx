@@ -271,16 +271,15 @@ export function SubmitEvidenceForm({ disputeId, onSuccess, onCancel }: SubmitEvi
               <Label>Uploaded Images ({images.length})</Label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {images.map((image) => (
-                  <div key={image.publicId} className="relative group">
-                    <div className="aspect-square rounded-md overflow-hidden border border-gray-200">
-                      <Image
-                        src={image.url || "/placeholder.svg"}
-                        alt="Evidence"
-                        width={200}
-                        height={200}
-                        className="object-cover w-full h-full"
-                      />
-                    </div>
+                  <div key={image.publicId} className="relative aspect-square group">
+                    <Image
+                      src={image.url || "/placeholder.svg"}
+                      alt="Evidence"
+                      fill
+                      className="object-cover rounded-md"
+                      sizes="(max-width: 768px) 50vw, 33vw"
+                      priority={false}
+                    />
                     <button
                       type="button"
                       onClick={() => removeImage(image.publicId)}

@@ -1,4 +1,6 @@
-import { ethers } from 'ethers'
+import * as tf from '@tensorflow/tfjs'
+import { createPublicClient, http, type PublicClient } from 'viem'
+import { celo } from 'viem/chains'
 import { analyzeWalletBehavior } from './fraudDetection'
 import { analyzeCreditRisk } from './creditRisk'
 import { optimizePayment } from './paymentOptimization'
@@ -46,8 +48,14 @@ interface RiskAssessment {
   }
 }
 
-// Celo testnet provider
-const provider = new ethers.JsonRpcProvider('https://alfajores-forno.celo-testnet.org')
+// Celo mainnet provider
+const provider = createPublicClient({
+  chain: celo,
+  transport: http('https://forno.celo.org'),
+  batch: {
+    multicall: true
+  }
+}) as PublicClient
 
 export async function assessRisk(
   address: string,

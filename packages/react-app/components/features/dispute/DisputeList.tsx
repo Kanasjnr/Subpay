@@ -235,14 +235,14 @@ export function DisputeList({ type }: DisputeListProps) {
     }
   }, [address, type, getDispute, getPlanDetails])
 
-  // Only fetch on mount or when address/type changes
+  // Only fetch on mount or when dependencies change
   useEffect(() => {
     mountedRef.current = true
     fetchAndSetDisputes()
     return () => {
       mountedRef.current = false
     }
-  }, [address, type])
+  }, [fetchAndSetDisputes])
 
   // Memoize filtered disputes
   const filteredDisputes = useMemo(() => {

@@ -217,15 +217,15 @@ export default function TransactionsPage() {
 
   return (
     <DashboardLayout type="subscriber">
-      <div className="space-y-6 sm:space-y-8">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      <div className="space-y-8">
+        <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">Transactions</h1>
-            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+            <h1 className="text-3xl font-bold">Transactions</h1>
+            <p className="text-muted-foreground mt-1">
               View your subscription payment history
             </p>
           </div>
-          <div className="flex items-center gap-2 bg-primary/10 text-primary px-3 sm:px-4 py-2 rounded-md">
+          <div className="flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-md">
             <span className="text-sm font-medium">
               Total Spent: {totalSpent.toFixed(2)} cUSD
             </span>
@@ -233,29 +233,29 @@ export default function TransactionsPage() {
         </div>
 
         <Card>
-          <CardHeader className="p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4">
+          <CardHeader>
+            <div className="flex flex-col md:flex-row justify-between gap-4">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search transactions..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 h-9 sm:h-10 text-sm"
+                  className="pl-9"
                 />
               </div>
               <Button
                 onClick={handleRefresh}
-                className="flex items-center gap-2 h-9 sm:h-10 text-sm"
+                className="flex items-center gap-2"
               >
                 <RefreshCw className="h-4 w-4" />
                 Refresh
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="p-0 sm:p-6">
+          <CardContent>
             {transactions.length === 0 ? (
-              <div className="space-y-6 p-4 sm:p-6">
+              <div className="space-y-6">
                 <Empty
                   title="No Transactions Found"
                   message="No subscription payment history was found for your account."
@@ -274,55 +274,53 @@ export default function TransactionsPage() {
                 )}
               </div>
             ) : (
-              <div className="rounded-md border overflow-x-auto">
-                <div className="min-w-[800px]">
-                  <div className="grid grid-cols-6 gap-4 p-4 bg-muted/50 text-sm font-medium">
-                    <div className="col-span-1">Date & Time</div>
-                    <div>Plan</div>
-                    <div>Merchant</div>
-                    <div>Amount</div>
-                    <div>Status</div>
-                    <div>Transaction</div>
-                  </div>
-                  <div className="divide-y divide-border">
-                    {filteredTransactions.map((tx) => (
-                      <div
-                        key={tx.id}
-                        className="grid grid-cols-6 gap-4 p-4 items-center text-sm hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="whitespace-nowrap">{tx.date}</div>
-                        <div className="truncate" title={tx.planName}>{tx.planName}</div>
-                        <div className="font-mono truncate" title={tx.merchant}>
-                          {tx.merchant.substring(0, 6)}...
-                          {tx.merchant.substring(tx.merchant.length - 4)}
-                        </div>
-                        <div className="whitespace-nowrap">{tx.amount}</div>
-                        <div>
-                          <span
-                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
-                              tx.status === 'Success'
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-red-100 text-red-800'
-                            }`}
-                          >
-                            {tx.status}
-                          </span>
-                        </div>
-                        <div className="font-mono truncate">
-                          <a
-                            href={`https://explorer.celo.org/tx/${tx.txHash}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline"
-                            title={tx.txHash}
-                          >
-                            {tx.txHash.substring(0, 6)}...
-                            {tx.txHash.substring(tx.txHash.length - 4)}
-                          </a>
-                        </div>
+              <div className="rounded-md border">
+                <div className="grid grid-cols-6 gap-4 p-4 bg-muted/50 text-sm font-medium">
+                  <div className="col-span-1">Date & Time</div>
+                  <div>Plan</div>
+                  <div>Merchant</div>
+                  <div>Amount</div>
+                  <div>Status</div>
+                  <div>Transaction</div>
+                </div>
+                <div className="divide-y divide-border">
+                  {filteredTransactions.map((tx) => (
+                    <div
+                      key={tx.id}
+                      className="grid grid-cols-6 gap-4 p-4 items-center text-sm"
+                    >
+                      <div>{tx.date}</div>
+                      <div>{tx.planName}</div>
+                      <div className="font-mono truncate" title={tx.merchant}>
+                        {tx.merchant.substring(0, 6)}...
+                        {tx.merchant.substring(tx.merchant.length - 4)}
                       </div>
-                    ))}
-                  </div>
+                      <div>{tx.amount}</div>
+                      <div>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs ${
+                            tx.status === 'Success'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {tx.status}
+                        </span>
+                      </div>
+                      <div className="font-mono truncate">
+                        <a
+                          href={`https://celo-alfajores.blockscout.com/tx/${tx.txHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                          title={tx.txHash}
+                        >
+                          {tx.txHash.substring(0, 6)}...
+                          {tx.txHash.substring(tx.txHash.length - 4)}
+                        </a>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

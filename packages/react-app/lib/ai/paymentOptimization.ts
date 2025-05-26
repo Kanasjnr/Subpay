@@ -1,5 +1,5 @@
 import * as tf from '@tensorflow/tfjs'
-import { ethers } from 'ethers'
+import { type PublicClient } from 'viem'
 
 interface PaymentPattern {
   amount: number
@@ -111,51 +111,45 @@ export async function loadOptimizationModel() {
 // Optimize payment
 export async function optimizePayment(
   address: string,
-  provider: ethers.JsonRpcProvider,
+  provider: PublicClient,
   targetAmount: number
 ): Promise<OptimizationResult> {
   try {
-    // Get transaction history
+    // Get recent transactions
     const blockNumber = await provider.getBlockNumber()
-    const startBlock = Math.max(0, blockNumber - 1000)
-    
-    const blocks = await Promise.all(
-      Array.from({ length: blockNumber - startBlock + 1 }, (_, i) => 
-        provider.getBlock(startBlock + i)
-      )
-    )
+    const logs = await provider.getLogs({
+      address: address as `0x${string}`,
+      fromBlock: blockNumber - 10000n, // Last ~10000 blocks
+      toBlock: blockNumber
+    })
 
-    // Collect payment patterns
-    const patterns: PaymentPattern[] = []
-    let totalGasUsed = 0
-    let successfulPayments = 0
-
-    for (const block of blocks) {
-      if (!block) continue
+    // Process transaction data
+    const paymentPatterns: PaymentPattern[] = []
+    for (const log of logs) {
+      if (!log) continue
       
-      for (const txHash of block.transactions) {
-        const tx = await provider.getTransaction(txHash)
-        if (!tx || tx.from !== address) continue
+      // Parse transaction data from log
+      const txData = log.data
+      if (typeof txData === 'string') {
+        const amount = parseInt(txData.slice(2, 66), 16) / 1e18 // Convert from wei to ether
+        const gasUsed = parseInt(txData.slice(66, 130), 16)
         
-        const receipt = await provider.getTransactionReceipt(txHash)
-        if (!receipt) continue
-
-        const amount = parseFloat(ethers.formatEther(tx.value))
-        patterns.push({
+        // Check transaction status from topics
+        const status = log.topics[1] // Assuming status is encoded in the second topic
+        const success = status === '0x0000000000000000000000000000000000000000000000000000000000000001'
+        
+        paymentPatterns.push({
           amount,
-          timestamp: block.timestamp,
-          success: receipt.status === 1,
-          gasUsed: Number(receipt.gasUsed)
+          timestamp: Number(log.blockNumber),
+          success,
+          gasUsed
         })
-
-        totalGasUsed += Number(receipt.gasUsed)
-        if (receipt.status === 1) successfulPayments++
       }
     }
 
     // Calculate average success rate and gas usage
-    const successRate = successfulPayments / patterns.length
-    const avgGasUsed = totalGasUsed / patterns.length
+    const successRate = paymentPatterns.filter(p => p.success).length / paymentPatterns.length
+    const avgGasUsed = paymentPatterns.reduce((sum, p) => sum + p.gasUsed, 0) / paymentPatterns.length
 
     // Prepare features for model
     const features = tf.tensor2d([[
@@ -178,7 +172,7 @@ export async function optimizePayment(
     const optimalTime = Number(rawOptimalTime) || 0
 
     // Calculate potential savings
-    const savings = calculateSavings(patterns, optimalAmount, optimalTime)
+    const savings = calculateSavings(paymentPatterns, optimalAmount, optimalTime)
 
     // Generate recommendations
     const recommendations = generateOptimizationRecommendations(
@@ -190,7 +184,7 @@ export async function optimizePayment(
     return {
       optimalAmount,
       optimalTime,
-      confidence: calculateConfidence(patterns, optimalAmount, optimalTime),
+      confidence: calculateConfidence(paymentPatterns, optimalAmount, optimalTime),
       savings,
       recommendations
     }

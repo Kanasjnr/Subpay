@@ -41,51 +41,53 @@ export default function BusinessDashboard() {
       router.push("/")
       return
     }
+  }, [address, router]);
 
-    const calculateStats = async () => {
-      if (!merchantPlans || hasInitialized.current) {
-        return
-      }
-
-      try {
-        setLoading(true)
-        const planDetails = await Promise.all(
-          merchantPlans.map(id => getPlanDetails(id))
-        )
-
-        const validPlans = planDetails.filter((plan): plan is NonNullable<typeof plan> => plan !== undefined)
-        
-        const monthlyRevenue = validPlans.reduce((acc, plan) => {
-          if (!plan.amount || !plan.active) return acc
-          try {
-            return acc + Number(formatEther(plan.amount))
-          } catch (error) {
-            return acc
-          }
-        }, 0)
-
-        setStats({
-          monthlyRevenue,
-          activePlans: validPlans.filter(p => p.active).length,
-          totalPlans: validPlans.length
-        })
-        hasInitialized.current = true
-      } catch (error) {
-        console.error("Error calculating stats:", error)
-      } finally {
-        setLoading(false)
-      }
+  const calculateStats = useCallback(async () => {
+    if (!merchantPlans || hasInitialized.current) {
+      return
     }
 
-    calculateStats()
-  }, [address, router, merchantPlans, getPlanDetails])
+    try {
+      setLoading(true)
+      const planDetails = await Promise.all(
+        merchantPlans.map(id => getPlanDetails(id))
+      )
+
+      const validPlans = planDetails.filter((plan): plan is NonNullable<typeof plan> => plan !== undefined)
+      
+      const monthlyRevenue = validPlans.reduce((acc, plan) => {
+        if (!plan.amount || !plan.active) return acc
+        try {
+          return acc + Number(formatEther(plan.amount))
+        } catch (error) {
+          return acc
+        }
+      }, 0)
+
+      setStats({
+        monthlyRevenue,
+        activePlans: validPlans.filter(p => p.active).length,
+        totalPlans: validPlans.length
+      })
+      hasInitialized.current = true
+    } catch (error) {
+      console.error("Error calculating stats:", error)
+    } finally {
+      setLoading(false)
+    }
+  }, [merchantPlans, getPlanDetails]);
+
+  useEffect(() => {
+    calculateStats();
+  }, [calculateStats]);
 
   // Reset initialization when merchant plans change
   useEffect(() => {
     if (merchantPlans) {
       hasInitialized.current = false
     }
-  }, [merchantPlans])
+  }, [merchantPlans]);
 
   if (!address) return null
 

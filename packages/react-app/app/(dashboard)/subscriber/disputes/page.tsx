@@ -662,13 +662,14 @@ export default function DisputesPage() {
             </DialogHeader>
             {selectedImage && (
               <div className="flex justify-center">
-                <div className="relative max-h-[70vh] max-w-full">
+                <div className="relative aspect-[4/3] w-full max-h-[70vh]">
                   <Image
                     src={selectedImage || "/placeholder.svg"}
                     alt="Evidence"
-                    width={800}
-                    height={600}
+                    fill
                     className="object-contain"
+                    sizes="(max-width: 768px) 100vw, 800px"
+                    priority={true}
                   />
                 </div>
               </div>

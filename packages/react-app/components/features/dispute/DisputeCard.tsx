@@ -13,6 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, FileText, Upload, Image as ImageIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import Image from 'next/image';
 
 interface EvidenceData {
   text: string;
@@ -244,11 +245,13 @@ export const DisputeCard: React.FC<DisputeCardProps> = ({ dispute, onResolve, ty
                           <h5 className="font-medium">Image Evidence:</h5>
                           <div className="grid grid-cols-2 gap-2">
                             {subscriberEvidence.images.map((image, index) => (
-                              <div key={index} className="relative">
-                                <img
+                              <div key={index} className="relative aspect-square">
+                                <Image
                                   src={image}
                                   alt={`Evidence Image ${index + 1}`}
-                                  className="w-full h-32 object-cover rounded-md"
+                                  fill
+                                  className="object-cover rounded-md"
+                                  sizes="(max-width: 768px) 50vw, 33vw"
                                 />
                               </div>
                             ))}
@@ -289,11 +292,13 @@ export const DisputeCard: React.FC<DisputeCardProps> = ({ dispute, onResolve, ty
                         <h5 className="font-medium">Selected Images:</h5>
                         <div className="grid grid-cols-2 gap-2">
                           {selectedFiles.map((file, index) => (
-                            <div key={index} className="relative group">
-                              <img
+                            <div key={index} className="relative aspect-square group">
+                              <Image
                                 src={URL.createObjectURL(file)}
                                 alt={`Evidence ${index + 1}`}
-                                className="w-full h-32 object-cover rounded-md"
+                                fill
+                                className="object-cover rounded-md"
+                                sizes="(max-width: 768px) 50vw, 33vw"
                               />
                               <Button
                                 variant="destructive"
